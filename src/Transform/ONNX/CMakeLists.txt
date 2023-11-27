@@ -12,6 +12,7 @@ add_onnx_mlir_library(OMONNXRewrite
   ScrubDisposablePass.cpp
   SetONNXNodeName.cpp
   Recompose.cpp
+  SeperateWeightsOutsidePass.cpp
 
   DEPENDS
   OMONNXDecomposeIncGen
@@ -109,3 +110,5 @@ add_onnx_mlir_library(OMONNXStandardFuncReturnPass
   OMONNXOps
   OMShapeInference
   )
+
+

@@ -546,3 +546,26 @@ def ONNXShapeTransformOp: ONNX_Op<"ShapeTransform", [Pure,
   let hasVerifier = 1;
 }
 
+
+
+def ONNXLoadOp: ONNX_Op<"load"> {
+  let summary = "load the ONNX weight from files";
+  let description  = [{
+
+  }];
+
+  let arguments = (ins
+    OptionalAttr<F64ArrayAttr>:$scale,
+    OptionalAttr<BoolAttr>:$do_compress
+    // OptionalAttr<StoreModeAttr>:$store_mode
+  );
+
+  let results = (outs AnyRankedTensor:$output);
+
+
+  let builders = [
+    OpBuilder<(ins "llvm::ArrayRef<int>":$shape, "llvm::StringRef":$location, "mlir::Type":$dtype)>
+  ];
+  
+}
+

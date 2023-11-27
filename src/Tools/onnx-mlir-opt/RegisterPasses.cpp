@@ -20,12 +20,14 @@
 
 #include "RegisterPasses.hpp"
 
+#include "mlir/Pass/Pass.h"
 #include "src/Accelerators/Accelerator.hpp"
 #include "src/Compiler/CompilerPasses.hpp"
 
 #include "mlir/InitAllPasses.h"
 #include "mlir/Pass/PassRegistry.h"
 #include "src/Pass/Passes.hpp"
+#include <memory>
 
 using namespace mlir;
 
@@ -126,6 +128,10 @@ void registerOMPasses(int optLevel) {
 
   mlir::registerPass([]() -> std::unique_ptr<mlir::Pass> {
     return createConvertONNXToTOSAPass();
+  });
+
+  mlir::registerPass([]() -> std::unique_ptr<mlir::Pass> {
+    return createSeperateWeighsOutsidePass();
   });
 
 #ifdef ONNX_MLIR_ENABLE_STABLEHLO

@@ -124,4 +124,6 @@ std::unique_ptr<mlir::Pass> createConvertKrnlToLLVMPass(bool verifyInputTensors,
 /// Pass for lowering Onnx ops to TOSA dialect
 std::unique_ptr<mlir::Pass> createConvertONNXToTOSAPass();
 
+// separate the const Op's weights outside
+std::unique_ptr<mlir::Pass> createSeperateWeighsOutsidePass();
 } // namespace onnx_mlir
