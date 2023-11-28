@@ -16,6 +16,7 @@
 
 #include "src/Conversion/ONNXToKrnl/ONNXToKrnlCommon.hpp"
 #include "src/Dialect/Krnl/DialectBuilder.hpp"
+
 #include "src/Dialect/ONNX/ONNXOps/ShapeHelper.hpp"
 
 #define DEBUG_TYPE "lowering-to-krnl"
@@ -719,6 +720,46 @@ Value emitScalarOpFor<ONNXSeluOp>(ConversionPatternRewriter &rewriter,
   Value select = create.math.select(greaterThanZero, operand,
       create.math.sub(create.math.mul(alpha, exp), alpha));
   return create.math.mul(gamma, select);
+}
+//===----------------------------------------------------------------------===//
+// Scalar unary ops for lowering ONNXCeluOp
+//===----------------------------------------------------------------------===//
+template <>
+struct ScalarOp<ONNXCeluOp> {
+  using FOp = CustomScalarOp;
+  using IOp = NotSuportedScalarOp;
+};
+template <>
+double analyzeSimdFor<ONNXCeluOp>(
+    Type t, Operation *op, int64_t &von, int64_t &son) {
+  return simdAnalysis(
+      {GenericOps::MulGop, GenericOps::ArithmeticGop, GenericOps::ExpGop,
+          GenericOps::MinMaxGop, GenericOps::DivGop},
+      {1, 2, 1, 2, 1}, t, von, son);
+}
+
+// ONNXCeluOp(%x) = MAX(%x, 0) + MIN(0, %alpha * (exp(%x / %alpha) - 1))
+template <>
+Value emitScalarOpFor<ONNXCeluOp>(ConversionPatternRewriter &rewriter,
+    Location loc, Operation *op, Type elementType,
+    ArrayRef<Value> scalarOperands) {
+
+  CheckIfCustomScalarOpIsSupported<ONNXCeluOp>(elementType);
+
+  Value operand = scalarOperands[0];
+
+  MultiDialectBuilder<MathBuilder> create(rewriter, loc);
+  Value alpha = create.math.constant(
+      elementType, dyn_cast<ONNXCeluOp>(op).getAlpha().convertToDouble());
+  Value zero = create.math.constant(elementType, 0);
+  Value one = create.math.constant(elementType, 1);
+  Value y = create.math.add(create.math.max(zero, operand),
+      create.math.min(zero,
+          create.math.mul(alpha,
+              create.math.sub(
+                  create.math.exp(create.math.div(operand, alpha)), one))));
+
+  return y;
 }
 
 //===----------------------------------------------------------------------===//
@@ -1689,7 +1730,7 @@ bool OpFusionHelper::checkFusibleOp(Operation *useOp, Operation *defOp,
       mlir::ONNXFloorOp, mlir::ONNXHardSigmoidOp, mlir::ONNXIsInfOp,
       mlir::ONNXIsNaNOp, mlir::ONNXLeakyReluOp, mlir::ONNXLogOp,
       mlir::ONNXNegOp, mlir::ONNXNotOp, mlir::ONNXReciprocalOp,
-      mlir::ONNXReluOp, mlir::ONNXRoundOp, mlir::ONNXSeluOp,
+      mlir::ONNXReluOp, mlir::ONNXRoundOp, mlir::ONNXSeluOp, mlir::ONNXCeluOp,
       mlir::ONNXSigmoidOp, mlir::ONNXSignOp, mlir::ONNXSinOp, mlir::ONNXSinhOp,
       mlir::ONNXSoftplusOp, mlir::ONNXSoftsignOp, mlir::ONNXSqrtOp,
       mlir::ONNXTanOp, mlir::ONNXTanhOp,
@@ -2596,6 +2637,7 @@ void populateLoweringONNXElementwiseOpPattern(RewritePatternSet &patterns,
       ONNXElementwiseBinaryOpLowering<mlir::ONNXPowOp>,
       ONNXElementwiseUnaryOpLowering<mlir::ONNXReciprocalOp>,
       ONNXElementwiseUnaryOpLowering<mlir::ONNXReluOp>,
+      ONNXElementwiseUnaryOpLowering<mlir::ONNXCeluOp>,
       ONNXElementwiseUnaryOpLowering<mlir::ONNXRoundOp>,
       ONNXElementwiseUnaryOpLowering<mlir::ONNXClipOp>,
       ONNXElementwiseUnaryOpLowering<mlir::ONNXSeluOp>,
