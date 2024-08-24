@@ -5,22 +5,25 @@ _ZLow add operation_
 
 ZLow operation to perform an add.
 
-Traits: MemRefsNormalizable
+Traits: `MemRefsNormalizable`
+
+Interfaces: `MemoryEffectOpInterface`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `layout` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>layout</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `X` | memref of any type values
-| `Y` | memref of any type values
+| `X` | memref of dlfloat16 type values
+| `Y` | memref of dlfloat16 type values
 | `shape` | memref of 64-bit signless integer values
-| `Out` | memref of any type values
+| `Out` | memref of dlfloat16 type values
 
 ### `zlow.avgpool2d` (::onnx_mlir::zlow::ZLowAvgPool2DOp)
 
@@ -38,23 +41,26 @@ ZLow operation to perform 2D average pooling.
 * strides: 1D array of stride height and width
 * padding_type: SAME_PADDING or VALID_PADDING.
 
-Traits: MemRefsNormalizable
+Traits: `MemRefsNormalizable`
+
+Interfaces: `MemoryEffectOpInterface`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `kernel_shape` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `strides` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `padding_type` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>kernel_shape</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>padding_type</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `input` | memref of any type values
+| `input` | memref of dlfloat16 type values
 | `shape` | memref of 64-bit signless integer values
-| `output` | memref of any type values
+| `output` | memref of dlfloat16 type values
 
 ### `zlow.batchnorm` (::onnx_mlir::zlow::ZLowBatchNormOp)
 
@@ -67,17 +73,19 @@ ZLow operation to perform batchnorm.
   * 3rd item: width
   * 4th item: channel
 
-Traits: MemRefsNormalizable
+Traits: `MemRefsNormalizable`
+
+Interfaces: `MemoryEffectOpInterface`
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `input` | memref of any type values
-| `A` | memref of any type values
-| `B` | memref of any type values
+| `input` | memref of dlfloat16 type values
+| `A` | memref of dlfloat16 type values
+| `B` | memref of dlfloat16 type values
 | `shape` | memref of 64-bit signless integer values
-| `output` | memref of any type values
+| `output` | memref of dlfloat16 type values
 
 ### `zlow.conv2d` (::onnx_mlir::zlow::ZLowConv2DOp)
 
@@ -97,26 +105,127 @@ ZLow operation to perform 2D convolution.
 * padding_type: SAME_PADDING or VALID_PADDING.
 * act_func: ACT_NONE or ACT_RELU.
 
-Traits: MemRefsNormalizable
+Traits: `MemRefsNormalizable`
+
+Interfaces: `MemoryEffectOpInterface`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `kernel_shape` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `strides` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `padding_type` | ::mlir::StringAttr | string attribute
-| `act_func` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>kernel_shape</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>padding_type</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>act_func</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `input` | memref of any type values
-| `input_kernel` | memref of any type values
-| `input_bias` | memref of any type values
+| `input` | memref of dlfloat16 type values
+| `input_kernel` | memref of dlfloat16 type values
+| `input_bias` | memref of dlfloat16 type values
 | `shape` | memref of 64-bit signless integer values
-| `output` | memref of any type values
+| `output` | memref of dlfloat16 type values
+
+### `zlow.dlf16_to_f32` (::onnx_mlir::zlow::ZLowConvertDLF16ToF32Op)
+
+_Convert a dlfloat16 value to a float32 value_
+
+This operation converts a dlfloat16 value to a float32 value. 
+
+Traits: `AlwaysSpeculatableImplTrait`
+
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`
+
+Effects: `MemoryEffects::Effect{}`
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `input` | dlfloat16 type
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `output` | 32-bit float
+
+### `zlow.vec_dlf16_to_f32` (::onnx_mlir::zlow::ZLowConvertDLF16ToF32VectorOp)
+
+_Convert dlfloat16 values to float32 values_
+
+This operation converts dlfloat16 values to float32 values. 
+
+Traits: `AlwaysSpeculatableImplTrait`
+
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`
+
+Effects: `MemoryEffects::Effect{}`
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `input` | vector of 16-bit float values of length 8
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `output1` | vector of 32-bit float values of length 4
+| `output2` | vector of 32-bit float values of length 4
+
+### `zlow.f32_to_dlf16` (::onnx_mlir::zlow::ZLowConvertF32ToDLF16Op)
+
+_Convert a float32 value to a dlfloat16 value_
+
+This operation converts a float32 value to a dlfloat16 value. 
+
+Traits: `AlwaysSpeculatableImplTrait`
+
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`
+
+Effects: `MemoryEffects::Effect{}`
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `input` | 32-bit float
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `output` | dlfloat16 type
+
+### `zlow.vec_f32_to_dlf16` (::onnx_mlir::zlow::ZLowConvertF32ToDLF16VectorOp)
+
+_Convert float32 values to dlfloat16 values_
+
+This operation converts float32 values to dlfloat16 values. 
+
+Traits: `AlwaysSpeculatableImplTrait`
+
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`
+
+Effects: `MemoryEffects::Effect{}`
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `input1` | vector of 32-bit float values of length 4
+| `input2` | vector of 32-bit float values of length 4
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `output` | vector of 16-bit float values of length 8
 
 ### `zlow.div` (::onnx_mlir::zlow::ZLowDivOp)
 
@@ -124,22 +233,25 @@ _ZLow div operation_
 
 ZLow operation to perform a div.
 
-Traits: MemRefsNormalizable
+Traits: `MemRefsNormalizable`
+
+Interfaces: `MemoryEffectOpInterface`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `layout` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>layout</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `X` | memref of any type values
-| `Y` | memref of any type values
+| `X` | memref of dlfloat16 type values
+| `Y` | memref of dlfloat16 type values
 | `shape` | memref of 64-bit signless integer values
-| `Out` | memref of any type values
+| `Out` | memref of dlfloat16 type values
 
 ### `zlow.dummy` (::onnx_mlir::zlow::ZLowDummyOp)
 
@@ -148,7 +260,7 @@ _ZLow dummy operation that behaves like identity_
 ZLow operation to forward the input value to the output value.
 It will be removed if canonicalization is called.
 
-Traits: MemRefsNormalizable
+Traits: `MemRefsNormalizable`
 
 #### Operands:
 
@@ -168,21 +280,24 @@ _ZLow exp operation_
 
 ZLow operation to perform a exp.
 
-Traits: MemRefsNormalizable
+Traits: `MemRefsNormalizable`
+
+Interfaces: `MemoryEffectOpInterface`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `layout` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>layout</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `X` | memref of any type values
+| `X` | memref of dlfloat16 type values
 | `shape` | memref of 64-bit signless integer values
-| `Out` | memref of any type values
+| `Out` | memref of dlfloat16 type values
 
 ### `zlow.gru` (::onnx_mlir::zlow::ZLowGRUOp)
 
@@ -200,29 +315,32 @@ ZLow operation to perform a gru.
 * return_all_steps: -1 returns all timesteps, 0: returns only the last timestep.
 * prev_layer for where input comes is "none", "uni", or "bidir"
 
-Traits: MemRefsNormalizable
+Traits: `MemRefsNormalizable`
+
+Interfaces: `MemoryEffectOpInterface`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `direction` | ::mlir::StringAttr | string attribute
-| `return_all_steps` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `prev_layer` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>direction</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>return_all_steps</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>prev_layer</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `input` | memref of any type values
-| `h0` | memref of any type values
-| `input_weights` | memref of any type values
-| `input_bias` | memref of any type values
-| `hidden_weights` | memref of any type values
-| `hidden_bias` | memref of any type values
-| `work_area` | memref of any type values
+| `input` | memref of dlfloat16 type values
+| `h0` | memref of dlfloat16 type values
+| `input_weights` | memref of dlfloat16 type values
+| `input_bias` | memref of dlfloat16 type values
+| `hidden_weights` | memref of dlfloat16 type values
+| `hidden_bias` | memref of dlfloat16 type values
+| `work_area` | memref of 8-bit signless integer values
 | `shape` | memref of 64-bit signless integer values
-| `hn_output` | memref of any type values
+| `hn_output` | memref of dlfloat16 type values
 
 ### `zlow.lstm` (::onnx_mlir::zlow::ZLowLSTMOp)
 
@@ -240,31 +358,34 @@ work_area: a 4K-aligned buffer.
 * return_all_steps: -1 returns all timesteps, 0: returns only the last timestep
 * prev_layer for where input comes is "none", "uni", or "bidir"
 
-Traits: MemRefsNormalizable
+Traits: `MemRefsNormalizable`
+
+Interfaces: `MemoryEffectOpInterface`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `direction` | ::mlir::StringAttr | string attribute
-| `return_all_steps` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `prev_layer` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>direction</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>return_all_steps</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>prev_layer</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `input` | memref of any type values
-| `h0` | memref of any type values
-| `c0` | memref of any type values
-| `input_weights` | memref of any type values
-| `input_bias` | memref of any type values
-| `hidden_weights` | memref of any type values
-| `hidden_bias` | memref of any type values
-| `work_area` | memref of any type values
+| `input` | memref of dlfloat16 type values
+| `h0` | memref of dlfloat16 type values
+| `c0` | memref of dlfloat16 type values
+| `input_weights` | memref of dlfloat16 type values
+| `input_bias` | memref of dlfloat16 type values
+| `hidden_weights` | memref of dlfloat16 type values
+| `hidden_bias` | memref of dlfloat16 type values
+| `work_area` | memref of 8-bit signless integer values
 | `shape` | memref of 64-bit signless integer values
-| `hn_output` | memref of any type values
-| `cf_output` | memref of any type values
+| `hn_output` | memref of dlfloat16 type values
+| `cf_output` | memref of dlfloat16 type values
 
 ### `zlow.log` (::onnx_mlir::zlow::ZLowLogOp)
 
@@ -272,21 +393,24 @@ _ZLow log operation_
 
 ZLow operation to perform a log.
 
-Traits: MemRefsNormalizable
+Traits: `MemRefsNormalizable`
+
+Interfaces: `MemoryEffectOpInterface`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `layout` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>layout</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `X` | memref of any type values
+| `X` | memref of dlfloat16 type values
 | `shape` | memref of 64-bit signless integer values
-| `Out` | memref of any type values
+| `Out` | memref of dlfloat16 type values
 
 ### `zlow.matmul` (::onnx_mlir::zlow::ZLowMatMulOp)
 
@@ -308,24 +432,27 @@ shape is a 1D MemRef (memref<4xi64>) whose items are:
 * is_bcast: -1 broadcasting, 0: no broadcasting.
 * is_stacked: -1 stacked, 0: unstacked.
 
-Traits: MemRefsNormalizable
+Traits: `MemRefsNormalizable`
+
+Interfaces: `MemoryEffectOpInterface`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `is_bcast` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `is_stacked` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>is_bcast</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>is_stacked</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `X` | memref of any type values
-| `Y` | memref of any type values
-| `Bias` | memref of any type values
+| `X` | memref of dlfloat16 type values
+| `Y` | memref of dlfloat16 type values
+| `Bias` | memref of dlfloat16 type values
 | `shape` | memref of 64-bit signless integer values
-| `Out` | memref of any type values
+| `Out` | memref of dlfloat16 type values
 
 ### `zlow.max` (::onnx_mlir::zlow::ZLowMaxOp)
 
@@ -333,22 +460,25 @@ _ZLow max operation_
 
 ZLow operation to perform a max.
 
-Traits: MemRefsNormalizable
+Traits: `MemRefsNormalizable`
+
+Interfaces: `MemoryEffectOpInterface`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `layout` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>layout</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `X` | memref of any type values
-| `Y` | memref of any type values
+| `X` | memref of dlfloat16 type values
+| `Y` | memref of dlfloat16 type values
 | `shape` | memref of 64-bit signless integer values
-| `Out` | memref of any type values
+| `Out` | memref of dlfloat16 type values
 
 ### `zlow.maxpool2d` (::onnx_mlir::zlow::ZLowMaxPool2DOp)
 
@@ -366,23 +496,26 @@ ZLow operation to perform 2D max pooling.
 * strides: 1D array of stride height and width
 * padding_type: SAME_PADDING or VALID_PADDING.
 
-Traits: MemRefsNormalizable
+Traits: `MemRefsNormalizable`
+
+Interfaces: `MemoryEffectOpInterface`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `kernel_shape` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `strides` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `padding_type` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>kernel_shape</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>padding_type</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `input` | memref of any type values
+| `input` | memref of dlfloat16 type values
 | `shape` | memref of 64-bit signless integer values
-| `output` | memref of any type values
+| `output` | memref of dlfloat16 type values
 
 ### `zlow.meanreduce2d` (::onnx_mlir::zlow::ZLowMeanReduce2DOp)
 
@@ -395,15 +528,17 @@ ZLow operation to perform 2D mean reduce.
   * 3th item: width": 3rd dim of input
   * 4nd item: channel": 4th dim of input
 
-Traits: MemRefsNormalizable
+Traits: `MemRefsNormalizable`
+
+Interfaces: `MemoryEffectOpInterface`
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `input` | memref of any type values
+| `input` | memref of dlfloat16 type values
 | `shape` | memref of 64-bit signless integer values
-| `output` | memref of any type values
+| `output` | memref of dlfloat16 type values
 
 ### `zlow.min` (::onnx_mlir::zlow::ZLowMinOp)
 
@@ -411,22 +546,25 @@ _ZLow min operation_
 
 ZLow operation to perform a min.
 
-Traits: MemRefsNormalizable
+Traits: `MemRefsNormalizable`
+
+Interfaces: `MemoryEffectOpInterface`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `layout` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>layout</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `X` | memref of any type values
-| `Y` | memref of any type values
+| `X` | memref of dlfloat16 type values
+| `Y` | memref of dlfloat16 type values
 | `shape` | memref of 64-bit signless integer values
-| `Out` | memref of any type values
+| `Out` | memref of dlfloat16 type values
 
 ### `zlow.mul` (::onnx_mlir::zlow::ZLowMulOp)
 
@@ -434,22 +572,25 @@ _ZLow mul operation_
 
 ZLow operation to perform a mul.
 
-Traits: MemRefsNormalizable
+Traits: `MemRefsNormalizable`
+
+Interfaces: `MemoryEffectOpInterface`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `layout` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>layout</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `X` | memref of any type values
-| `Y` | memref of any type values
+| `X` | memref of dlfloat16 type values
+| `Y` | memref of dlfloat16 type values
 | `shape` | memref of 64-bit signless integer values
-| `Out` | memref of any type values
+| `Out` | memref of dlfloat16 type values
 
 ### `zlow.relu` (::onnx_mlir::zlow::ZLowReluOp)
 
@@ -457,21 +598,24 @@ _ZLow relu operation_
 
 ZLow operation to perform a relu.
 
-Traits: MemRefsNormalizable
+Traits: `MemRefsNormalizable`
+
+Interfaces: `MemoryEffectOpInterface`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `layout` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>layout</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `X` | memref of any type values
+| `X` | memref of dlfloat16 type values
 | `shape` | memref of 64-bit signless integer values
-| `Out` | memref of any type values
+| `Out` | memref of dlfloat16 type values
 
 ### `zlow.sigmoid` (::onnx_mlir::zlow::ZLowSigmoidOp)
 
@@ -479,21 +623,24 @@ _ZLow sigmoid operation_
 
 ZLow operation to perform a sigmoid.
 
-Traits: MemRefsNormalizable
+Traits: `MemRefsNormalizable`
+
+Interfaces: `MemoryEffectOpInterface`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `layout` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>layout</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `X` | memref of any type values
+| `X` | memref of dlfloat16 type values
 | `shape` | memref of 64-bit signless integer values
-| `Out` | memref of any type values
+| `Out` | memref of dlfloat16 type values
 
 ### `zlow.softmax` (::onnx_mlir::zlow::ZLowSoftmaxOp)
 
@@ -503,22 +650,25 @@ ZLow operation to perform a softmax.
 work_area: a 4K-aligned buffer.
 act_func: ACT_NONE or ACT_LOG.
 
-Traits: MemRefsNormalizable
+Traits: `MemRefsNormalizable`
+
+Interfaces: `MemoryEffectOpInterface`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `act_func` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>act_func</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `X` | memref of any type values
-| `work_area` | memref of any type values
+| `X` | memref of dlfloat16 type values
+| `work_area` | memref of 8-bit signless integer values
 | `shape` | memref of 64-bit signless integer values
-| `Out` | memref of any type values
+| `Out` | memref of dlfloat16 type values
 
 ### `zlow.stickForGRU` (::onnx_mlir::zlow::ZLowStickForGRUOp)
 
@@ -528,22 +678,25 @@ ZLow operation to perform a stick for GRU.
 Variadic: list of pointers for input data to be transformed: 
   - GRU concatenated: 3 data pointers, one for each input gate in (Z)update, Reset, Hidden, (ZRH) gate order.
 
-Traits: MemRefsNormalizable
+Traits: `MemRefsNormalizable`
+
+Interfaces: `MemoryEffectOpInterface`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `prev_layer` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>prev_layer</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `z_gate` | memref of any type values
-| `r_gate` | memref of any type values
-| `h_gate` | memref of any type values
-| `out` | memref of any type values
+| `z_gate` | memref of 16-bit float or 32-bit float values
+| `r_gate` | memref of 16-bit float or 32-bit float values
+| `h_gate` | memref of 16-bit float or 32-bit float values
+| `out` | memref of dlfloat16 type values
 
 ### `zlow.stickForLSTM` (::onnx_mlir::zlow::ZLowStickForLSTMOp)
 
@@ -553,23 +706,26 @@ ZLow operation to perform a stick for LSTM.
 Variadic: list of pointers for input data to be transformed: 
   - LSTM concatenated: 4 data pointers, one for each input gate in Forget, Input, Cell, Output (FICO) order.
 
-Traits: MemRefsNormalizable
+Traits: `MemRefsNormalizable`
+
+Interfaces: `MemoryEffectOpInterface`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `prev_layer` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>prev_layer</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `f_gate` | memref of any type values
-| `i_gate` | memref of any type values
-| `c_gate` | memref of any type values
-| `o_gate` | memref of any type values
-| `out` | memref of any type values
+| `f_gate` | memref of 16-bit float or 32-bit float values
+| `i_gate` | memref of 16-bit float or 32-bit float values
+| `c_gate` | memref of 16-bit float or 32-bit float values
+| `o_gate` | memref of 16-bit float or 32-bit float values
+| `out` | memref of dlfloat16 type values
 
 ### `zlow.stick` (::onnx_mlir::zlow::ZLowStickOp)
 
@@ -577,20 +733,24 @@ _ZLow stick operation_
 
 "ZLow operation to perform a stick."
 
-Traits: MemRefsNormalizable
+Traits: `MemRefsNormalizable`
+
+Interfaces: `MemoryEffectOpInterface`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `layout` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>layout</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>saturation</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `X` | memref of any type values
-| `Out` | memref of any type values
+| `X` | memref of 16-bit float or 32-bit float values
+| `Out` | memref of dlfloat16 type values
 
 ### `zlow.sub` (::onnx_mlir::zlow::ZLowSubOp)
 
@@ -598,22 +758,25 @@ _ZLow sub operation_
 
 ZLow operation to perform a sub.
 
-Traits: MemRefsNormalizable
+Traits: `MemRefsNormalizable`
+
+Interfaces: `MemoryEffectOpInterface`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `layout` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>layout</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `X` | memref of any type values
-| `Y` | memref of any type values
+| `X` | memref of dlfloat16 type values
+| `Y` | memref of dlfloat16 type values
 | `shape` | memref of 64-bit signless integer values
-| `Out` | memref of any type values
+| `Out` | memref of dlfloat16 type values
 
 ### `zlow.tanh` (::onnx_mlir::zlow::ZLowTanhOp)
 
@@ -621,21 +784,24 @@ _ZLow tanh operation_
 
 ZLow operation to perform a tanh.
 
-Traits: MemRefsNormalizable
+Traits: `MemRefsNormalizable`
+
+Interfaces: `MemoryEffectOpInterface`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `layout` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>layout</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `X` | memref of any type values
+| `X` | memref of dlfloat16 type values
 | `shape` | memref of 64-bit signless integer values
-| `Out` | memref of any type values
+| `Out` | memref of dlfloat16 type values
 
 ### `zlow.unstick` (::onnx_mlir::zlow::ZLowUnstickOp)
 
@@ -643,18 +809,21 @@ _ZLow unstick operation_
 
 ZLow operation to perform a unstick.
 
-Traits: MemRefsNormalizable
+Traits: `MemRefsNormalizable`
+
+Interfaces: `MemoryEffectOpInterface`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `layout` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>layout</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `X` | memref of any type values
-| `Out` | memref of any type values
+| `X` | memref of dlfloat16 type values
+| `Out` | memref of 16-bit float or 32-bit float values
 

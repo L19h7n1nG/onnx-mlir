@@ -13,6 +13,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "mlir/Conversion/AffineToStandard/AffineToStandard.h"
+#include "mlir/Conversion/Passes.h"
 #include "mlir/Conversion/ReconcileUnrealizedCasts/ReconcileUnrealizedCasts.h"
 #include "mlir/Conversion/SCFToControlFlow/SCFToControlFlow.h"
 #include "mlir/Conversion/VectorToSCF/VectorToSCF.h"
@@ -44,6 +45,19 @@ using namespace mlir;
 using namespace onnx_mlir;
 
 namespace onnx_mlir {
+
+void configurePassesNNPA() {
+  configureOnnxToZHighLoweringPass(optReport == OptReport::NNPAUnsupportedOps);
+  // Compiler generated sticks supports saturation, so force its usage.
+  // TODO: remove this if zDNN adds support for saturation.
+  if (nnpaEnableSaturation)
+    nnpaEnableCompilerStickUnstick = true;
+  // Currently nnpaEnableCompilerStickUnstick not supported on zOS.
+  // TODO enable on zOS
+  if (mtriple == "s390x-ibm-zos") {
+    nnpaEnableCompilerStickUnstick = false;
+  }
+}
 
 void addONNXToZHighPasses(mlir::PassManager &pm) {
   for (unsigned i = 0; i < 3; i++) {
@@ -89,7 +103,8 @@ void addONNXToZHighPasses(mlir::PassManager &pm) {
   // Clip zhigh.Stick inputs if required. This is to avoid out-of-range of
   // dlfloat. Do constant propagation after clipping to remove ONNX ops used for
   // clipping such as ONNXMax if applicable.
-  if (nnpaClipToDLFloatRange) {
+  // This pass will be removed and replaced by nnpa-saturation in the future.
+  if (!nnpaEnableSaturation && nnpaClipToDLFloatRange) {
     pm.addNestedPass<func::FuncOp>(
         onnx_mlir::zhigh::createZHighClipToDLFloatPass());
     pm.addNestedPass<func::FuncOp>(onnx_mlir::createConstPropONNXToONNXPass());
@@ -121,10 +136,21 @@ void addONNXToZHighPasses(mlir::PassManager &pm) {
 
   // Constant propagation at ZHighIR: constant stickify.
   // Only support BE machines.
-  bool isBE = llvm::endianness::native == llvm::support::endianness::big;
+  bool isBE = llvm::endianness::native == llvm::endianness::big;
   if (isBE)
     pm.addNestedPass<func::FuncOp>(
         onnx_mlir::zhigh::createZHighConstPropagationPass());
+
+  // Experimental feature: Decompose stick/unstick into two phases: layout
+  // transform and data conversion. Do some optimizations after decomposing.
+  // Then, recompose again layout and data conversion if they are not optimized.
+  if (nnpaEnableZHighDecomposeStickUnstick) {
+    pm.addNestedPass<func::FuncOp>(
+        onnx_mlir::zhigh::createZHighDecomposeStickUnstickPass());
+    pm.addPass(mlir::createCanonicalizerPass());
+    pm.addNestedPass<func::FuncOp>(
+        onnx_mlir::zhigh::createZHighRecomposeToStickUnstickPass());
+  }
 
   // Remove common sub-expressions.
   pm.addPass(mlir::createCSEPass());
@@ -157,6 +183,19 @@ void addPassesNNPA(mlir::OwningOpRef<mlir::ModuleOp> &module,
   // TODO: Develop and use determineInputIRLevel for NNPA
   // InputIRLevelType inputIRLevel = determineInputIRLevel(module);
 
+  // Disable constprop rules:
+  // - add(add(x, c), y) to add(add(x, y), c)
+  // - add(x, add(y, c)) to add(add(x, y), c)
+  // because in foundation models we have add(add(matmul(x, z), c), y), and we
+  // want to keep c near matmul so that add(matmul(x, z), c) will be run on zAIU
+  // as one call.
+  onnxConstPropDisablePatterns.emplace_back("AddConstAssociative2");
+  onnxConstPropDisablePatterns.emplace_back("AddConstAssociative3");
+
+  // Override pass configurations.
+  configurePasses();
+  configurePassesNNPA();
+
   // LLVM_DEBUG(llvm::dbgs() << "Adding NNPA passes" << std::endl;);
   if (emissionTarget >= EmitONNXIR) {
     addONNXToMLIRPasses(pm, /*target CPU*/ maccel.empty());
@@ -185,8 +224,8 @@ void addPassesNNPA(mlir::OwningOpRef<mlir::ModuleOp> &module,
       else if (optStr == "-O3")
         optLevel = OptLevel::O3;
       // Lower ONNX to Krnl, ZHigh to ZLow.
-      addONNXToKrnlPasses(pm, optLevel, /*enableCSE*/ true,
-          instrumentONNXSignature, ONNXOpStats);
+      addONNXToKrnlPasses(
+          pm, optLevel, /*enableCSE*/ true, instrumentSignatures, ONNXOpStats);
 
       if (nnpaEmissionTarget >= EmitZLowIR)
         emissionTarget = EmitMLIR;
@@ -195,14 +234,23 @@ void addPassesNNPA(mlir::OwningOpRef<mlir::ModuleOp> &module,
         addKrnlToAffinePasses(pm);
         // Optimizations at ZLow that needs affine map in MemRef.
         pm.addPass(zlow::createZLowRewritePass());
+        // Late generation of code for stick/unstick, needed to be after a
+        // ZLowRewrite pass.
+        if (nnpaEnableCompilerStickUnstick)
+          pm.addPass(zlow::createZLowStickExpansionPass(enableParallel));
         pm.addPass(mlir::createCanonicalizerPass());
         // Normalize MemRefs.
         normalizeMemRefsPasses(pm);
-        // Some Knrl ops, e.g. KrnlMemset, potentially exist and will be lowered
+        // Some Krnl ops, e.g. KrnlMemset, potentially exist and will be lowered
         // to Affine when its operands are normalized.
         addKrnlToAffinePasses(pm);
         // Optimizations at ZLow after normalizing MemRefs.
         pm.addPass(zlow::createZLowRewritePass());
+        // The createZLowStickExpansion pass may create parallel constructs,
+        // they need to be handled here.
+        if (nnpaEnableCompilerStickUnstick && enableParallel)
+          pm.addPass(mlir::createConvertSCFToOpenMPPass());
+
         pm.addPass(mlir::createCanonicalizerPass());
         // Constant folding for std.alloc.
         pm.addNestedPass<func::FuncOp>(onnx_mlir::createFoldStdAllocPass());

@@ -4,7 +4,7 @@
 
 //===---------- NNPAPasses.hpp - NNPA Passes Definition ------------------===//
 //
-// Copyright 2019-2022 The IBM Research Authors.
+// Copyright 2019-2024 The IBM Research Authors.
 //
 // =============================================================================
 //
@@ -13,7 +13,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#pragma once
+#ifndef ONNX_MLIR_NNPA_PASSES_H
+#define ONNX_MLIR_NNPA_PASSES_H
 
 #include "mlir/Pass/Pass.h"
 
@@ -29,10 +30,9 @@ std::unique_ptr<mlir::Pass> createDevicePlacementPass(
 
 /// Add pass for lowering ONNX ops to ZHigh ops.
 std::unique_ptr<mlir::Pass> createONNXToZHighPass();
-std::unique_ptr<mlir::Pass> createONNXToZHighPass();
+void configureOnnxToZHighLoweringPass(bool reportOnNNPAUnsupportedOps);
 
 /// Add pass for rewriting ONNX ops for ZHigh.
-std::unique_ptr<mlir::Pass> createRewriteONNXForZHighPass();
 std::unique_ptr<mlir::Pass> createRewriteONNXForZHighPass();
 
 /// Add pass for re-construct ONNX ops from ZHigh ops.
@@ -51,6 +51,12 @@ std::unique_ptr<mlir::Pass> createZHighConstPropagationPass();
 
 /// Pass for clipping values to dlfloat before stickification at ZHighIR.
 std::unique_ptr<mlir::Pass> createZHighClipToDLFloatPass();
+
+/// Pass for decomposing stick/unstick at ZHighIR.
+std::unique_ptr<mlir::Pass> createZHighDecomposeStickUnstickPass();
+
+/// Pass for recomposing ops back to stick/unstick at ZHighIR.
+std::unique_ptr<mlir::Pass> createZHighRecomposeToStickUnstickPass();
 } // end namespace zhigh
 
 namespace zlow {
@@ -59,7 +65,12 @@ namespace zlow {
 std::unique_ptr<mlir::Pass> createZLowRewritePass();
 
 /// Add pass for rewriting ZLow ops.
+std::unique_ptr<mlir::Pass> createZLowStickExpansionPass(
+    bool enableParallel = false);
+
+/// Add pass for rewriting ZLow ops.
 std::unique_ptr<mlir::Pass> createZLowDummyOpForMultiDerefPass();
 
 } // namespace zlow
 } // namespace onnx_mlir
+#endif

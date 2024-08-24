@@ -81,13 +81,13 @@ struct ONNXCategoryMapperOpLowering
 
     // Convert the output type to MemRefType.
     Type convertedType = typeConverter->convertType(*op->result_type_begin());
-    assert(convertedType && convertedType.isa<MemRefType>() &&
+    assert(convertedType && mlir::isa<MemRefType>(convertedType) &&
            "Failed to convert type to MemRefType");
-    MemRefType memRefType = convertedType.cast<MemRefType>();
+    MemRefType memRefType = mlir::cast<MemRefType>(convertedType);
 
     // Basic information.
     int64_t rank = memRefType.getShape().size();
-    ShapedType inputType = X.getType().cast<ShapedType>();
+    ShapedType inputType = mlir::cast<ShapedType>(X.getType());
     Type elementType = inputType.getElementType();
 
     // Insert an allocation and deallocation for the result of this operation.
@@ -102,15 +102,17 @@ struct ONNXCategoryMapperOpLowering
     // Convert the cats type to MemRefType.
     Type convertedCatsInt64s =
         typeConverter->convertType(cats_int64s.getType());
-    assert(convertedCatsInt64s && convertedCatsInt64s.isa<MemRefType>() &&
+    assert(convertedCatsInt64s && mlir::isa<MemRefType>(convertedCatsInt64s) &&
            "Failed to convert type to MemRefType");
-    MemRefType catsInt64sInMemRefType = convertedCatsInt64s.cast<MemRefType>();
+    MemRefType catsInt64sInMemRefType =
+        mlir::cast<MemRefType>(convertedCatsInt64s);
     Type convertedCatsStrings =
         typeConverter->convertType(cats_strings.getType());
-    assert(convertedCatsStrings && convertedCatsStrings.isa<MemRefType>() &&
+    assert(convertedCatsStrings &&
+           mlir::isa<MemRefType>(convertedCatsStrings) &&
            "Failed to convert type to MemRefType");
     MemRefType catsStringsInMemRefType =
-        convertedCatsStrings.cast<MemRefType>();
+        mlir::cast<MemRefType>(convertedCatsStrings);
 
     // Create loop invariant values.
     Value constantForCatsInt64s = create.krnl.constant(
@@ -150,7 +152,7 @@ struct ONNXCategoryMapperOpLowering
           Value inputElem =
               loadElement(X, loopInd, elementType, rank, createKrnl);
           if (emitPrintStmts)
-            create.krnl.printf("inputElem: ", inputElem, elementType);
+            create.krnl.printf("inputElem: ", inputElem);
 
           Value index, isIndexValid;
           std::tie(index, isIndexValid) =
@@ -158,7 +160,7 @@ struct ONNXCategoryMapperOpLowering
                   constantForCatsInt64s, constantForCatsStrings, create);
 
           if (emitPrintStmts)
-            create.krnl.printf("index: ", index, index.getType());
+            create.krnl.printf("index: ", index);
 
           // Store the final result.
           scf::IfOp ifOp = rewriter.create<scf::IfOp>(
@@ -218,7 +220,7 @@ private:
           int32_t size = cats_int64s.size();
           for (int32_t idx = 0; idx < size; ++idx) {
             Attribute elemAttr = getElemAttr(cats_int64s_ArrayAttr, idx);
-            int64_t key = elemAttr.cast<IntegerAttr>().getInt();
+            int64_t key = mlir::cast<IntegerAttr>(elemAttr).getInt();
             dict[key] = idx;
           }
 
@@ -233,7 +235,7 @@ private:
           int32_t size = cats_strings.size();
           for (int32_t idx = 0; idx < size; ++idx) {
             Attribute elemAttr = getElemAttr(cats_strings_ArrayAttr, idx);
-            StringRef key = elemAttr.cast<StringAttr>().getValue();
+            StringRef key = mlir::cast<StringAttr>(elemAttr).getValue();
             dict[key] = idx;
           }
 
@@ -257,20 +259,36 @@ private:
         .Case<IntegerType>(
             [&](IntegerType) { inputElem = createKrnl.load(memref, loopInd); })
         .Case<krnl::StringType>([&](krnl::StringType stringType) {
-          MathBuilder createMath(createKrnl);
-          Value zero = createMath.constant(
-              createMath.getBuilder().getIntegerType(64), 0);
           ArrayRef<int64_t> shape =
-              memref.getType().cast<ShapedType>().getShape();
+              mlir::cast<ShapedType>(memref.getType()).getShape();
           SmallVector<int64_t, 4> newShape;
-          for (uint64_t i = 0; i < shape.size(); i++)
-            newShape.emplace_back(
-                (shape[i] == ShapedType::kDynamic) ? 1 : shape[i]);
-          auto memRefType = MemRefType::get(
-              newShape, krnl::StringType::get(elementType.getContext()));
-          // Sole use of krnl.getRef.
-          Value stringMemRef = createKrnl.getRef(memRefType, memref, zero);
-          inputElem = createKrnl.load(stringMemRef, loopInd);
+          bool hasDynamicDim = false;
+          for (uint64_t i = 0; i < shape.size(); i++) {
+            if (shape[i] == ShapedType::kDynamic) {
+              newShape.emplace_back(1);
+              hasDynamicDim = true;
+            } else {
+              newShape.emplace_back(shape[i]);
+            }
+          }
+          if (!hasDynamicDim) {
+            inputElem = createKrnl.load(memref, loopInd);
+          } else {
+            MemRefBuilder createMemRef(createKrnl);
+            MemRefType memRefType = MemRefType::get(
+                newShape, krnl::StringType::get(elementType.getContext()));
+            SmallVector<int64_t, 4> offsets(shape.size(), 0);
+            SmallVector<int64_t, 4> strides;
+            int64_t alignmentOffset; // not used, just to make the function call
+                                     // completed.
+            if (getStridesAndOffset(memRefType, strides, alignmentOffset)
+                    .failed())
+              llvm_unreachable("Failed to get strides");
+            Value stringMemRef =
+                createMemRef.subView(memref, offsets, newShape, strides)
+                    .getResult();
+            inputElem = createKrnl.load(stringMemRef, loopInd);
+          }
         })
         .Default([&](Type type) {
           llvm::errs() << "type: " << type << "\n";

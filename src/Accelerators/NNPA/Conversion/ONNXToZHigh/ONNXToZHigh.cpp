@@ -16,12 +16,14 @@
 #include "src/Accelerators/NNPA/Conversion/ONNXToZHigh/ONNXToZHigh.hpp"
 #include "src/Accelerators/NNPA/Conversion/ONNXToZHigh/ONNXToZHighCommon.hpp"
 #include "src/Accelerators/NNPA/Dialect/ZHigh/ZHighOps.hpp"
+#include "src/Accelerators/NNPA/Dialect/ZHigh/ZHighOps/OpHelper.hpp"
 #include "src/Accelerators/NNPA/Pass/NNPAPasses.hpp"
 #include "src/Conversion/ONNXToKrnl/RNN/RNNBase.hpp"
 #include "src/Dialect/ONNX/DialectBuilder.hpp"
 #include "src/Dialect/ONNX/ONNXDimAnalysis.hpp"
 #include "src/Dialect/ONNX/ONNXOps.hpp"
 #include "src/Dialect/ONNX/ONNXOps/ShapeHelper.hpp"
+#include "src/Dialect/ONNX/Transforms/ShapeInference.hpp"
 
 using namespace mlir;
 
@@ -45,7 +47,7 @@ ArrayAttr getLSTMGRUBiasSplitShape(
 Value getLSTMGRUZDNNWeightFromONNXWeight(
     Location loc, PatternRewriter &rewriter, Value weight, int isLSTM) {
   int64_t splitNum = isLSTM ? 4 : 3;
-  RankedTensorType weightType = weight.getType().cast<RankedTensorType>();
+  RankedTensorType weightType = mlir::cast<RankedTensorType>(weight.getType());
   Type elementType = weightType.getElementType();
   ArrayRef<int64_t> weightShape = weightType.getShape();
   int64_t direction = weightShape[0];
@@ -123,7 +125,7 @@ Value getLSTMGRUGetYh(Location loc, PatternRewriter &rewriter, Value val,
   if (isNoneValue(resYh) || isNoneValue(val))
     return noneValue;
 
-  ArrayRef<int64_t> shapeX = X.getType().cast<ShapedType>().getShape();
+  ArrayRef<int64_t> shapeX = mlir::cast<ShapedType>(X.getType()).getShape();
   MultiDialectBuilder<OnnxBuilder> create(rewriter, loc);
   // Generate Y_h for onnx.LSTM from hn_output for all timestep
   Value minusOne = create.onnx.constantInt64({-1});
@@ -135,12 +137,12 @@ Value getLSTMGRUGetYh(Location loc, PatternRewriter &rewriter, Value val,
   Value intMax = create.onnx.constantInt64({INT_MAX});
   StringRef directionStr = direction.getValue();
   ArrayRef<int64_t> resYhShape =
-      resYh.getType().cast<RankedTensorType>().getShape();
+      mlir::cast<RankedTensorType>(resYh.getType()).getShape();
   int64_t T = isNoneValue(resY) ? 1 : shapeX[0];
   int64_t D = resYhShape[0];
   int64_t B = resYhShape[1];
   int64_t H = resYhShape[2];
-  Type elementType = resYh.getType().cast<ShapedType>().getElementType();
+  Type elementType = mlir::cast<ShapedType>(resYh.getType()).getElementType();
   Value axis = zero;
   Value step = one;
   Value ret;
@@ -204,19 +206,20 @@ Value getLSTMGRUGetYc(
 
 SmallVector<Value, 4> emitONNXSplitOp(Location loc, PatternRewriter &rewriter,
     Value input, IntegerAttr axis, ArrayAttr split) {
-  Type elementType = input.getType().cast<ShapedType>().getElementType();
+  Type elementType = mlir::cast<ShapedType>(input.getType()).getElementType();
   SmallVector<mlir::Type> outputTypes;
   int64_t splitNum = split.size();
   ArrayRef<int64_t> inputShape =
-      input.getType().cast<RankedTensorType>().getShape();
-  int64_t splitAxis = axis.cast<IntegerAttr>().getSInt();
+      mlir::cast<RankedTensorType>(input.getType()).getShape();
+  int64_t splitAxis = mlir::cast<IntegerAttr>(axis).getSInt();
   assert(splitAxis >= 0 && "Negative axis");
   for (int i = 0; i < splitNum; i++) {
     SmallVector<int64_t> outputShape;
     for (size_t dim = 0; dim < inputShape.size(); dim++) {
-      outputShape.emplace_back((dim == (unsigned int)splitAxis)
-                                   ? split[dim].cast<IntegerAttr>().getInt()
-                                   : inputShape[dim]);
+      outputShape.emplace_back(
+          (dim == (unsigned int)splitAxis)
+              ? mlir::cast<IntegerAttr>(split[dim]).getInt()
+              : inputShape[dim]);
     }
     outputTypes.emplace_back(RankedTensorType::get(outputShape, elementType));
   }
@@ -328,19 +331,21 @@ void getONNXToZHighMultipleOpPatterns(RewritePatternSet &patterns) {
   patterns.insert<replaceONNXMatMulAddPattern2>(context);
   patterns.insert<replaceONNXReluConvPattern>(context);
   patterns.insert<replaceONNXLogSoftmaxPattern>(context);
+  // Shape inference for newly-added operations.
+  getShapeInferencePatterns(patterns);
 }
 
 void ONNXToZHighLoweringPass::runOnOperation() {
   ModuleOp module = getOperation();
 
-  // Run the unknown dimension analysis to help check equality of unknown
-  // dimensions at compile time.
-  onnx_mlir::DimAnalysis dimAnalysis(module);
-  dimAnalysis.analyze();
-
   // The first thing to define is the conversion target. This will define the
   // final target for this lowering.
   ConversionTarget target(getContext());
+
+  // Enable reporting on NNPA unsupported ops when specifying
+  // `--opt-report=NNPAUnsupportedOps`.
+  OnnxToZHighLoweringConfiguration::reportOnNNPAUnsupportedOps =
+      OnnxToZHighLoweringConfiguration::optReportNNPAUnsupportedOps;
 
   // We define the specific operations, or dialects, that are legal targets for
   // this lowering.
@@ -362,6 +367,11 @@ void ONNXToZHighLoweringPass::runOnOperation() {
 
   // It's ok to fail.
   (void)applyPatternsAndFoldGreedily(module, std::move(combinedPatterns));
+
+  // Run the unknown dimension analysis to help check equality of unknown
+  // dimensions at compile time.
+  onnx_mlir::DimAnalysis dimAnalysis(module);
+  dimAnalysis.analyze();
 
   // Single ONNX to ZHigh operation lowering.
   RewritePatternSet patterns(&getContext());

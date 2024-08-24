@@ -80,11 +80,11 @@ getActivationPack<ONNXGRUOp, GruActivationPack>(ONNXGRUOp *op) {
       // Forward activations.
       if (activationArrAttr.size() > 0) {
         activationForward.f.name =
-            activationArrAttr[0].cast<StringAttr>().getValue();
+            mlir::cast<StringAttr>(activationArrAttr[0]).getValue();
       }
       if (activationArrAttr.size() > 1) {
         activationForward.g.name =
-            activationArrAttr[1].cast<StringAttr>().getValue();
+            mlir::cast<StringAttr>(activationArrAttr[1]).getValue();
       }
     }
 
@@ -93,11 +93,12 @@ getActivationPack<ONNXGRUOp, GruActivationPack>(ONNXGRUOp *op) {
       unsigned int startIndex = (direction == REVERSE) ? 0 : 2;
       if (activationArrAttr.size() > startIndex) {
         activationReverse.f.name =
-            activationArrAttr[startIndex].cast<StringAttr>().getValue();
+            mlir::cast<StringAttr>(activationArrAttr[startIndex]).getValue();
       }
       if (activationArrAttr.size() > startIndex + 1) {
         activationReverse.g.name =
-            activationArrAttr[startIndex + 1].cast<StringAttr>().getValue();
+            mlir::cast<StringAttr>(activationArrAttr[startIndex + 1])
+                .getValue();
       }
     }
   }
@@ -108,10 +109,10 @@ getActivationPack<ONNXGRUOp, GruActivationPack>(ONNXGRUOp *op) {
     if (direction == FORWARD || direction == BIDIRECTIONAL) {
       // Forward activations.
       if (activationArrAttr.size() > 0) {
-        activationForward.f.alpha = activationArrAttr[0].cast<FloatAttr>();
+        activationForward.f.alpha = mlir::cast<FloatAttr>(activationArrAttr[0]);
       }
       if (activationArrAttr.size() > 1) {
-        activationForward.g.alpha = activationArrAttr[1].cast<FloatAttr>();
+        activationForward.g.alpha = mlir::cast<FloatAttr>(activationArrAttr[1]);
       }
     }
 
@@ -120,11 +121,11 @@ getActivationPack<ONNXGRUOp, GruActivationPack>(ONNXGRUOp *op) {
       unsigned int startIndex = (direction == REVERSE) ? 0 : 2;
       if (activationArrAttr.size() > startIndex) {
         activationReverse.f.alpha =
-            activationArrAttr[startIndex].cast<FloatAttr>();
+            mlir::cast<FloatAttr>(activationArrAttr[startIndex]);
       }
       if (activationArrAttr.size() > startIndex + 1) {
         activationReverse.g.alpha =
-            activationArrAttr[startIndex + 1].cast<FloatAttr>();
+            mlir::cast<FloatAttr>(activationArrAttr[startIndex + 1]);
       }
     }
   }
@@ -135,10 +136,10 @@ getActivationPack<ONNXGRUOp, GruActivationPack>(ONNXGRUOp *op) {
     if (direction == FORWARD || direction == BIDIRECTIONAL) {
       // Forward activations.
       if (activationArrAttr.size() > 0) {
-        activationForward.f.beta = activationArrAttr[0].cast<FloatAttr>();
+        activationForward.f.beta = mlir::cast<FloatAttr>(activationArrAttr[0]);
       }
       if (activationArrAttr.size() > 1) {
-        activationForward.g.beta = activationArrAttr[1].cast<FloatAttr>();
+        activationForward.g.beta = mlir::cast<FloatAttr>(activationArrAttr[1]);
       }
     }
 
@@ -147,11 +148,11 @@ getActivationPack<ONNXGRUOp, GruActivationPack>(ONNXGRUOp *op) {
       unsigned int startIndex = (direction == REVERSE) ? 0 : 2;
       if (activationArrAttr.size() > startIndex) {
         activationReverse.f.beta =
-            activationArrAttr[startIndex].cast<FloatAttr>();
+            mlir::cast<FloatAttr>(activationArrAttr[startIndex]);
       }
       if (activationArrAttr.size() > startIndex + 1) {
         activationReverse.g.beta =
-            activationArrAttr[startIndex + 1].cast<FloatAttr>();
+            mlir::cast<FloatAttr>(activationArrAttr[startIndex + 1]);
       }
     }
   }
@@ -179,8 +180,8 @@ getWeightPack<ONNXGRUOp, GruWeightPack>(
   if (op->getLinearBeforeReset() == 0)
     linearBeforeReset = false;
 
-  ArrayRef<int64_t> wShape = W.getType().cast<ShapedType>().getShape();
-  Type elementType = W.getType().cast<ShapedType>().getElementType();
+  ArrayRef<int64_t> wShape = mlir::cast<ShapedType>(W.getType()).getShape();
+  Type elementType = mlir::cast<ShapedType>(W.getType()).getElementType();
   int64_t hiddenSize = wShape[1] / 3;
   int64_t inputSize = wShape[2];
 
@@ -207,60 +208,64 @@ getWeightPack<ONNXGRUOp, GruWeightPack>(
   // Squeeze the direction axis from W and R.
   Value fW, bW, fR, bR;
   if (direction == FORWARD) {
-    fW = foldOrEmitONNXSqueezeV11Op(rewriter, loc, w2DTy, W, /*axis=*/0);
-    fR = foldOrEmitONNXSqueezeV11Op(rewriter, loc, r2DTy, R, /*axis=*/0);
+    fW = foldOrEmitONNXSqueezeV11OpKrnl(rewriter, loc, w2DTy, W, /*axis=*/0);
+    fR = foldOrEmitONNXSqueezeV11OpKrnl(rewriter, loc, r2DTy, R, /*axis=*/0);
   } else if (direction == REVERSE) {
-    bW = foldOrEmitONNXSqueezeV11Op(rewriter, loc, w2DTy, W, /*axis=*/0);
-    bR = foldOrEmitONNXSqueezeV11Op(rewriter, loc, r2DTy, R, /*axis=*/0);
+    bW = foldOrEmitONNXSqueezeV11OpKrnl(rewriter, loc, w2DTy, W, /*axis=*/0);
+    bR = foldOrEmitONNXSqueezeV11OpKrnl(rewriter, loc, r2DTy, R, /*axis=*/0);
   } else { // BIDIRECTIONAL
     // W
     std::vector<Value> vals =
-        foldOrEmitONNXSplitOp(rewriter, loc, w3D2Ty, W, 0);
-    fW = foldOrEmitONNXSqueezeV11Op(rewriter, loc, w2DTy, vals[0], /*axis=*/0);
-    bW = foldOrEmitONNXSqueezeV11Op(rewriter, loc, w2DTy, vals[1], /*axis=*/0);
+        foldOrEmitONNXSplitV11OpKrnl(rewriter, loc, w3D2Ty, W, 0);
+    fW = foldOrEmitONNXSqueezeV11OpKrnl(
+        rewriter, loc, w2DTy, vals[0], /*axis=*/0);
+    bW = foldOrEmitONNXSqueezeV11OpKrnl(
+        rewriter, loc, w2DTy, vals[1], /*axis=*/0);
     // R
     vals.clear();
-    vals = foldOrEmitONNXSplitOp(rewriter, loc, r3D2Ty, R, 0);
-    fR = foldOrEmitONNXSqueezeV11Op(rewriter, loc, r2DTy, vals[0], /*axis=*/0);
-    bR = foldOrEmitONNXSqueezeV11Op(rewriter, loc, r2DTy, vals[1], /*axis=*/0);
+    vals = foldOrEmitONNXSplitV11OpKrnl(rewriter, loc, r3D2Ty, R, 0);
+    fR = foldOrEmitONNXSqueezeV11OpKrnl(
+        rewriter, loc, r2DTy, vals[0], /*axis=*/0);
+    bR = foldOrEmitONNXSqueezeV11OpKrnl(
+        rewriter, loc, r2DTy, vals[1], /*axis=*/0);
   }
 
   // Split W and R into individual weight tensors, and transpose them.
   if (direction == FORWARD || direction == BIDIRECTIONAL) {
     // W
-    weightForward.WT =
-        foldOrEmitONNXTransposeOp(rewriter, loc, wTransposeTy, fW, permAttr);
+    weightForward.WT = foldOrEmitONNXTransposeOpKrnl(
+        rewriter, loc, wTransposeTy, fW, permAttr);
     // R
     if (linearBeforeReset) {
-      weightForward.RT =
-          foldOrEmitONNXTransposeOp(rewriter, loc, rTransposeTy, fR, permAttr);
+      weightForward.RT = foldOrEmitONNXTransposeOpKrnl(
+          rewriter, loc, rTransposeTy, fR, permAttr);
     } else {
       std::vector<Value> vals =
-          foldOrEmitONNXSplitOp(rewriter, loc, rSplit2D3Ty, fR, 0);
-      weightForward.Rz = foldOrEmitONNXTransposeOp(
+          foldOrEmitONNXSplitV11OpKrnl(rewriter, loc, rSplit2D3Ty, fR, 0);
+      weightForward.Rz = foldOrEmitONNXTransposeOpKrnl(
           rewriter, loc, rTranspose2DTy, vals[0], permAttr);
-      weightForward.Rr = foldOrEmitONNXTransposeOp(
+      weightForward.Rr = foldOrEmitONNXTransposeOpKrnl(
           rewriter, loc, rTranspose2DTy, vals[1], permAttr);
-      weightForward.Rh = foldOrEmitONNXTransposeOp(
+      weightForward.Rh = foldOrEmitONNXTransposeOpKrnl(
           rewriter, loc, rTranspose2DTy, vals[2], permAttr);
     }
   }
   if (direction == REVERSE || direction == BIDIRECTIONAL) {
     // W
-    weightReverse.WT =
-        foldOrEmitONNXTransposeOp(rewriter, loc, wTransposeTy, bW, permAttr);
+    weightReverse.WT = foldOrEmitONNXTransposeOpKrnl(
+        rewriter, loc, wTransposeTy, bW, permAttr);
     // R
     if (linearBeforeReset) {
-      weightReverse.RT =
-          foldOrEmitONNXTransposeOp(rewriter, loc, rTransposeTy, bR, permAttr);
+      weightReverse.RT = foldOrEmitONNXTransposeOpKrnl(
+          rewriter, loc, rTransposeTy, bR, permAttr);
     } else {
       std::vector<Value> vals =
-          foldOrEmitONNXSplitOp(rewriter, loc, rSplit2D3Ty, bR, 0);
-      weightReverse.Rz = foldOrEmitONNXTransposeOp(
+          foldOrEmitONNXSplitV11OpKrnl(rewriter, loc, rSplit2D3Ty, bR, 0);
+      weightReverse.Rz = foldOrEmitONNXTransposeOpKrnl(
           rewriter, loc, rTranspose2DTy, vals[0], permAttr);
-      weightReverse.Rr = foldOrEmitONNXTransposeOp(
+      weightReverse.Rr = foldOrEmitONNXTransposeOpKrnl(
           rewriter, loc, rTranspose2DTy, vals[1], permAttr);
-      weightReverse.Rh = foldOrEmitONNXTransposeOp(
+      weightReverse.Rh = foldOrEmitONNXTransposeOpKrnl(
           rewriter, loc, rTranspose2DTy, vals[2], permAttr);
     }
   }
@@ -283,8 +288,8 @@ std::tuple<GruBiasPack, GruBiasPack> getBiasPack<ONNXGRUOp, GruBiasPack>(
       create(rewriter, loc);
   // Split B.
   if (!isNoneValue(B)) {
-    ArrayRef<int64_t> bShape = B.getType().cast<ShapedType>().getShape();
-    Type elementType = B.getType().cast<ShapedType>().getElementType();
+    ArrayRef<int64_t> bShape = mlir::cast<ShapedType>(B.getType()).getShape();
+    Type elementType = mlir::cast<ShapedType>(B.getType()).getElementType();
     int64_t hiddenSize = bShape[1] / 6;
 
     // MemRef types.
@@ -297,22 +302,24 @@ std::tuple<GruBiasPack, GruBiasPack> getBiasPack<ONNXGRUOp, GruBiasPack>(
     // Squeeze the direction axis from B.
     Value fB, bB;
     if (direction == FORWARD) {
-      fB = foldOrEmitONNXSqueezeV11Op(rewriter, loc, bType1D, B, /*axis=*/0);
+      fB =
+          foldOrEmitONNXSqueezeV11OpKrnl(rewriter, loc, bType1D, B, /*axis=*/0);
     } else if (direction == REVERSE) {
-      bB = foldOrEmitONNXSqueezeV11Op(rewriter, loc, bType1D, B, /*axis=*/0);
+      bB =
+          foldOrEmitONNXSqueezeV11OpKrnl(rewriter, loc, bType1D, B, /*axis=*/0);
     } else { // BIDIRECTIONAL
       std::vector<Value> vals;
-      vals = foldOrEmitONNXSplitOp(rewriter, loc, split2D2Ty, B, 0);
-      fB = foldOrEmitONNXSqueezeV11Op(
+      vals = foldOrEmitONNXSplitV11OpKrnl(rewriter, loc, split2D2Ty, B, 0);
+      fB = foldOrEmitONNXSqueezeV11OpKrnl(
           rewriter, loc, bType1D, vals[0], /*axis=*/0);
-      bB = foldOrEmitONNXSqueezeV11Op(
+      bB = foldOrEmitONNXSqueezeV11OpKrnl(
           rewriter, loc, bType1D, vals[1], /*axis=*/0);
     }
 
     // Split B into individual bias tensors.
     if (direction == FORWARD || direction == BIDIRECTIONAL) {
       std::vector<Value> vals =
-          foldOrEmitONNXSplitOp(rewriter, loc, split1D6Ty, fB, 0);
+          foldOrEmitONNXSplitV11OpKrnl(rewriter, loc, split1D6Ty, fB, 0);
       biasForward.Wbz = vals[0];
       biasForward.Wbr = vals[1];
       biasForward.Wbh = vals[2];
@@ -323,7 +330,7 @@ std::tuple<GruBiasPack, GruBiasPack> getBiasPack<ONNXGRUOp, GruBiasPack>(
     }
     if (direction == REVERSE || direction == BIDIRECTIONAL) {
       std::vector<Value> vals =
-          foldOrEmitONNXSplitOp(rewriter, loc, split1D6Ty, bB, 0);
+          foldOrEmitONNXSplitV11OpKrnl(rewriter, loc, split1D6Ty, bB, 0);
       biasReverse.Wbz = vals[0];
       biasReverse.Wbr = vals[1];
       biasReverse.Wbh = vals[2];
@@ -373,7 +380,7 @@ GruState allocAndInitializeStates<ONNXGRUOp, GruState>(
   Value noneValue;
   initializeIntermediateStates(rewriter, loc, state.forwardHt, state.reverseHt,
       noneValue, noneValue, operandAdaptor.getInitialH(), noneValue,
-      operandAdaptor.getX().getType().cast<MemRefType>().getElementType(),
+      mlir::cast<MemRefType>(operandAdaptor.getX().getType()).getElementType(),
       direction, /*onlyHidden=*/true);
 
   // Obtain the value of 'linear_before_reset' attribute.
@@ -403,17 +410,17 @@ void calculateState<GruState, GruActivationPack, GruWeightPack, GruBiasPack>(
   MultiDialectBuilder<KrnlBuilder, MathBuilder, MemRefBuilder, OnnxBuilder>
       create(rewriter, loc);
 
-  ArrayRef<int64_t> xtShape = Xt.getType().cast<ShapedType>().getShape();
+  ArrayRef<int64_t> xtShape = mlir::cast<ShapedType>(Xt.getType()).getShape();
   int64_t batchSize = xtShape[0];
 
   // Get Ht.
   Value Ht = (isForward) ? state.forwardHt : state.reverseHt;
 
-  ArrayRef<int64_t> htShape = Ht.getType().cast<ShapedType>().getShape();
+  ArrayRef<int64_t> htShape = mlir::cast<ShapedType>(Ht.getType()).getShape();
   int64_t hiddenSize = htShape[1];
 
   // Frequently used types.
-  MemRefType matrixType = Ht.getType().cast<MemRefType>();
+  MemRefType matrixType = mlir::cast<MemRefType>(Ht.getType());
   unsigned htRank = matrixType.getRank();
   Type elementType = matrixType.getElementType();
   MemRefType matrixAllGatesType =

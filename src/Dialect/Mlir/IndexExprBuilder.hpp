@@ -4,7 +4,7 @@
 
 //===---------------- ONNXShapeHelper.hpp - help for shapes ---------------===//
 //
-// Copyright 2022-2023 The IBM Research Authors.
+// Copyright 2022-2024 The IBM Research Authors.
 //
 // =============================================================================
 //
@@ -15,14 +15,15 @@
 // The IndexExprBuilder class has virtual functions that needs to be
 // instantiated by specialized sub-classes, defined to work in a specific
 // dialect. There are currently 3 sub-classes, one for ONNX, KRNL, and
-// StableHlo.
+// Stablehlo.
 //
 // Namely: IndexExprBuilderForAnalysis, IndexExprBuilderForKrnl, and
-// IndexExprBuilderForStableHlo
+// IndexExprBuilderForStablehlo
 //
 //===----------------------------------------------------------------------===//
 
-#pragma once
+#ifndef ONNX_MLIR_INDEX_EXPR_BUILDER_H
+#define ONNX_MLIR_INDEX_EXPR_BUILDER_H
 
 #include <utility>
 
@@ -63,8 +64,8 @@ namespace onnx_mlir {
   analysis phase; runtime values are described by questionmark index
   expressions.
 
-  Other subclasses (e.g. IndexExprBuilderForKrnl/IndexExprBuilderForStableHlo )
-  generate dialect operations (e.g. Krnl/StableHlo ops) to generate code that
+  Other subclasses (e.g. IndexExprBuilderForKrnl/IndexExprBuilderForStablehlo )
+  generate dialect operations (e.g. Krnl/Stablehlo ops) to generate code that
   compute runtime values.
 */
 
@@ -230,3 +231,4 @@ private:
 };
 
 } // namespace onnx_mlir
+#endif

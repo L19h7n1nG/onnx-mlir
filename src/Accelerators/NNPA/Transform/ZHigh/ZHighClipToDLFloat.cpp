@@ -23,7 +23,7 @@
 #include "src/Accelerators/NNPA/Dialect/ZHigh/ZHighOps.hpp"
 #include "src/Accelerators/NNPA/Dialect/ZHigh/ZHighOps/OpHelper.hpp"
 #include "src/Accelerators/NNPA/Pass/NNPAPasses.hpp"
-#include "src/Accelerators/NNPA/Support/NNPALimit.h"
+#include "src/Accelerators/NNPA/Support/NNPALimit.hpp"
 #include "src/Dialect/ONNX/DialectBuilder.hpp"
 #include "src/Dialect/ONNX/ONNXOps.hpp"
 #include "src/Dialect/ONNX/ONNXOps/OpHelper.hpp"
@@ -42,7 +42,7 @@ namespace {
 /// modification.
 bool valueFromZTensor(Value tensor) {
   // Function arguments are always CPU tensors.
-  if (tensor.dyn_cast<BlockArgument>())
+  if (mlir::dyn_cast<BlockArgument>(tensor))
     return false;
 
   Operation *op = tensor.getDefiningOp();
@@ -119,8 +119,9 @@ public:
         RankedTensorType::get({1}, inputElementType), DLF16_MIN);
     Value minVal = create.onnx.constant(minAttr);
     Value clippedVal = create.onnx.max({input, minVal});
-    Value replacedVal = rewriter.create<ZHighStickOp>(
-        loc, stickOp.getOut().getType(), clippedVal, stickOp.getLayoutAttr());
+    Value replacedVal =
+        rewriter.create<ZHighStickOp>(loc, stickOp.getOut().getType(),
+            clippedVal, stickOp.getLayoutAttr(), IntegerAttr());
 
     rewriter.replaceOp(genericOp, replacedVal);
     return success();

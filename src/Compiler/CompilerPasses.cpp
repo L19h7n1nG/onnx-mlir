@@ -4,7 +4,7 @@
 
 //===------------------------- CompilerPasses.cpp -------------------------===//
 //
-// Copyright 2022-2023 The IBM Research Authors.
+// Copyright 2022-2024 The IBM Research Authors.
 //
 // =============================================================================
 //
@@ -50,7 +50,8 @@ void configurePasses() {
       onnxConstPropExpansionBound, onnxConstPropDisablePatterns,
       disableConstantProp);
   configureOnnxToKrnlLoweringPass(optReport == OptReport::Parallel,
-      enableParallel, optReport == OptReport::Simd, !disableSimdOption);
+      enableParallel, parallelizeOps, optReport == OptReport::Simd,
+      !disableSimdOption);
 }
 
 void addONNXToMLIRPasses(mlir::PassManager &pm, bool targetCPU) {
@@ -156,7 +157,7 @@ void addONNXToMLIRPasses(mlir::PassManager &pm, bool targetCPU) {
 }
 
 void addONNXToKrnlPasses(mlir::PassManager &pm, int optLevel, bool enableCSE,
-    bool enableInstrumentONNXSignature, std::string ONNXOpsStatFormat) {
+    std::string instrumentSignatureString, std::string ONNXOpsStatFormat) {
   if (enableCSE)
     // Eliminate common sub-expressions before lowering to Krnl.
     // TODO: enable this by default when we make sure it works flawlessly.
@@ -181,20 +182,17 @@ void addONNXToKrnlPasses(mlir::PassManager &pm, int optLevel, bool enableCSE,
   }
 
   // Print Signatures of each op at runtime if enabled. Should not run
-  // signature and instrument passes at the same time.
-  if (enableInstrumentONNXSignature)
-    pm.addNestedPass<func::FuncOp>(
-        onnx_mlir::createInstrumentONNXSignaturePass());
+  // signature and instrument passes at the same time as time may include printf
+  // overheads.
+  if (instrumentSignatureString != "NONE")
+    pm.addNestedPass<func::FuncOp>(onnx_mlir::createInstrumentONNXSignaturePass(
+        instrumentSignatureString));
   pm.addPass(onnx_mlir::createLowerToKrnlPass(/*enableTiling*/ optLevel >= 3,
-      /*enableSIMD*/ optLevel >= 3 && !disableSimdOption,
-      /*enableParallel*/ enableParallel,
+      /*enableSIMD*/ optLevel >= 3 && !disableSimdOption, enableParallel,
       /*opsToCall*/ opsForCall));
   // An additional pass of canonicalization is helpful because lowering
   // from ONNX dialect to Standard dialect exposes additional canonicalization
   // opportunities.
-  pm.addPass(mlir::createCanonicalizerPass());
-  pm.addNestedPass<func::FuncOp>(
-      onnx_mlir::createDisconnectKrnlDimFromAllocPass());
   pm.addPass(mlir::createCanonicalizerPass());
 }
 
@@ -218,6 +216,18 @@ void addKrnlToLLVMPasses(
   // After affine is lowered, KrnlRegion for affine scope can be removed.
   pm.addNestedPass<func::FuncOp>(krnl::createLowerKrnlRegionPass());
 
+  if (enableParallel) {
+    // Pass to ensure that memory allocated by parallel loops stay inside the
+    // parallel region (privatization of memory). Otherwise, all threads would
+    // end up sharing the same temporary data. This pass works on affine
+    // parallel operations, and must be executed (in presence of OMP
+    // parallelism) before bufferization. In practical terms, this pass add
+    // memref.alloca_scope inside each parallel for.
+    pm.addPass(onnx_mlir::createProcessScfParallelPrivatePass());
+    // No canonicalize passes are allowed between that pass above and the buffer
+    // management passes.
+  }
+
   // Hoist allocations out of loop nests to avoid stack overflow.
   pm.addPass(bufferization::createBufferLoopHoistingPass());
 
@@ -238,18 +248,20 @@ void addKrnlToLLVMPasses(
   // Late introduction of OpenMP, after bufferization.
   if (enableParallel) {
     pm.addPass(mlir::createConvertSCFToOpenMPPass());
-    pm.addPass(mlir::createFinalizeMemRefToLLVMConversionPass());
+    //  The alloca_scope ops are somewhat fragile; canonicalize remove them when
+    //  redundant, which helps reliability of the compilation of these ops.
+    pm.addPass(mlir::createCanonicalizerPass());
   }
 
   // The pass below is needed for subview and collapseShape.. Unfortunately,
   // MLIR supports only collapse for scalar loaded by scalar memory at this
   // time. Uncomment if subview/collapse are used.
   // pm.addNestedPass<func::FuncOp>(krnl::createConvertSeqToMemrefPass());
-  pm.addNestedPass<func::FuncOp>(mlir::createConvertSCFToCFPass());
 
   pm.addPass(mlir::memref::createFoldMemRefAliasOpsPass());
+  if (enableBoundCheck)
+    pm.addPass(mlir::createGenerateRuntimeVerificationPass());
   pm.addPass(krnl::createConvertKrnlToLLVMPass(verifyInputTensors,
-      /*useOpaquePointers=*/true,
       /*useLRODATA=*/(modelSize == ModelSize::large),
       /*storeConstantsToFile=*/storeConstantsToFile,
       constantsToFileSingleThreshold, constantsToFileTotalThreshold,
@@ -293,7 +305,7 @@ void addPasses(mlir::OwningOpRef<ModuleOp> &module, mlir::PassManager &pm,
   if (emissionTarget >= EmitMLIR) {
     if (inputIRLevel <= ONNXLevel)
       addONNXToKrnlPasses(pm, OptimizationLevel, /*enableCSE*/ true,
-          instrumentONNXSignature, ONNXOpStats);
+          instrumentSignatures, ONNXOpStats);
     if (inputIRLevel <= MLIRLevel)
       addKrnlToAffinePasses(pm);
   }

@@ -66,7 +66,7 @@ list_operation_version = args.list_operation_version
 
 # ==UPDATE_ONNX_VERSION_OPSET==
 # Look for tag above and update all references when upgrading the ONNX support within ONNX-MLIR.
-current_onnx_version = "1.14.1"
+current_onnx_version = "1.16.2"
 
 # Check the version of onnx package being used.
 if (
@@ -121,7 +121,7 @@ version_dict = {
     "Concat": [13],
     "ConcatFromSequence": [11],
     "Constant": [19],
-    "ConstantOfShape": [9],
+    "ConstantOfShape": [20],
     "Conv": [11],
     "ConvInteger": [10],
     "ConvTranspose": [11],
@@ -133,7 +133,7 @@ version_dict = {
     "DepthToSpace": [13],
     "DequantizeLinear": [19],
     "Det": [11],
-    "DFT": [17],
+    "DFT": [20, 17],
     "DictVectorizer": [1],
     "Div": [14],
     "Dropout": [13],
@@ -152,6 +152,7 @@ version_dict = {
     "Gather": [13],
     "GatherElements": [13],
     "GatherND": [13],
+    "Gelu": [20],
     "Gemm": [13],
     "GlobalAveragePool": [1],
     "GlobalLpPool": [2],
@@ -170,8 +171,8 @@ version_dict = {
     "If": [19],
     "Imputer": [1],
     "InstanceNormalization": [6],
-    "IsInf": [10],
-    "IsNaN": [13],
+    "IsInf": [20],
+    "IsNaN": [20],
     "LayerNormalization": [17],
     "LRN": [13],
     "LSTM": [14],
@@ -230,9 +231,9 @@ version_dict = {
     "ReduceL2": [18, 13],
     "ReduceLogSum": [18, 13],
     "ReduceLogSumExp": [18, 13],
-    "ReduceMax": [18, 13],
+    "ReduceMax": [20, 18, 13],
     "ReduceMean": [18, 13],
-    "ReduceMin": [18, 13],
+    "ReduceMin": [20, 18, 13],
     "ReduceProd": [18, 13],
     "ReduceSum": [13, 11],
     "ReduceSumSquare": [18, 13],
@@ -331,6 +332,7 @@ OpsWithCanonicalizer = [
     "Cast",
     "Constant",
     "DepthToSpace",
+    "DequantizeLinear",
     "Div",
     "Dropout",
     "Equal",
@@ -355,9 +357,11 @@ OpsWithCanonicalizer = [
     "Squeeze",
     "SqueezeV11",
     "Sub",
+    "Tile",
     "Transpose",
     "Unsqueeze",
     "UnsqueezeV11",
+    "Where",
     "Xor",
 ]
 
@@ -389,6 +393,7 @@ OpsWithVerifier = [
     "Gather",
     "GatherElements",
     "GatherND",
+    "Gelu",
     "Greater",
     "GreaterOrEqual",
     "Hardmax",
@@ -489,6 +494,7 @@ custom_builder_unranked_ops_list = [
     "Pad",
     "ReduceLogSum",
     "ReduceMaxV13",
+    "ReduceMaxV18",
     "ReduceMax",
     "ReduceSum",
     "ReduceSumSquare",
@@ -540,11 +546,11 @@ custom_definition_misc = dict(
             """  let builders = [
   OpBuilder<(ins "Attribute":$sparse_value, "Attribute":$value), [{
    if (value) {
-    auto tensorType = value.cast<TypedAttr>().getType();
+    auto tensorType = mlir::cast<TypedAttr>(value).getType();
     build($_builder, $_state, tensorType, sparse_value, value,
       FloatAttr(), ArrayAttr(), IntegerAttr(), ArrayAttr(), StringAttr(), ArrayAttr());
    } else {
-    auto tensorType = sparse_value.cast<TypedAttr>().getType();
+    auto tensorType = mlir::cast<TypedAttr>(sparse_value).getType();
     build($_builder, $_state, tensorType, sparse_value, value,
       FloatAttr(), ArrayAttr(), IntegerAttr(), ArrayAttr(), StringAttr(), ArrayAttr());
    }
@@ -1263,20 +1269,18 @@ def gen_op_def(schema, with_version=False):
                 + (", " + elTy if elTy else "")
                 + ");\n"
             )
-            r += (
-                "{indent}auto shapedType = resultType.dyn_cast_or_null<ShapedType>();\n"
-            )
+            r += "{indent}auto shapedType = mlir::dyn_cast_or_null<ShapedType>(resultType);\n"
             r += "{indent}if (!shapedType || !shapedType.hasStaticShape())\n"
             r += (
                 "{indent}  resultType = UnrankedTensorType::get("
-                + (elTy if elTy else "lhsTy.cast<ShapedType>().getElementType()")
+                + (elTy if elTy else "mlir::cast<ShapedType>(lhsTy).getElementType()")
                 + ");\n"
             )
         else:
             numOperands = 1
             r += (
                 "{indent}auto resultType = UnrankedTensorType::get("
-                + "{0}.getType().cast<ShapedType>().getElementType());\n"
+                + "mlir::cast<ShapedType>({0}.getType()).getElementType());\n"
             )
         resultType = r
 

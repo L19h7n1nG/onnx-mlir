@@ -20,6 +20,7 @@
 
 #include "RegisterPasses.hpp"
 
+#include "mlir/Conversion/ReconcileUnrealizedCasts/ReconcileUnrealizedCasts.h"
 #include "src/Accelerators/Accelerator.hpp"
 #include "src/Compiler/CompilerPasses.hpp"
 
@@ -70,7 +71,7 @@ void registerOMPasses(int optLevel) {
       []() -> std::unique_ptr<mlir::Pass> { return createInstrumentPass(); });
 
   mlir::registerPass([]() -> std::unique_ptr<mlir::Pass> {
-    return createInstrumentONNXSignaturePass();
+    return createInstrumentONNXSignaturePass("NONE");
   });
 
   mlir::registerPass([]() -> std::unique_ptr<mlir::Pass> {
@@ -93,7 +94,7 @@ void registerOMPasses(int optLevel) {
   });
 
   mlir::registerPass([]() -> std::unique_ptr<mlir::Pass> {
-    return createElideConstGlobalValuePass();
+    return createProcessScfParallelPrivatePass();
   });
 
   mlir::registerPass([]() -> std::unique_ptr<mlir::Pass> {
@@ -109,15 +110,11 @@ void registerOMPasses(int optLevel) {
   });
 
   mlir::registerPass([]() -> std::unique_ptr<mlir::Pass> {
-    return createDisconnectKrnlDimFromAllocPass();
-  });
-
-  mlir::registerPass([]() -> std::unique_ptr<mlir::Pass> {
-    return createLowerKrnlShapePass();
-  });
-
-  mlir::registerPass([]() -> std::unique_ptr<mlir::Pass> {
     return createSimplifyShapeRelatedOpsPass();
+  });
+
+  mlir::registerPass([]() -> std::unique_ptr<mlir::Pass> {
+    return createStandardFuncReturnPass();
   });
 
   mlir::registerPass([]() -> std::unique_ptr<mlir::Pass> {
@@ -130,7 +127,7 @@ void registerOMPasses(int optLevel) {
 
 #ifdef ONNX_MLIR_ENABLE_STABLEHLO
   mlir::registerPass([]() -> std::unique_ptr<mlir::Pass> {
-    return createLowerToStableHloPass();
+    return createLowerToStablehloPass();
   });
 #endif
 }
@@ -167,6 +164,9 @@ void registerMLIRPasses() {
   });
   mlir::registerPass([]() -> std::unique_ptr<mlir::Pass> {
     return mlir::createFinalizeMemRefToLLVMConversionPass();
+  });
+  mlir::registerPass([]() -> std::unique_ptr<mlir::Pass> {
+    return mlir::createReconcileUnrealizedCastsPass();
   });
 }
 

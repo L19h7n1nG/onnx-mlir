@@ -29,7 +29,8 @@ llvm::cl::opt<NNPAEmissionTargetType> nnpaEmissionTarget(
 llvm::cl::opt<bool> nnpaClipToDLFloatRange("nnpa-clip-to-dlfloat-range",
     llvm::cl::desc("Clip CPU tensors to dlfloat range before stickification to "
                    "avoid out-of-range. Only clip Softmax inputs at this "
-                   "moment. Default is true."),
+                   "moment. Default is true. This option will be removed and "
+                   "replaced by --nnpa-saturation in the future."),
     llvm::cl::init(true), llvm::cl::cat(OnnxMlirOptions));
 
 llvm::cl::opt<bool> nnpaEnableZHighToOnnx("enable-zhigh-to-onnx",
@@ -40,12 +41,37 @@ llvm::cl::opt<bool> nnpaEnableZHighToOnnx("enable-zhigh-to-onnx",
         "level. Default is true."),
     llvm::cl::init(true), llvm::cl::cat(OnnxMlirOptions));
 
+llvm::cl::opt<bool> nnpaEnableZHighDecomposeStickUnstick(
+    "enable-zhigh-decompose-stick-unstick",
+    llvm::cl::desc(
+        "[Experimental feature] Enabling this will convert zhigh.Stick to "
+        "`zhigh.F32ToDLF16 -> onnx.LayoutTransform` and zhigh.Unstick to "
+        "`onnx.LayoutTransform -> zhigh.DLF16ToF32`. "
+        "Default is false."),
+    llvm::cl::init(false), llvm::cl::cat(OnnxMlirOptions));
+
+// Enabled default now, could also enable it only if parallel is on as parallel
+// stick/unstick is quite a bit faster than sequential.
+llvm::cl::opt<bool> nnpaEnableCompilerStickUnstick(
+    "enable-compiler-stick-unstick",
+    llvm::cl::desc("[Experimental feature] Enable the compiler generate some "
+                   "stick/unstick code. Default is true."),
+    llvm::cl::init(true), llvm::cl::cat(OnnxMlirCommonOptions));
+
+llvm::cl::opt<bool> nnpaEnableScalarBcastBinary(
+    "nnpa-enable-scalar-bcast-binary",
+    llvm::cl::desc("Enable the lowering to NNPA of binary operations with "
+                   "broadcasting of a scalar operand."
+                   "Currently only enable ONNXDiv. Default is false."),
+    llvm::cl::init(false), llvm::cl::cat(OnnxMlirCommonOptions));
+
 llvm::cl::opt<std::string> nnpaLoadDevicePlacementFile{
     "nnpa-load-device-placement-file",
     llvm::cl::desc(
         "Load device placement configuration from a JSON file. To "
         "have a template for the JSON file, use "
-        "-save-device-placement-file=cfg.json. Note that we can use regex for "
+        "--nnpa-save-device-placement-file=cfg.json. Note that we can use "
+        "regex for "
         "string values in the JSON file to match operations. The compiler uses "
         "C++ std::regex_match function for matching."),
     llvm::cl::init(""), llvm::cl::cat(OnnxMlirOptions)};
@@ -67,5 +93,11 @@ llvm::cl::opt<NNPAPlacementHeuristic> nnpaPlacementHeuristic{
         clEnumVal(MuchFasterOpsWSU,
             "Much/Significantly FasterOps with stick/unstick cost")),
     llvm::cl::init(QualifyingOps), llvm::cl::cat(OnnxMlirOptions)};
+
+llvm::cl::opt<bool> nnpaEnableSaturation("nnpa-saturation",
+    llvm::cl::desc("Enable saturating f32 values before stickify them."
+                   "This option turns enable-compiler-stick-unstick on."
+                   "Default is false."),
+    llvm::cl::init(false), llvm::cl::cat(OnnxMlirCommonOptions));
 
 } // namespace onnx_mlir

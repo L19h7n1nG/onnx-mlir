@@ -23,11 +23,11 @@ namespace krnl {
 void customizeTypeConverter(LLVMTypeConverter &typeConverter) {
   typeConverter.addConversion([&](MemRefType type) -> std::optional<Type> {
     Type elementType = type.getElementType();
-    if (!elementType.isa<krnl::StringType>())
+    if (!mlir::isa<krnl::StringType>(elementType))
       return std::nullopt;
 
-    elementType =
-        elementType.cast<krnl::StringType>().getLLVMType(type.getContext());
+    elementType = mlir::cast<krnl::StringType>(elementType)
+                      .getLLVMType(type.getContext());
     return typeConverter.convertType(
         MemRefType::get(type.getShape(), elementType));
   });
@@ -35,6 +35,8 @@ void customizeTypeConverter(LLVMTypeConverter &typeConverter) {
   typeConverter.addConversion([&](krnl::StringType type) -> Type {
     return typeConverter.convertType(type.getLLVMType(type.getContext()));
   });
+
+  typeConverter.addConversion([&](NoneType type) -> Type { return type; });
 }
 
 } // namespace krnl

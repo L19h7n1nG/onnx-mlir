@@ -4,7 +4,7 @@
 
 //===---------------- Gather.cpp - Lowering Gather Op ---------------------===//
 //
-// Copyright 2020-2023 The IBM Research Authors.
+// Copyright 2020-2024 The IBM Research Authors.
 //
 // =============================================================================
 //
@@ -20,8 +20,15 @@ using namespace mlir;
 namespace onnx_mlir {
 
 struct ONNXGatherOpLowering : public OpConversionPattern<ONNXGatherOp> {
-  ONNXGatherOpLowering(TypeConverter &typeConverter, MLIRContext *ctx)
-      : OpConversionPattern(typeConverter, ctx) {}
+  ONNXGatherOpLowering(
+      TypeConverter &typeConverter, MLIRContext *ctx, bool enableParallel)
+      : OpConversionPattern(typeConverter, ctx) {
+    this->enableParallel =
+        enableParallel &&
+        OnnxToKrnlLoweringConfiguration::enableSpecificParallelOps.isEnabled(
+            ONNXGatherOp::getOperationName());
+  }
+  bool enableParallel;
 
   LogicalResult matchAndRewrite(ONNXGatherOp gatherOp,
       ONNXGatherOpAdaptor adaptor,
@@ -39,9 +46,9 @@ struct ONNXGatherOpLowering : public OpConversionPattern<ONNXGatherOp> {
 
     // Convert the output type to MemRefType.
     Type convertedType = typeConverter->convertType(*op->result_type_begin());
-    assert(convertedType && convertedType.isa<MemRefType>() &&
+    assert(convertedType && mlir::isa<MemRefType>(convertedType) &&
            "Failed to convert type to MemRefType");
-    MemRefType outputMemRefType = convertedType.cast<MemRefType>();
+    MemRefType outputMemRefType = mlir::cast<MemRefType>(convertedType);
 
     // Insert an allocation and deallocation for the output of this operation.
     Value alloc =
@@ -51,8 +58,8 @@ struct ONNXGatherOpLowering : public OpConversionPattern<ONNXGatherOp> {
     Value data = adaptor.getData();
     Value indices = adaptor.getIndices();
     int64_t axisLit = adaptor.getAxis();
-    int64_t dataRank = data.getType().cast<MemRefType>().getRank();
-    int64_t indicesRank = indices.getType().cast<MemRefType>().getRank();
+    int64_t dataRank = mlir::cast<MemRefType>(data.getType()).getRank();
+    int64_t indicesRank = mlir::cast<MemRefType>(indices.getType()).getRank();
 
     // Determine whether indices may be negative.
     bool indicesMayBeNegative = !indicesAreNonNegativeConstants(indices);
@@ -82,6 +89,18 @@ struct ONNXGatherOpLowering : public OpConversionPattern<ONNXGatherOp> {
     // Define loops and iteration trip counts (equivalent to size of output)
     ValueRange loopDef = create.krnl.defineLoops(outputRank);
     DimsExpr lbs(outputRank, zeroIE);
+    DimsExpr ubs = shapeHelper.getOutputDims();
+    if (enableParallel) {
+      int64_t parId;
+      if (findSuitableParallelDimension(lbs, ubs, 0, outputRank, parId)) {
+        create.krnl.parallel(loopDef[parId]);
+        onnxToKrnlParallelReport(
+            op, true, parId, lbs[parId], ubs[parId], "gather");
+      } else {
+        onnxToKrnlParallelReport(
+            op, false, -1, -1, "dim with not enough work in gather");
+      }
+    }
     create.krnl.iterateIE(loopDef, loopDef, lbs, shapeHelper.getOutputDims(),
         [&](KrnlBuilder &createKrnl, ValueRange loopInd) {
           // Insert code inside the loop.
@@ -125,8 +144,8 @@ struct ONNXGatherOpLowering : public OpConversionPattern<ONNXGatherOp> {
 };
 
 void populateLoweringONNXGatherOpPattern(RewritePatternSet &patterns,
-    TypeConverter &typeConverter, MLIRContext *ctx) {
-  patterns.insert<ONNXGatherOpLowering>(typeConverter, ctx);
+    TypeConverter &typeConverter, MLIRContext *ctx, bool enableParallel) {
+  patterns.insert<ONNXGatherOpLowering>(typeConverter, ctx, enableParallel);
 }
 
 } // namespace onnx_mlir

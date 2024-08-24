@@ -4,7 +4,7 @@
 
 //===------------------- KrnlTypes.hpp - Krnl Operations ------------------===//
 //
-// Copyright 2019-2020 The IBM Research Authors.
+// Copyright 2019-2024 The IBM Research Authors.
 //
 // =============================================================================
 //
@@ -12,7 +12,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#pragma once
+#ifndef ONNX_MLIR_KRNL_TYPES_H
+#define ONNX_MLIR_KRNL_TYPES_H
 
 #include "mlir/Conversion/LLVMCommon/TypeConverter.h"
 #include "mlir/Dialect/LLVMIR/LLVMTypes.h"
@@ -28,6 +29,8 @@ class LoopType
 public:
   using Base::Base;
 
+  static constexpr const char *name = "loop.type";
+
   // Support type inquiry through isa, cast and dyn_cast.
 
   // Get a unique instance of Loop type.
@@ -40,6 +43,8 @@ class StringType
 
 public:
   using Base::Base;
+
+  static constexpr const char *name = "string.type";
 
   // Get a unique instance of StringType.
   static StringType get(mlir::MLIRContext *context) {
@@ -75,3 +80,4 @@ void customizeTypeConverter(mlir::LLVMTypeConverter &typeConverter);
 
 } // namespace krnl
 } // namespace onnx_mlir
+#endif

@@ -11,8 +11,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef OP_HELPER 
-#define OP_HELPER 
+#ifndef OP_HELPER
+#define OP_HELPER
 
 #ifndef OP_BASE
 include "src/Accelerators/NNPA/Dialect/ZHigh/ZHigh.td"
@@ -37,7 +37,7 @@ def NotSameLayout: Constraint<
   "Two ztensors have different layouts"
 >;
 
-def IsNoneType : Constraint<CPred<"(($_self).getType().isa<NoneType>())">>;
+def IsNoneType : Constraint<CPred<"mlir::isa<NoneType>(($_self).getType())">>;
 
 def GetLayout : NativeCodeCall<
   "::onnx_mlir::zhigh::convertZTensorDataLayoutToStringAttr($_builder, "
@@ -77,7 +77,7 @@ class GetConstantOfType<string v> : NativeCodeCall<
 def IsStaticShapeTensor:
   Constraint<
     CPred<
-      "$0.getType().cast<::mlir::ShapedType>().hasStaticShape()">,
+      "mlir::cast<::mlir::ShapedType>($0.getType()).hasStaticShape()">,
     "is a tensor of static shape">;
 
 def IsPlusConstantFloat : Constraint<
@@ -113,6 +113,11 @@ def TensorHasNoNHWCLayout: Constraint<
   "ZTensor has no NHWC layout"
 >;
 
+def HasNNPAUse: Constraint<
+  CPred<"::onnx_mlir::zhigh::hasNNPAUse($0)">,
+  "The value has NNPA users (or is consumed by an NNPA op)"
+>;
+
 def Is2DLayout : Constraint<
   CPred<"::onnx_mlir::is2DLayout($0)">,
   "Is 2D layout"
@@ -121,6 +126,11 @@ def Is2DLayout : Constraint<
 def Is3DSLayout : Constraint<
   CPred<"::onnx_mlir::is3DSLayout($0)">,
   "Is 3DS layout"
+>;
+
+def IsNotNHWCLayout : Constraint<
+  CPred<"!::onnx_mlir::isNHWCLayout($0)">,
+  "Is not NHWC layout"
 >;
 
 /// Compose two affine maps.
@@ -185,4 +195,10 @@ def GetAxisNHWC : NativeCodeCall<
   "::onnx_mlir::zhigh::getAxisNHWC($0)"
 >;
 
-#endif // OP_HELPER 
+def NoneIntegerAttr: NativeCodeCall<"IntegerAttr()">;
+
+def GetDefaultSaturation : NativeCodeCall<
+  "::onnx_mlir::zhigh::getDefaultSaturation($_builder)"
+>;
+
+#endif // OP_HELPER

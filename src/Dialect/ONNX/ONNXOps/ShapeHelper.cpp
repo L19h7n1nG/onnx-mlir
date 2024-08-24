@@ -4,7 +4,7 @@
 
 //===----------------ONNXShapeHelper.cpp - help for shapes----------------=== //
 //
-// Copyright 2020-2023 The IBM Research Authors.
+// Copyright 2020-2024 The IBM Research Authors.
 //
 // =============================================================================
 //
@@ -46,7 +46,7 @@ bool isAxisInRange(int64_t &axis, int64_t rank, bool includeRank) {
 }
 
 bool isAxisInRange(int64_t &axis, Value val, bool includeRank) {
-  ShapedType shapedType = val.getType().cast<ShapedType>();
+  ShapedType shapedType = mlir::cast<ShapedType>(val.getType());
   assert(shapedType && "expected a shaped type to determine the rank for axis");
   return isAxisInRange(axis, shapedType.getRank(), includeRank);
 }
@@ -204,7 +204,7 @@ LogicalResult ONNXOpShapeHelper::setOutputDimsFromLiterals(
 
 LogicalResult ONNXOpShapeHelper::setOutputDimsFromTypeWithConstantShape(
     Type type, int n, bool refineShape) {
-  RankedTensorType rankedType = type.dyn_cast<RankedTensorType>();
+  RankedTensorType rankedType = mlir::dyn_cast<RankedTensorType>(type);
   if (!rankedType)
     return failure();
   DimsExpr outputDims;
@@ -221,12 +221,13 @@ LogicalResult ONNXOpShapeHelper::computeShapeAndUpdateType(
   // Invoke virtual compute shape.
   if (failed(computeShape()))
     return op->emitError("Failed to scan parameters successfully");
-  assert((elementType.isa<VectorType>() || !elementType.isa<ShapedType>()) &&
+  assert((mlir::isa<VectorType>(elementType) ||
+             !mlir::isa<ShapedType>(elementType)) &&
          "element type cannot be a shaped type other than vector type");
   uint64_t resNum = op->getNumResults();
   for (uint64_t i = 0; i < resNum; ++i) {
     // If we have an optional type, leave it as is.
-    if (op->getResults()[i].getType().isa<NoneType>())
+    if (mlir::isa<NoneType>(op->getResults()[i].getType()))
       continue;
     llvm::SmallVector<int64_t, 4> shapeVect;
     IndexExpr::getShape(getOutputDims(i), shapeVect);
@@ -253,7 +254,7 @@ LogicalResult ONNXOpShapeHelper::computeShapeAndUpdateTypes(
                          " parameters successfully");
   for (uint64_t i = 0; i < resNum; ++i) {
     // If we have an optional type, leave it as is.
-    if (op->getResults()[i].getType().isa<NoneType>())
+    if (mlir::isa<NoneType>(op->getResults()[i].getType()))
       continue;
     llvm::SmallVector<int64_t, 4> shapeVect;
     IndexExpr::getShape(getOutputDims(i), shapeVect);
@@ -442,7 +443,7 @@ bool ONNXBroadcastOpShapeHelper::hasNoBroadcast(DimAnalysis *dimAnalysis) {
 bool ONNXBroadcastOpShapeHelper::hasRankBroadcast() {
   ValueRange operands = this->operands;
   for (Value operand : operands) {
-    auto operandType = operand.getType().cast<ShapedType>();
+    auto operandType = mlir::cast<ShapedType>(operand.getType());
     if (outputRank != (uint64_t)operandType.getRank())
       return true;
   }
@@ -516,8 +517,23 @@ bool ONNXBroadcastOpShapeHelper::hasManageableBroadcastForInnerDims(
     // no need to collapse the 1 dimensions... it brings no advantages. So by
     // skipping the updating of collapsedInnermostLoops here, we will omit
     // these leading ones.
-    if (numOfOnes == dimNum) {
+
+    // Revision: it is actually good to detects 1s everywhere as we can
+    // collapse the loop and have less overhead.
+#define REVISION_COLLAPSE_ALL_ONES 1
+    bool allOnes = numOfOnes == dimNum;
+    if (allOnes) {
+#if REVISION_COLLAPSE_ALL_ONES
+      // No need to update the sizes as dim is all ones.
+      collapsedInnermostLoops = -r;
+      LLVM_DEBUG(llvm::dbgs() << "  SUCCESS (all ones) at collapsing "
+                              << collapsedInnermostLoops
+                              << " inner loops with cumulative static size of "
+                              << collapsedLiteralSize << "\n\n");
+
+#else
       LLVM_DEBUG(llvm::dbgs() << "  all ones, done\n");
+#endif
       continue;
     }
 
@@ -529,7 +545,8 @@ bool ONNXBroadcastOpShapeHelper::hasManageableBroadcastForInnerDims(
       LLVM_DEBUG(llvm::dbgs() << "  check non-scalar compatibility\n");
       // For all non scalars...
       for (int64_t d = 0; d < dimNum; ++d) {
-        // Consider only dims d that are not scalar, and skip d == nonScalarID.
+        // Consider only dims d that are not scalar, and skip d ==
+        // nonScalarID.
         if (isOne[d] || d == nonScalarID)
           continue;
         // Compare nonScalarID with d
@@ -550,8 +567,8 @@ bool ONNXBroadcastOpShapeHelper::hasManageableBroadcastForInnerDims(
                                   << nonScalarID << " & " << d << "; abort\n");
           return collapsedInnermostLoops > 0;
         }
-        // We could not determine compatibility with literals, try deducing info
-        // with dim analysis, if available.
+        // We could not determine compatibility with literals, try deducing
+        // info with dim analysis, if available.
         if (canUseDimAnalysis &&
             /* Use negative index convention here as operands may have fewer
                than outputRank dimensions */
@@ -570,7 +587,7 @@ bool ONNXBroadcastOpShapeHelper::hasManageableBroadcastForInnerDims(
       } // End for all non-scalars,
     }   // End testing non-scalar compatibility.
 
-    // 4) Since we have at least one non-scalar,
+    // 4) Since we have at least one non-scalar
     //   4.1) all the scalar inputs are now marked as having a broadcast.
     //   4.2) any inputs with a one that is not a scalar has a new broadcast,
     //        which is not allowed as only scalars can be broadcast to be
@@ -584,10 +601,10 @@ bool ONNXBroadcastOpShapeHelper::hasManageableBroadcastForInnerDims(
       } else if (isOne[d]) { // Is one but is not a scalar.
         // Case 1x4x1, 2x4x1, and 1x1x1: no broadcast at r==-1, broadcast at
         // r==-2 for last entry, no broadcast for the others. At r==-3,
-        // continued broadcast for last entry, but first entry has new broadcast
-        // to size 2 (i.e. isOne[0] is true, and isScalar[0] is false). We
-        // cannot manage this. Abort at this rank r; thus stops at previous
-        // iteration of r.
+        // continued broadcast for last entry, but first entry has new
+        // broadcast to size 2 (i.e. isOne[0] is true, and isScalar[0] is
+        // false). We cannot manage this. Abort at this rank r; thus stops at
+        // previous iteration of r.
         LLVM_DEBUG(llvm::dbgs() << "  one and no scalar" << d << "; abort\n");
         return collapsedInnermostLoops > 0;
       }
@@ -620,7 +637,7 @@ LogicalResult ONNXBroadcastOpShapeHelper::getAccessExprs(Value operand,
   // Get info.
   int64_t loopDepth = loopAccessExprs.size();
   int64_t inputSize = inputsDims.size();
-  int64_t operandRank = operand.getType().cast<ShapedType>().getRank();
+  int64_t operandRank = mlir::cast<ShapedType>(operand.getType()).getRank();
   // Flattened? no more than one loop per dim in output (aka output rank).
   // Not flattened? one loop per dim in output (aka output rank).
   if (flattenedInnerDims)
@@ -826,7 +843,7 @@ void updateType(Operation *op, Value val, ArrayRef<int64_t> shape,
     elementType = getElementType(val.getType());
 
   // Get encoding.
-  if (auto valType = val.getType().dyn_cast<RankedTensorType>())
+  if (auto valType = mlir::dyn_cast<RankedTensorType>(val.getType()))
     if (!encoding)
       encoding = valType.getEncoding();
 
@@ -842,7 +859,7 @@ void updateType(Operation *op, Value val, ArrayRef<int64_t> shape,
 
 static void resetTypeShapeToQuestionmarks(Value val) {
   // Only deal with ranked tensor types here.
-  RankedTensorType valType = val.getType().dyn_cast<RankedTensorType>();
+  RankedTensorType valType = mlir::dyn_cast<RankedTensorType>(val.getType());
   if (!valType)
     return;
   // Reset any compile time literal to unknown (aka question marks).
@@ -891,10 +908,13 @@ ONNXCustomOpShapeHelper::ONNXCustomOpShapeHelper(Operation *op,
 
   std::vector<mlir::Value> operandsVector;
   for (auto indexAttr : inputIndexAttrs.value()) {
-    operandsVector.push_back(inputs[indexAttr.cast<IntegerAttr>().getInt()]);
+    operandsVector.push_back(
+        inputs[mlir::cast<IntegerAttr>(indexAttr).getInt()]);
   }
   setOperands(ValueRange(operandsVector));
 }
+
+bool ONNXCustomOpShapeHelper::isImplemented() { return pattern != 0; }
 
 LogicalResult ONNXCustomOpShapeHelper::computeShape() {
   if (pattern == 1) {

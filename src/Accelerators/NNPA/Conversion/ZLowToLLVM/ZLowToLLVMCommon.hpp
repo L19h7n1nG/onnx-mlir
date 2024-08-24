@@ -4,7 +4,7 @@
 
 //===---------- ZLowToLLVMCommon.hpp - Lowering from ZLow to LLVM ---------===//
 //
-// Copyright 2019-2020 The IBM Research Authors.
+// Copyright 2019-2024 The IBM Research Authors.
 //
 // =============================================================================
 //
@@ -12,7 +12,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#pragma once
+#ifndef ONNX_MLIR_ZLOW_TO_LLVM_COMMON_H
+#define ONNX_MLIR_ZLOW_TO_LLVM_COMMON_H
 
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/LLVMIR/LLVMDialect.h"
@@ -56,7 +57,10 @@ enum class API {
   ZDNN_AVGPOOL2D,
   ZDNN_MAXPOOL2D,
   ZDNN_MEANREDUCE2D,
-  ZDNN_BATCHNORM
+  ZDNN_BATCHNORM,
+  // Scalar operations.
+  DLF16_TO_F32,
+  F32_TO_DLF16,
 };
 
 // Obtain a zDNN API for an elementwise ZLow operation.
@@ -197,3 +201,4 @@ void fillInZTensor(mlir::PatternRewriter &rewriter, mlir::Location loc,
 
 } // namespace zlow
 } // namespace onnx_mlir
+#endif

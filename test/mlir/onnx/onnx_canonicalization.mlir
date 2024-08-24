@@ -85,7 +85,7 @@ func.func @test_gemm_add_fusion_beta_zero(%arg0: tensor<128x128xf32>, %arg1: ten
 
 // -----
 
-//CHECK-LABEL: @test_gemm_add_fusion_rank3(%{{.*}}: tensor<128x128x256xf32>, %{{.*}}: tensor<128x128x256xf32>, %{{.*}}: tensor<256xf32>) -> tensor<*xf32> {
+// CHECK-LABEL: @test_gemm_add_fusion_rank3(%{{.*}}: tensor<128x128x256xf32>, %{{.*}}: tensor<128x128x256xf32>, %{{.*}}: tensor<256xf32>) -> tensor<*xf32> {
 func.func @test_gemm_add_fusion_rank3(%arg0: tensor<128x128x256xf32>, %arg1: tensor<128x128x256xf32>, %arg2: tensor<256xf32>) -> tensor<*xf32> {
   %cst = "onnx.NoValue"() {value} : () -> none
   %0 = "onnx.Gemm"(%arg0, %arg1, %cst) : (tensor<128x128x256xf32>, tensor<128x128x256xf32>, none) -> tensor<*xf32>
@@ -98,12 +98,43 @@ func.func @test_gemm_add_fusion_rank3(%arg0: tensor<128x128x256xf32>, %arg1: ten
 
 // -----
 
-//CHECK-LABEL: @cast_elimination(%{{.*}}: tensor<2xf32>) -> tensor<2xf32> {
+// CHECK-LABEL: @cast_elimination(%{{.*}}: tensor<2xf32>) -> tensor<2xf32> {
 func.func @cast_elimination(%arg0: tensor<2xf32>) -> tensor<2xf32> {
   %0 = "onnx.Cast"(%arg0) {to = f32} : (tensor<2xf32>) -> tensor<2xf32>
   onnx.Return %0 : tensor<2xf32>
 
   // CHECK-NEXT: onnx.Return %arg0 : tensor<2xf32>
+}
+
+// -----
+
+func.func @cast_concat_swap(%arg0: tensor<1xi32>, %arg1: tensor<1xi32>) -> tensor<2xi64> {
+  %0 = "onnx.Concat"(%arg0, %arg1) {axis = 0 : si64} : (tensor<1xi32>, tensor<1xi32>) -> tensor<2xi32>
+  %1 = "onnx.Cast"(%0) {to = i64} : (tensor<2xi32>) -> tensor<2xi64>
+  onnx.Return %1 : tensor<2xi64>
+
+// CHECK-LABEL:  func.func @cast_concat_swap
+// CHECK-SAME:   ([[PARAM_0_:%.+]]: tensor<1xi32>, [[PARAM_1_:%.+]]: tensor<1xi32>) -> tensor<2xi64> {
+// CHECK-DAG:       [[VAR_0_:%.+]] = "onnx.Cast"([[PARAM_0_]]) {saturate = 1 : si64, to = i64} : (tensor<1xi32>) -> tensor<1xi64>
+// CHECK-DAG:       [[VAR_1_:%.+]] = "onnx.Cast"([[PARAM_1_]]) {saturate = 1 : si64, to = i64} : (tensor<1xi32>) -> tensor<1xi64>
+// CHECK:           [[VAR_2_:%.+]] = "onnx.Concat"([[VAR_0_]], [[VAR_1_]]) {axis = 0 : si64} : (tensor<1xi64>, tensor<1xi64>) -> tensor<2xi64>
+// CHECK:           onnx.Return [[VAR_2_]] : tensor<2xi64>
+// CHECK:         }
+}
+
+// -----
+
+func.func @cast_slice_swap(%arg0: tensor<3xi32>, %arg1: tensor<1xi64>, %arg2: tensor<1xi64>, %arg3: tensor<1xi64>, %arg4: tensor<1xi64>) -> tensor<1xi64> {
+  %0 = "onnx.Slice"(%arg0, %arg1, %arg2, %arg3, %arg4) {axis = 0 : si64} : (tensor<3xi32>, tensor<1xi64>, tensor<1xi64>, tensor<1xi64>, tensor<1xi64>) -> tensor<1xi32>
+  %1 = "onnx.Cast"(%0) {to = i64} : (tensor<1xi32>) -> tensor<1xi64>
+  onnx.Return %1 : tensor<1xi64>
+
+// CHECK-LABEL:  func.func @cast_slice_swap
+// CHECK-SAME:   ([[PARAM_0_:%.+]]: tensor<3xi32>, [[PARAM_1_:%.+]]: tensor<1xi64>, [[PARAM_2_:%.+]]: tensor<1xi64>, [[PARAM_3_:%.+]]: tensor<1xi64>, [[PARAM_4_:%.+]]: tensor<1xi64>) -> tensor<1xi64> {
+// CHECK:           [[VAR_0_:%.+]] = "onnx.Cast"([[PARAM_0_]]) {saturate = 1 : si64, to = i64} : (tensor<3xi32>) -> tensor<*xi64>
+// CHECK:           [[VAR_1_:%.+]] = "onnx.Slice"([[VAR_0_]], [[PARAM_1_]], [[PARAM_2_]], [[PARAM_3_]], [[PARAM_4_]]) : (tensor<*xi64>, tensor<1xi64>, tensor<1xi64>, tensor<1xi64>, tensor<1xi64>) -> tensor<1xi64>
+// CHECK:           onnx.Return [[VAR_1_]] : tensor<1xi64>
+// CHECK:         }
 }
 
 // -----
@@ -178,6 +209,18 @@ func.func @test_transpose_concat_reversed(%arg0: tensor<?x5x5x1xf32>, %arg1: ten
 
     // CHECK-NEXT: "onnx.Concat"(%arg0, %arg1) {axis = 3 : si64} : (tensor<?x5x5x1xf32>, tensor<?x5x5x2xf32>) -> tensor<?x5x5x3xf32>
     // CHECK-NOT: "onnx.Transpose"
+}
+
+// -----
+
+// CHECK-LABEL: func @identity_tile
+func.func @identity_tile(%arg0: tensor<32x64xf32>) -> tensor<32x64xf32> {
+    %0 = onnx.Constant dense<1> : tensor<2xi64>
+    %1 = "onnx.Tile"(%arg0, %0) : (tensor<32x64xf32>, tensor<2xi64>) -> tensor<32x64xf32>
+    onnx.Return %1 : tensor<32x64xf32>
+
+    // CHECK-NEXT: onnx.Return %arg0
+    // CHECK-NOT: "onnx.Tile"
 }
 
 // -----
@@ -680,38 +723,6 @@ func.func @test_remove_space_to_depth_depth_to_space(%arg0 : tensor<1x256x8x16xf
 
 // -----
 
-func.func @test_constant_1() -> tensor<i64> {
-  %0 = onnx.Constant {value_int = 1 : si64} : tensor<i64>
-  onnx.Return %0 : tensor<i64>
-// CHECK-LABEL:       func @test_constant_1
-// CHECK:           [[VAR_0:%.+]] = onnx.Constant dense<1> : tensor<i64>
-// CHECK:           onnx.Return [[VAR_0]] : tensor<i64>
-}
-
-
-// -----
-
-func.func @test_constant_2() -> tensor<f32> {
-  %0 = onnx.Constant {value_float = 2.0 : f32 } : tensor<f32>
-  onnx.Return %0 : tensor<f32>
-// CHECK-LABEL:     func @test_constant_2
-// CHECK: [[VAR_0:%.+]] = onnx.Constant dense<2.000000e+00> : tensor<f32>
-// CHECK: onnx.Return [[VAR_0]] : tensor<f32>
-}
-
-// -----
-
-func.func @test_constant_3() -> tensor<3xi64> {
-  %0 = onnx.Constant {value_ints = [1, 2, 3] } : tensor<3xi64>
-  onnx.Return %0 : tensor<3xi64>
-// CHECK-LABEL:       func @test_constant_3
-// CHECK-SAME:     () -> tensor<3xi64> {
-// CHECK:           [[VAR_0:%.+]] = onnx.Constant dense<[1, 2, 3]> : tensor<3xi64>
-// CHECK:           onnx.Return [[VAR_0]] : tensor<3xi64>
-}
-
-// -----
-
 func.func @test_rewrite_batchnormtestmode_Nd(%arg0 : tensor<1x64x112x112xf32>, %scale : tensor<64xf32>, %bias : tensor<64xf32>, %mean : tensor<64xf32>, %var : tensor<64xf32>) -> tensor<1x64x112x112xf32> {
     %0 = "onnx.BatchNormalizationInferenceMode"(%arg0, %scale, %bias, %mean, %var) {epsilon = 1.00000007E-5 : f32} : (tensor<1x64x112x112xf32>, tensor<64xf32>, tensor<64xf32>, tensor<64xf32>, tensor<64xf32>) -> tensor<1x64x112x112xf32>
     onnx.Return %0 :  tensor<1x64x112x112xf32>
@@ -1186,6 +1197,18 @@ func.func @test_layout_transform(%arg0: tensor<5x3x32x32xf32, #onnx.layout<{data
     onnx.Return %0 : tensor<5x3x32x32xf32, #onnx.layout<{dataLayout = "NCHW4C"}>>
 
 // CHECK-LABEL: test_layout_transform
+// CHECK-NOT: "onnx.LayoutTransform"
+// CHECK: onnx.Return
+}
+
+// -----
+
+func.func @test_layout_transform_fusion(%arg0: tensor<5x3x32x32xf32>) -> tensor<5x3x32x32xf32> {
+    %0 = "onnx.LayoutTransform"(%arg0) {target_layout = #onnx.layout<{dataLayout = "NCHW4C"}>} : (tensor<5x3x32x32xf32>) -> tensor<5x3x32x32xf32, #onnx.layout<{dataLayout = "NCHW4C"}>>
+    %1 = "onnx.LayoutTransform"(%0) : (tensor<5x3x32x32xf32, #onnx.layout<{dataLayout = "NCHW4C"}>>) -> tensor<5x3x32x32xf32>
+    onnx.Return %1 : tensor<5x3x32x32xf32>
+
+// CHECK-LABEL: test_layout_transform_fusion
 // CHECK-NOT: "onnx.LayoutTransform"
 // CHECK: onnx.Return
 }
@@ -1728,5 +1751,92 @@ func.func @test_mul_in_attention(%arg0: tensor<?x?x768xf32>, %arg1: tensor<?x?x7
 // CHECK:           [[VAR_20_:%.+]] = "onnx.Transpose"([[VAR_19_]]) {perm = [0, 2, 3, 1]} : (tensor<?x?x12x64xf32>) -> tensor<?x12x64x?xf32>
 // CHECK:           [[VAR_21_:%.+]] = "onnx.MatMul"([[VAR_13_]], [[VAR_20_]]) : (tensor<?x12x?x64xf32>, tensor<?x12x64x?xf32>) -> tensor<?x12x?x?xf32>
 // CHECK:           onnx.Return [[VAR_21_]] : tensor<?x12x?x?xf32>
+// CHECK:         }
+}
+
+// -----
+
+// Canonicalize WhereOp whose condition is always false.
+// This pattern was found in the model xlm-roberta-base-language-detection in HuggingFace.
+func.func @test_where_with_always_false_1(%arg0: tensor<?x?xi64>) -> tensor<2xi64> {
+  %0 = onnx.Constant dense<-1> : tensor<2xi64>
+  %1 = onnx.Constant dense<1> : tensor<2xi64>
+  %2 = "onnx.Dim"(%arg0) {axis = 0 : si64} : (tensor<?x?xi64>) -> tensor<1xi64>
+  %3 = "onnx.Dim"(%arg0) {axis = 1 : si64} : (tensor<?x?xi64>) -> tensor<1xi64>
+  %4 = "onnx.Concat"(%2, %3) {axis = 0 : si64} : (tensor<1xi64>, tensor<1xi64>) -> tensor<2xi64>
+  %5 = "onnx.Equal"(%4, %0) : (tensor<2xi64>, tensor<2xi64>) -> tensor<2xi1>
+  %6 = "onnx.Where"(%5, %1, %4) : (tensor<2xi1>, tensor<2xi64>, tensor<2xi64>) -> tensor<2xi64>
+  onnx.Return %6 : tensor<2xi64>
+
+// CHECK-LABEL:  func.func @test_where_with_always_false_1
+// CHECK-SAME:   ([[PARAM_0_:%.+]]: tensor<?x?xi64>) -> tensor<2xi64> {
+// CHECK-DAG:       [[VAR_0_:%.+]] = "onnx.Dim"([[PARAM_0_]]) {axis = 0 : si64} : (tensor<?x?xi64>) -> tensor<1xi64>
+// CHECK-DAG:       [[VAR_1_:%.+]] = "onnx.Dim"([[PARAM_0_]]) {axis = 1 : si64} : (tensor<?x?xi64>) -> tensor<1xi64>
+// CHECK:           [[VAR_2_:%.+]] = "onnx.Concat"([[VAR_0_]], [[VAR_1_]]) {axis = 0 : si64} : (tensor<1xi64>, tensor<1xi64>) -> tensor<2xi64>
+// CHECK:           onnx.Return [[VAR_2_]] : tensor<2xi64>
+// CHECK:         }
+}
+
+// -----
+
+// Mix of DimOp and ConstantOp.
+func.func @test_where_with_always_false_2(%arg0: tensor<?x?xi64>) -> tensor<2xi64> {
+    %0 = onnx.Constant dense<-1> : tensor<2xi64>
+    %1 = onnx.Constant dense<1> : tensor<2xi64>
+    %2 = onnx.Constant dense<2> : tensor<1xi64>
+    %3 = "onnx.Dim"(%arg0) {axis = 1 : si64} : (tensor<?x?xi64>) -> tensor<1xi64>
+    %4 = "onnx.Concat"(%2, %3) {axis = 0 : si64} : (tensor<1xi64>, tensor<1xi64>) -> tensor<2xi64>
+    %5 = "onnx.Equal"(%4, %0) : (tensor<2xi64>, tensor<2xi64>) -> tensor<2xi1>
+    %6 = "onnx.Where"(%5, %1, %4) : (tensor<2xi1>, tensor<2xi64>, tensor<2xi64>) -> tensor<2xi64>
+    onnx.Return %6 : tensor<2xi64>
+
+// CHECK-LABEL:  func.func @test_where_with_always_false_2
+// CHECK-SAME:   ([[PARAM_0_:%.+]]: tensor<?x?xi64>) -> tensor<2xi64> {
+// CHECK-DAG:       [[VAR_0_:%.+]] = onnx.Constant dense<2> : tensor<1xi64>
+// CHECK-DAG:       [[VAR_1_:%.+]] = "onnx.Dim"([[PARAM_0_]]) {axis = 1 : si64} : (tensor<?x?xi64>) -> tensor<1xi64>
+// CHECK:           [[VAR_2_:%.+]] = "onnx.Concat"([[VAR_0_]], [[VAR_1_]]) {axis = 0 : si64} : (tensor<1xi64>, tensor<1xi64>) -> tensor<2xi64>
+// CHECK:           onnx.Return [[VAR_2_]] : tensor<2xi64>
+// CHECK:         }
+}
+
+// -----
+
+// Mix of DimOp and ConstantOp but the constant is negative, so cannot guarantee the false condition in WhereOp.
+// No rewrite happened.
+func.func @test_where_with_always_false_3(%arg0: tensor<?x?xi64>) -> tensor<2xi64> {
+    %0 = onnx.Constant dense<-1> : tensor<2xi64>
+    %1 = onnx.Constant dense<1> : tensor<2xi64>
+    %2 = onnx.Constant dense<-2> : tensor<1xi64>
+    %3 = "onnx.Dim"(%arg0) {axis = 1 : si64} : (tensor<?x?xi64>) -> tensor<1xi64>
+    %4 = "onnx.Concat"(%2, %3) {axis = 0 : si64} : (tensor<1xi64>, tensor<1xi64>) -> tensor<2xi64>
+    %5 = "onnx.Equal"(%4, %0) : (tensor<2xi64>, tensor<2xi64>) -> tensor<2xi1>
+    %6 = "onnx.Where"(%5, %1, %4) : (tensor<2xi1>, tensor<2xi64>, tensor<2xi64>) -> tensor<2xi64>
+    onnx.Return %6 : tensor<2xi64>
+
+// CHECK-LABEL:  func.func @test_where_with_always_false_3
+// CHECK-SAME:   ([[PARAM_0_:%.+]]: tensor<?x?xi64>) -> tensor<2xi64> {
+// CHECK-DAG:       [[VAR_0_:%.+]] = onnx.Constant dense<-1> : tensor<2xi64>
+// CHECK-DAG:       [[VAR_1_:%.+]] = onnx.Constant dense<1> : tensor<2xi64>
+// CHECK-DAG:       [[VAR_2_:%.+]] = onnx.Constant dense<-2> : tensor<1xi64>
+// CHECK-DAG:       [[VAR_3_:%.+]] = "onnx.Dim"([[PARAM_0_]]) {axis = 1 : si64} : (tensor<?x?xi64>) -> tensor<1xi64>
+// CHECK:           [[VAR_4_:%.+]] = "onnx.Concat"([[VAR_2_]], [[VAR_3_]]) {axis = 0 : si64} : (tensor<1xi64>, tensor<1xi64>) -> tensor<2xi64>
+// CHECK:           [[VAR_5_:%.+]] = "onnx.Equal"([[VAR_4_]], [[VAR_0_]]) : (tensor<2xi64>, tensor<2xi64>) -> tensor<2xi1>
+// CHECK:           [[VAR_6_:%.+]] = "onnx.Where"([[VAR_5_]], [[VAR_1_]], [[VAR_4_]]) : (tensor<2xi1>, tensor<2xi64>, tensor<2xi64>) -> tensor<2xi64>
+// CHECK:           onnx.Return [[VAR_6_]] : tensor<2xi64>
+// CHECK:         }
+}
+
+// -----
+
+func.func @test_dequantize_linear(%arg0: tensor<?x?x768xf32>, %arg1: tensor<f32>, %arg2: tensor<i8>) -> (tensor<?x?x768xf32>) {
+    %0 = "onnx.QuantizeLinear"(%arg0, %arg1, %arg2) {axis = 1 : si64} : (tensor<?x?x768xf32>, tensor<f32>, tensor<i8>) -> tensor<?x?x768xi8>
+    %1 = "onnx.DequantizeLinear"(%0, %arg1, %arg2) {axis = 1 : si64} : (tensor<?x?x768xi8>, tensor<f32>, tensor<i8>) -> tensor<?x?x768xf32>
+    return %1: tensor<?x?x768xf32>
+
+// CHECK-LABEL:  func.func @test_dequantize_linear
+// CHECK-SAME:   ([[PARAM_0_:%.+]]: tensor<?x?x768xf32>, [[PARAM_1_:%.+]]: tensor<f32>, [[PARAM_2_:%.+]]: tensor<i8>) -> tensor<?x?x768xf32> {
+// CHECK-NOT:       "onnx.QuantizeLinear"
+// CHECK-NOT:       "onnx.DequantizeLinear"
+// CHECK:           return [[PARAM_0_]] : tensor<?x?x768xf32>
 // CHECK:         }
 }

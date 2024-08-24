@@ -4,7 +4,7 @@
 
 //===-------------- KrnlMatmul.cpp - Lower KrnlMatmulOp -------------------===//
 //
-// Copyright 2019-2023 The IBM Research Authors.
+// Copyright 2019-2024 The IBM Research Authors.
 //
 // =============================================================================
 //
@@ -54,8 +54,8 @@ public:
     bool fullUnrollAndJam = matmulOp.getUnroll();
 
     // Operands and types.
-    Type elementType =
-        operandAdaptor.getA().getType().cast<MemRefType>().getElementType();
+    Type elementType = mlir::cast<MemRefType>(operandAdaptor.getA().getType())
+                           .getElementType();
     bool simdize = matmulOp.getSimdize();
     // Init scope and emit constants.
     Location loc = matmulOp.getLoc();
@@ -131,10 +131,10 @@ public:
         if (iComputeTileSize.isLiteral() && kComputeTileSize.isLiteral()) {
           uint64_t i = iComputeTileSize.getLiteral();
           uint64_t k = kComputeTileSize.getLiteral();
-          uint64_t mVL = create.vec.getMachineVectorLength(elementType);
-          if (i % mVL == 0 && k % mVL == 0) {
-            // Right now, vector length must be mVL.
-            vectorLen = LiteralIndexExpr(mVL);
+          uint64_t archVL = create.vec.getArchVectorLength(elementType);
+          if (i % archVL == 0 && k % archVL == 0) {
+            // Right now, vector length must be archVL.
+            vectorLen = LiteralIndexExpr(archVL);
           } else {
             simdize = false;
             LLVM_DEBUG(llvm::dbgs() << "Matmul: mat*vec with bad sizes: i " << i
@@ -241,7 +241,7 @@ public:
           /* then full tiles */ [&](AffineBuilderKrnlMem &createAffine) {
           genSimdMatMat(createAffine, matmulOp, elementType, aStart, bStart,
              cStart, iComputeTileSize, jComputeTileSize, kComputeTileSize,
-            vectorLen, fullUnrollAndJam); 
+            vectorLen, fullUnrollAndJam);
         }, /* has some partial tiles */ [&](AffineBuilderKrnlMem &createAffine) {
           // Trip regardless of full/partial for N & K
           // Test if SIMD dim (M) is full.
@@ -271,7 +271,7 @@ public:
         /* then full */ [&](AffineBuilderKrnlMem &createAffine) {
         genScalar(createAffine, matmulOp, elementType, aStart, bStart, cStart,
           iComputeTileSize, jComputeTileSize, kComputeTileSize,
-          fullUnrollAndJam); 
+          fullUnrollAndJam);
       }, /* else partial */ [&](AffineBuilderKrnlMem &createAffine) {
         genScalar(createAffine, matmulOp, elementType, aStart, bStart, cStart,
           iTrip, jTrip, kTrip, false);
@@ -351,14 +351,14 @@ private:
         MemRefBuilder, KrnlBuilder>
         create(createAffine);
     int64_t iLit(I.getLiteral()), VL(vectorLen.getLiteral());
-    int64_t mVL = create.vec.getMachineVectorLength(elementType);
+    int64_t archVL = create.vec.getArchVectorLength(elementType);
     // Get operands.
     KrnlMatMulOpAdaptor operandAdaptor = KrnlMatMulOpAdaptor(op);
     Value A(operandAdaptor.getA()), B(operandAdaptor.getB()),
         C(operandAdaptor.getC());
 
     // Generate the vector type conversions.
-    assert(VL == mVL && "vector length and VL must be identical for now");
+    assert(VL == archVL && "vector length and VL must be identical for now");
     VectorType vecType = VectorType::get({VL}, elementType);
     int64_t iUnrollFactor = iLit;
     assert(iUnrollFactor % VL == 0 && "i blocking should be a multiple of VL");
@@ -405,7 +405,7 @@ private:
           }
         });
 
-    // Reduce each SIMD vector of length mVL using a SIMD parallel reduction.
+    // Reduce each SIMD vector of length VL using a SIMD parallel reduction.
     SmallVector<Value, 8> vProdList, vReductionList;
     for (int64_t i = 0; i < iUnrollFactor; ++i) {
       Value iVal = create.math.constantIndex(i);

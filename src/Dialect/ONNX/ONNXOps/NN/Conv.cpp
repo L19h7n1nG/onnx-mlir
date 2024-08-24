@@ -229,8 +229,9 @@ LogicalResult processConvStrideParam(
 template <class T>
 LogicalResult processConvTypeParams(T *op, Value inputOperand, Value W) {
   // 1) Get shape of input. Shape is not guaranteed to be compile time constant.
-  auto inputShape = inputOperand.getType().cast<RankedTensorType>().getShape();
-  auto wShape = W.getType().cast<RankedTensorType>().getShape();
+  auto inputShape =
+      mlir::cast<RankedTensorType>(inputOperand.getType()).getShape();
+  auto wShape = mlir::cast<RankedTensorType>(W.getType()).getShape();
 
   // If kernel_shape isn't provided, add kernel_shape to the the op based on the
   // shape of the input and weights.
@@ -483,15 +484,6 @@ LogicalResult ONNXConvTransposeOpShapeHelper::computeShape() {
 
   // Save the final result.
   setOutputDims(outputDims);
-
-  dimsNoOutputPadding.emplace_back(outputDims[0]);
-  dimsNoOutputPadding.emplace_back(outputDims[1]);
-  for (int i = 0; i < spatialRank; ++i) {
-    LiteralIndexExpr outPad(outputPadding[i]);
-    IndexExpr dimNoOutPad =
-        IndexExpr::max(zeroIE, outputDims[i + spatialOffset] - outPad);
-    dimsNoOutputPadding.emplace_back(dimNoOutPad);
-  }
   return success();
 }
 
@@ -516,7 +508,7 @@ LogicalResult ONNXConvOp::verify() {
     // Won't be able to do any checking at this stage.
     return success();
   }
-  auto wShape = W.getType().cast<ShapedType>().getShape();
+  auto wShape = mlir::cast<ShapedType>(W.getType()).getShape();
   int64_t spatialRank = wShape.size() - 2;
   // If ranked, verify ranks of inputs.
   if (spatialRank < 1)
@@ -539,7 +531,7 @@ LogicalResult ONNXConvOp::verify() {
         "Channel Out (M) must be a multiple of the number of groups");
   }
   if (hasShapeAndRank(X)) {
-    auto xShape = X.getType().cast<ShapedType>().getShape();
+    auto xShape = mlir::cast<ShapedType>(X.getType()).getShape();
     if ((int64_t)xShape.size() - 2 != spatialRank)
       return emitOpError("Input and filter rank mismatch");
     if (xShape[1] != ShapedType::kDynamic && xShape[1] % g != 0)
@@ -552,7 +544,7 @@ LogicalResult ONNXConvOp::verify() {
     }
   }
   if (hasBias && hasShapeAndRank(B)) {
-    auto bShape = B.getType().cast<ShapedType>().getShape();
+    auto bShape = mlir::cast<ShapedType>(B.getType()).getShape();
     if (bShape.size() != 1)
       return emitOpError("Bias should have a rank of one");
     if (bShape[0] != ShapedType::kDynamic &&
@@ -610,7 +602,7 @@ LogicalResult ONNXConvTransposeOp::verify() {
   auto X = operandAdaptor.getX();
   auto W = operandAdaptor.getW();
   auto B = operandAdaptor.getB();
-  bool hasBias = !B.getType().isa<NoneType>();
+  bool hasBias = !mlir::isa<NoneType>(B.getType());
   int64_t g = getGroup();
   if (g < 1)
     return emitOpError("group must be strictly positive");
@@ -619,14 +611,14 @@ LogicalResult ONNXConvTransposeOp::verify() {
     // Won't be able to do any checking at this stage.
     return success();
   }
-  auto wShape = W.getType().cast<ShapedType>().getShape();
+  auto wShape = mlir::cast<ShapedType>(W.getType()).getShape();
   int64_t spatialRank = wShape.size() - 2;
   // If ranked, verify ranks of inputs.
   if (spatialRank < 1)
     return emitOpError("Spatial rank must be strictly positive");
 
   if (hasShapeAndRank(X)) {
-    auto xShape = X.getType().cast<ShapedType>().getShape();
+    auto xShape = mlir::cast<ShapedType>(X.getType()).getShape();
     if ((int64_t)xShape.size() - 2 != spatialRank)
       return emitOpError("Input and filter rank mismatch");
     if (xShape[1] != ShapedType::kDynamic &&
@@ -636,7 +628,7 @@ LogicalResult ONNXConvTransposeOp::verify() {
     }
   }
   if (hasBias && hasShapeAndRank(B)) {
-    auto bShape = B.getType().cast<ShapedType>().getShape();
+    auto bShape = mlir::cast<ShapedType>(B.getType()).getShape();
     if (bShape.size() != 1)
       return emitOpError("Bias should have a rank of one");
     if (bShape[0] != ShapedType::kDynamic &&
@@ -722,14 +714,14 @@ LogicalResult ONNXQLinearConvOp::inferShapes(
   bool hasBias = !isNoneValue(B());
 
   // Cannot infer shape if no shape exists.
-  if (!getX().getType().isa<RankedTensorType>() ||
-      !getW().getType().isa<RankedTensorType>() ||
-      (hasBias && !getB().getType().isa<RankedTensorType>()))
+  if (!mlir::isa<RankedTensorType>(getX().getType()) ||
+      !mlir::isa<RankedTensorType>(getW().getType()) ||
+      (hasBias && !mlir::isa<RankedTensorType>(getB().getType())))
     return success();
 
-  auto xTy = getX().getType().cast<RankedTensorType>();
+  auto xTy = mlir::cast<RankedTensorType>(getX().getType());
   auto xShape = xTy.getShape();
-  auto weightTy = getW().getType().cast<RankedTensorType>();
+  auto weightTy = mlir::cast<RankedTensorType>(getW().getType());
   auto weightShape = weightTy.getShape();
   auto builder = Builder(this->getContext());
 
@@ -756,7 +748,7 @@ LogicalResult ONNXQLinearConvOp::inferShapes(
 
   // Check the size of bias.
   if (hasBias) {
-    auto bTx = getB().getType().cast<RankedTensorType>();
+    auto bTx = mlir::cast<RankedTensorType>(getB().getType());
     auto bShape = bTx.getShape();
     if (bShape.size() != 1)
       return emitError("bias should be one dimensional");

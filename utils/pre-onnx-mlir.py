@@ -11,6 +11,7 @@ The converted model will be saved into file add-opset-13.onnx
 To display a model, add.onnx, use command:
   python pre-onnx-mlir add.onnx -v --no_convert
 """
+
 import onnx
 import argparse
 from onnx import version_converter, helper
@@ -38,7 +39,7 @@ if args.no_convert:
 
 # ==UPDATE_ONNX_VERSION_OPSET==
 # Look for tag above and update all references when upgrading the ONNX support within ONNX-MLIR.
-current_onnx_opset = 19
+current_onnx_opset = 21
 
 converted_model = version_converter.convert_version(original_model, current_onnx_opset)
 

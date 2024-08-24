@@ -75,7 +75,7 @@ public:
     std::optional<StringRef> stickLayout = stickOp.getLayout();
 
     // Input is a block argument, ignore it.
-    if (stickInput.dyn_cast<BlockArgument>())
+    if (mlir::dyn_cast<BlockArgument>(stickInput))
       return failure();
 
     // Get UnstickOp that produced the stick input.
@@ -88,6 +88,7 @@ public:
         continue;
       // UnstickOp must be before the stick operation.
       if (userOp.getOut() == stickInput &&
+          user->getBlock() == stickOp.getOperation()->getBlock() &&
           user->isBeforeInBlock(stickOp.getOperation())) {
         unstickOp = userOp;
         break;
@@ -140,7 +141,7 @@ public:
       return failure();
 
     // Input is a block argument, ignore it.
-    if (stickInput.dyn_cast<BlockArgument>())
+    if (mlir::dyn_cast<BlockArgument>(stickInput))
       return failure();
 
     // Input must have no affine layout. In other words, it has been normalized.
@@ -181,8 +182,9 @@ public:
     // Match shapes.
     Value stickRes = stickOp.getOut();
     Value unstickInput = unstickOp.getX();
-    MemRefType stickResType = stickRes.getType().dyn_cast<MemRefType>();
-    MemRefType unstickInputType = unstickInput.getType().dyn_cast<MemRefType>();
+    MemRefType stickResType = mlir::dyn_cast<MemRefType>(stickRes.getType());
+    MemRefType unstickInputType =
+        mlir::dyn_cast<MemRefType>(unstickInput.getType());
     if (!stickResType.hasStaticShape() ||
         (stickResType.getShape() != unstickInputType.getShape()))
       return failure();
@@ -212,7 +214,7 @@ public:
 ///
 /// * Example:
 ///
-/// Consider the following code: 
+/// Consider the following code:
 /// ```mlir
 /// zlow.unstick(%stick, %A) {layout = "2D"}: memref<2x3xf16, #map2D>, memref<2x3xf32>
 /// affine.for
@@ -223,7 +225,7 @@ public:
 /// #map3D>
 /// ```
 /// `%stick` memref is unstickified and shuffled by the pair of (affine.load,affine.store),
-/// then stickified again. It said data are transfered from a stickified memref
+/// then stickified again. It said data are transferred from a stickified memref
 /// into another stickified memref via a chain of affine transformation.
 ///
 /// The above code can be rewritten into the following code:
@@ -239,12 +241,12 @@ public:
 /// as Transpose, Concat, and Split.
 ///
 /// * Why does this rewriting work?
-/// 
+///
 /// - This rewriting depends on the fact that `zlow.stick` and `zlow.unstick`
 /// maintain an affine map that maps one element in a memref to an element in
 /// another memref. Those maps are `#map2D` and `#map3D` in the above example.
 /// Combined with affine.load and affine.store, one element in a stickified
-/// memref can be forwarded directly into an element in another stickifired
+/// memref can be forwarded directly into an element in another stickified
 /// memref without `zlow.stick` and `zlow.unstick`.
 ///
 /// - The shape of the input and output memrefs of `zlow.stick`/`zlow.unstick`
@@ -293,9 +295,9 @@ public:
 
     // Common types.
     Type stickifiedElementType =
-        stickifiedMemRef.getType().cast<MemRefType>().getElementType();
+        mlir::cast<MemRefType>(stickifiedMemRef.getType()).getElementType();
     Type cpuElementType =
-        cpuMemRef.getType().cast<MemRefType>().getElementType();
+        mlir::cast<MemRefType>(cpuMemRef.getType()).getElementType();
 
     // Stickified Memref must have affine layout to access elements.
     if (!hasNonIdentityLayout(stickifiedMemRef.getType()))
@@ -313,7 +315,7 @@ public:
     // incorrect: https://github.com/onnx/onnx-mlir/issues/1940
     if ((unstickLayout == LAYOUT_1D) || (unstickLayout == LAYOUT_2DS))
       return rewriter.notifyMatchFailure(op, [&](::mlir::Diagnostic &diag) {
-        diag << "Unsupport layout 1D and 2DS";
+        diag << "Unsupported layout 1D and 2DS";
       });
 
     // 1. Match pattern: data flows from zlow.unstick to zlow.stick via
@@ -367,7 +369,8 @@ public:
       if (unstickNCHWLayout) {
         AffineMapAttr oldMap = loadOp.getAffineMapAttr();
         // NCHW -> NHWC
-        AffineMap permuteMap = AffineMap::getPermutationMap({0, 2, 3, 1}, ctx);
+        SmallVector<unsigned, 4> permutation = {0, 2, 3, 1};
+        AffineMap permuteMap = AffineMap::getPermutationMap(permutation, ctx);
         AffineMapAttr newMap =
             AffineMapAttr::get(permuteMap.compose(oldMap.getValue()));
         clonedOp->setAttr(affine::AffineLoadOp::getMapAttrStrName(), newMap);
@@ -435,7 +438,8 @@ public:
       if (stickNCHWLayout) {
         AffineMapAttr oldMap = storeOp.getAffineMapAttr();
         // NCHW -> NHWC
-        AffineMap permuteMap = AffineMap::getPermutationMap({0, 2, 3, 1}, ctx);
+        SmallVector<unsigned, 4> permutation = {0, 2, 3, 1};
+        AffineMap permuteMap = AffineMap::getPermutationMap(permutation, ctx);
         AffineMapAttr newMap =
             AffineMapAttr::get(permuteMap.compose(oldMap.getValue()));
         clonedOp->setAttr(affine::AffineStoreOp::getMapAttrStrName(), newMap);
@@ -555,7 +559,7 @@ private:
     Value storeValue = storeOp.getValue();
 
     // Store's input must be defined by a memref.alloc.
-    if (destMemref.isa<BlockArgument>())
+    if (mlir::isa<BlockArgument>(destMemref))
       return false;
     Operation *allocOp = destMemref.getDefiningOp();
     if (!isa<memref::AllocOp>(allocOp))

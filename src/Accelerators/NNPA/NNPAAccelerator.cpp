@@ -25,7 +25,7 @@
 #include "src/Accelerators/NNPA/Dialect/ZLow/ZLowOps.hpp"
 #include "src/Accelerators/NNPA/NNPAAccelerator.hpp"
 #include "src/Accelerators/NNPA/Pass/NNPAPasses.hpp"
-#include "src/Accelerators/NNPA/Support/NNPALimit.h"
+#include "src/Accelerators/NNPA/Support/NNPALimit.hpp"
 #include "src/Compiler/CompilerOptions.hpp"
 #include "zdnn.h"
 
@@ -58,7 +58,7 @@ NNPAAccelerator::NNPAAccelerator() : Accelerator(Accelerator::Kind::NNPA) {
 
   acceleratorTargets.push_back(this);
   // Order is important! libRuntimeNNPA depends on libzdnn
-  addCompilerConfig(CCM_SHARED_LIB_DEPS, {"RuntimeNNPA", "zdnn"});
+  addCompilerConfig(CCM_SHARED_LIB_DEPS, {"RuntimeNNPA", "zdnn"}, true);
 };
 
 NNPAAccelerator::~NNPAAccelerator() { delete instance; }
@@ -102,6 +102,10 @@ void NNPAAccelerator::registerPasses(int optLevel) const {
   });
 
   mlir::registerPass([]() -> std::unique_ptr<mlir::Pass> {
+    return onnx_mlir::zlow::createZLowStickExpansionPass();
+  });
+
+  mlir::registerPass([]() -> std::unique_ptr<mlir::Pass> {
     return onnx_mlir::zlow::createZLowDummyOpForMultiDerefPass();
   });
 
@@ -119,14 +123,21 @@ void NNPAAccelerator::registerPasses(int optLevel) const {
   mlir::registerPass([]() -> std::unique_ptr<mlir::Pass> {
     return onnx_mlir::zhigh::createZHighClipToDLFloatPass();
   });
+
+  mlir::registerPass([]() -> std::unique_ptr<mlir::Pass> {
+    return onnx_mlir::zhigh::createZHighDecomposeStickUnstickPass();
+  });
+
+  mlir::registerPass([]() -> std::unique_ptr<mlir::Pass> {
+    return onnx_mlir::zhigh::createZHighRecomposeToStickUnstickPass();
+  });
 }
 
 mlir::MemRefType NNPAAccelerator::convertTensorTypeToMemRefType(
     const mlir::TensorType tensorType) const {
   assert(tensorType.hasRank() && "expected only ranked shapes");
-  if (tensorType.cast<mlir::RankedTensorType>()
-          .getEncoding()
-          .dyn_cast_or_null<onnx_mlir::zhigh::ZTensorEncodingAttr>()) {
+  if (mlir::dyn_cast_or_null<onnx_mlir::zhigh::ZTensorEncodingAttr>(
+          mlir::cast<mlir::RankedTensorType>(tensorType).getEncoding())) {
     onnx_mlir::zhigh::ZMemRefType zMemRefType =
         onnx_mlir::zhigh::convertZTensorToMemRefType(tensorType);
     return zMemRefType.value;
@@ -137,9 +148,8 @@ mlir::MemRefType NNPAAccelerator::convertTensorTypeToMemRefType(
 int64_t NNPAAccelerator::getDefaultAllocAlignment(
     const mlir::TensorType tensorType) const {
   assert(tensorType.hasRank() && "expected only ranked shapes");
-  if (tensorType.cast<mlir::RankedTensorType>()
-          .getEncoding()
-          .dyn_cast_or_null<onnx_mlir::zhigh::ZTensorEncodingAttr>())
+  if (mlir::dyn_cast_or_null<onnx_mlir::zhigh::ZTensorEncodingAttr>(
+          mlir::cast<mlir::RankedTensorType>(tensorType).getEncoding()))
     return gAlignment;
   return -1;
 }
@@ -153,7 +163,7 @@ void NNPAAccelerator::rewritePatternONNXToKrnl(
     mlir::RewritePatternSet &patterns, mlir::TypeConverter &typeConverter,
     mlir::MLIRContext *ctx) const {
   onnx_mlir::zhigh::populateZHighToZLowConversionPattern(
-      patterns, typeConverter, ctx);
+      patterns, typeConverter, ctx, enableParallel);
 }
 
 void NNPAAccelerator::conversionTargetKrnlToLLVM(

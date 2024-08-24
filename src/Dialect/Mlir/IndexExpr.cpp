@@ -4,7 +4,7 @@
 
 //===----------------IndexExpr.cpp - Index expression---------------------=== //
 //
-// copyright 2020-2023 The IBM Research Authors.
+// copyright 2020-2024 The IBM Research Authors.
 //
 // =============================================================================
 //
@@ -22,11 +22,11 @@
 #include "mlir/Dialect/MemRef/IR/MemRef.h"
 #include "mlir/IR/Operation.h"
 #include "mlir/Support/LLVM.h"
-#include "mlir/Support/MathExtras.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/Sequence.h"
 #include "llvm/ADT/TypeSwitch.h"
 #include "llvm/Support/Debug.h"
+#include "llvm/Support/MathExtras.h"
 
 #define DEBUG_TYPE "index-expr"
 
@@ -42,8 +42,10 @@ namespace onnx_mlir {
 IndexExprScope::IndexExprScope(OpBuilder *rewriter, Location loc)
     : dims(), symbols(), rewriter(rewriter), parentScope(getCurrentScopePtr()),
       loc(loc), container() {
+#if DETAILED_DEBUG_OF_SCOPE
   LLVM_DEBUG(
       llvm::dbgs() << "IES: build scope: " << ((long long)this) << "\n";);
+#endif
   getCurrentScopePtr() = this;
 }
 
@@ -56,8 +58,10 @@ IndexExprScope::IndexExprScope(
     : dims(), symbols(), rewriter(innerRewriter),
       parentScope(enclosingScope ? enclosingScope : getCurrentScopePtr()),
       loc(parentScope->loc), container() {
+#if DETAILED_DEBUG_OF_SCOPE
   LLVM_DEBUG(
       llvm::dbgs() << "IES: build scope: " << ((long long)this) << "\n";);
+#endif
   // Check the provided enclosing scope is the current one.
   assert(parentScope == getCurrentScopePtr() &&
          "provided parent scope was not the enclosing active scope");
@@ -79,8 +83,10 @@ IndexExprScope::~IndexExprScope() {
   container.clear();
   // no need to clear the cached copies as they are also in the container.
   getCurrentScopePtr() = parentScope;
+#if DETAILED_DEBUG_OF_SCOPE
   LLVM_DEBUG(
       llvm::dbgs() << "IES: delete scope: " << ((long long)this) << "\n";);
+#endif
 }
 
 /*static*/ IndexExprScope &IndexExprScope::getCurrentScope() {
@@ -448,55 +454,10 @@ IndexExprKind IndexExpr::getKind() const { return getObj().getKind(); }
 
 void IndexExpr::debugPrint(const std::string &msg) const {
   LLVM_DEBUG({
-    llvm::dbgs() << msg.c_str();
-    if (!isDefined()) {
-      llvm::dbgs() << " undefined\n";
-      return;
-    }
-    if (isLiteral()) {
-      if (isFloat())
-        llvm::dbgs() << " floatLiteral(" << getFloatLiteral() << ")";
-      else
-        llvm::dbgs() << " literal(" << (long long)getLiteral() << ")";
-    }
-    if (isFloat())
-      llvm::dbgs() << " isFloat";
-    if (hasAffineExpr())
-      llvm::dbgs() << " hasAffine";
-    if (hasValue()) {
-      llvm::dbgs() << " hasValue";
-      auto op = getValue().getDefiningOp();
-      if (op) {
-        std::string str;
-        llvm::raw_string_ostream os(str);
-        op->print(os);
-        llvm::dbgs() << "( \"" << str.c_str() << "\")";
-      } else
-        llvm::dbgs() << "(op not found)";
-    }
-    if (isAffine())
-      llvm::dbgs() << " is affine";
-    switch (getKind()) {
-    case IndexExprKind::NonAffine:
-      llvm::dbgs() << " kind(non-affine)";
-      break;
-    case IndexExprKind::Questionmark:
-      llvm::dbgs() << " kind(questionmark)";
-      break;
-    case IndexExprKind::Predicate:
-      llvm::dbgs() << " kind(predicate)";
-      break;
-    case IndexExprKind::Affine:
-      llvm::dbgs() << " kind(affine)";
-      break;
-    case IndexExprKind::Dim:
-      llvm::dbgs() << " kind(dim)";
-      break;
-    case IndexExprKind::Symbol:
-      llvm::dbgs() << " kind(symbol)";
-      break;
-    }
-    llvm::dbgs() << " scope(0x " << (long long unsigned)getScopePtr() << ")\n";
+    if (!indexExprObj)
+      llvm::dbgs() << msg.c_str() << " undefined\n";
+    else
+      indexExprObj->debugPrint(msg);
   });
 }
 
@@ -560,6 +521,29 @@ void IndexExpr::debugPrint(
   valueList.clear();
   for (IndexExpr expr : indexExprArray)
     valueList.emplace_back(expr.getValue());
+}
+
+/* static*/ void IndexExpr::getAffineMapAndOperands(
+    ArrayRef<IndexExpr> indexExprArray, AffineMap &map,
+    SmallVectorImpl<mlir::Value> &operands) {
+  assert(indexExprArray.size() > 0 && "expected at least one index expr");
+  SmallVector<AffineExpr, 8> affineExprList;
+  for (IndexExpr expr : indexExprArray) {
+    AffineMap tmpMap;
+    SmallVector<Value, 8> tmpOperands;
+    expr.getAffineMapAndOperands(tmpMap, tmpOperands);
+    operands = tmpOperands;
+    // Enqueue the affine expressions defined by this temp map.
+    for (AffineExpr affineExpr : tmpMap.getResults()) {
+      affineExprList.emplace_back(affineExpr);
+    }
+  }
+
+  // Now can generate a common map with all the results
+  unsigned dimCount = indexExprArray[0].getScope().getNumDims();
+  unsigned symCount = indexExprArray[0].getScope().getNumSymbols();
+  map = AffineMap::get(dimCount, symCount, affineExprList,
+      indexExprArray[0].getRewriter().getContext());
 }
 
 //===----------------------------------------------------------------------===//
@@ -963,7 +947,7 @@ IndexExpr IndexExpr::ceilDiv(IndexExpr const b) const {
 // Int operator
 IndexExpr IndexExpr::operator%(IndexExpr const b) const {
   F2 litFct = [](IndexExpr const aa, IndexExpr const bb) -> IndexExpr {
-    int64_t rval = mlir::mod(aa.getLiteral(), bb.getLiteral());
+    int64_t rval = llvm::mod(aa.getLiteral(), bb.getLiteral());
     return LiteralIndexExpr(rval);
   };
   F2 affineExprFct = [](IndexExpr const aa, IndexExpr const bb) -> IndexExpr {
@@ -1111,9 +1095,15 @@ IndexExpr IndexExpr::clamp(IndexExpr const min, IndexExpr const max) const {
   assert(trueVal.canBeUsedInScope() && "trueVal incompatible scope");
   assert(falseVal.canBeUsedInScope() && "falseVal incompatible scope");
   // When compare result is literal, just feed forward the right value.
+  // Do not deep copy the question mark to keep it unchanged.
   if (compare.isLiteral()) {
-    if (compare.getLiteral())
+    if (compare.getLiteral()) {
+      if (trueVal.isQuestionmark())
+        return trueVal;
       return trueVal.deepCopy();
+    }
+    if (falseVal.isQuestionmark())
+      return falseVal;
     return falseVal.deepCopy();
   }
   // Dynamic value, just set as undefined during shape inference pass.

@@ -11,10 +11,11 @@
 // Implements main for onnx-mlir driver.
 //===----------------------------------------------------------------------===//
 
-#include <iostream>
+#include <filesystem>
 #include <regex>
 
-#include "mlir/Target/LLVMIR/Dialect/OpenMP/OpenMPToLLVMIRTranslation.h"
+#include "mlir/IR/AsmState.h"
+#include "mlir/Support/Timing.h"
 #include "src/Compiler/CompilerOptions.hpp"
 #include "src/Compiler/CompilerUtils.hpp"
 #include "src/Version/Version.hpp"
@@ -25,13 +26,10 @@
 using namespace onnx_mlir;
 
 int main(int argc, char *argv[]) {
-
   // Register MLIR command line options.
   mlir::registerAsmPrinterCLOptions();
   mlir::registerMLIRContextCLOptions();
   mlir::registerPassManagerCLOptions();
-  mlir::registerDefaultTimingManagerCLOptions();
-  mlir::registerAsmPrinterCLOptions();
 
   llvm::cl::SetVersionPrinter(getVersionPrinter);
 
@@ -45,8 +43,12 @@ int main(int argc, char *argv[]) {
     llvm::errs() << "Failed to parse options\n";
     return 1;
   }
-
   initCompilerConfig();
+
+  // Timing manager reporting enabled via "--enable-timing" compiler flag
+  timingManager.setEnabled(enableTiming);
+  rootTimingScope = timingManager.getRootScope();
+  auto setupTiming = rootTimingScope.nest("[onnx-mlir] Loading Dialects");
 
   // Special handling of outputBaseName to derive output filename.
   // outputBaseName must specify a file, so ignore invalid values
@@ -67,13 +69,20 @@ int main(int argc, char *argv[]) {
 
   // Create context after MLIRContextCLOptions are registered and parsed.
   mlir::MLIRContext context;
-  mlir::registerOpenMPDialectTranslation(context);
   if (!context.isMultithreadingEnabled()) {
     assert(context.getNumThreads() == 1 && "1 thread if no multithreading");
     LLVM_DEBUG(llvm::dbgs() << "multithreading is disabled\n");
   }
   loadDialects(context);
-
+  setupTiming.stop();
+  // Add the short inputFilename to the first compile phase printout so that we
+  // may better determine which compilation we are dealing with.
+  std::filesystem::path p(inputFilename);
+  std::string modelShortName = p.filename();
+  std::string msg =
+      "Importing ONNX Model to MLIR Module from \"" + modelShortName + "\"";
+  showCompilePhase(msg);
+  auto inputFileTiming = rootTimingScope.nest("[onnx-mlir] " + msg);
   mlir::OwningOpRef<mlir::ModuleOp> module;
   std::string errorMessage;
   int rc = processInputFile(inputFilename, context, module, &errorMessage);
@@ -82,6 +91,6 @@ int main(int argc, char *argv[]) {
       llvm::errs() << errorMessage << "\n";
     return 1;
   }
-
+  inputFileTiming.stop();
   return compileModule(module, context, outputBaseName, emissionTarget);
 }

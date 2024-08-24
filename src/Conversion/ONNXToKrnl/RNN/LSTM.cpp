@@ -12,6 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "src/Conversion/ONNXConversionCommon/RNN/LSTM.hpp"
 #include "src/Conversion/ONNXToKrnl/RNN/RNNBase.hpp"
 #include "src/Dialect/Mlir/DialectBuilder.hpp"
 
@@ -31,166 +32,6 @@ struct LstmState {
   Value reverseCt;
 };
 
-struct LstmActivationPack {
-  RNNActivation f;
-  RNNActivation g;
-  RNNActivation h;
-};
-
-struct LstmWeightPack {
-  Value WT;
-  Value RT;
-};
-
-struct LstmBiasPack {
-  bool hasBias = false;
-  Value Wbi;
-  Value Wbo;
-  Value Wbf;
-  Value Wbc;
-  Value Rbi;
-  Value Rbo;
-  Value Rbf;
-  Value Rbc;
-  // Put peephole here.
-  bool hasPeephole = false;
-  Value Pi;
-  Value Po;
-  Value Pf;
-};
-
-template <>
-bool hasAllNoneOutput<ONNXLSTMOp>(ONNXLSTMOp *op) {
-  return (isNoneValue(op->getY()) && isNoneValue(op->getYH()) &&
-          isNoneValue(op->getYC()));
-}
-
-template <>
-std::tuple<LstmActivationPack, LstmActivationPack>
-getActivationPack<ONNXLSTMOp, LstmActivationPack>(ONNXLSTMOp *op) {
-  auto direction = op->getDirection();
-  auto activations = op->getActivations();
-  auto activationAlpha = op->getActivationAlpha();
-  auto activationBeta = op->getActivationBeta();
-
-  LstmActivationPack activationForward, activationReverse;
-
-  // Get activation function name.
-  // Default forward functions
-  activationForward.f.name = "sigmoid";
-  activationForward.g.name = "tanh";
-  activationForward.h.name = "tanh";
-  // Default backward functions
-  activationReverse.f.name = "sigmoid";
-  activationReverse.g.name = "tanh";
-  activationReverse.h.name = "tanh";
-  if (activations) {
-    ArrayAttr activationArrAttr = activations.value();
-    if (direction == FORWARD || direction == BIDIRECTIONAL) {
-      // Forward activations.
-      if (activationArrAttr.size() > 0) {
-        activationForward.f.name =
-            activationArrAttr[0].cast<StringAttr>().getValue();
-      }
-      if (activationArrAttr.size() > 1) {
-        activationForward.g.name =
-            activationArrAttr[1].cast<StringAttr>().getValue();
-      }
-      if (activationArrAttr.size() > 2) {
-        activationForward.h.name =
-            activationArrAttr[2].cast<StringAttr>().getValue();
-      }
-    }
-
-    // Reverse activations.
-    if (direction == REVERSE || direction == BIDIRECTIONAL) {
-      unsigned int startIndex = (direction == REVERSE) ? 0 : 3;
-      if (activationArrAttr.size() > startIndex) {
-        activationReverse.f.name =
-            activationArrAttr[startIndex].cast<StringAttr>().getValue();
-      }
-      if (activationArrAttr.size() > startIndex + 1) {
-        activationReverse.g.name =
-            activationArrAttr[startIndex + 1].cast<StringAttr>().getValue();
-      }
-      if (activationArrAttr.size() > startIndex + 2) {
-        activationReverse.h.name =
-            activationArrAttr[startIndex + 2].cast<StringAttr>().getValue();
-      }
-    }
-  }
-
-  // Get alpha attributes.
-  if (activationAlpha) {
-    ArrayAttr activationArrAttr = activationAlpha.value();
-    if (direction == FORWARD || direction == BIDIRECTIONAL) {
-      // Forward activations.
-      if (activationArrAttr.size() > 0) {
-        activationForward.f.alpha = activationArrAttr[0].cast<FloatAttr>();
-      }
-      if (activationArrAttr.size() > 1) {
-        activationForward.g.alpha = activationArrAttr[1].cast<FloatAttr>();
-      }
-      if (activationArrAttr.size() > 2) {
-        activationForward.h.alpha = activationArrAttr[2].cast<FloatAttr>();
-      }
-    }
-
-    // Reverse activations.
-    if (direction == REVERSE || direction == BIDIRECTIONAL) {
-      unsigned int startIndex = (direction == REVERSE) ? 0 : 3;
-      if (activationArrAttr.size() > startIndex) {
-        activationReverse.f.alpha =
-            activationArrAttr[startIndex].cast<FloatAttr>();
-      }
-      if (activationArrAttr.size() > startIndex + 1) {
-        activationReverse.g.alpha =
-            activationArrAttr[startIndex + 1].cast<FloatAttr>();
-      }
-      if (activationArrAttr.size() > startIndex + 2) {
-        activationReverse.h.alpha =
-            activationArrAttr[startIndex + 2].cast<FloatAttr>();
-      }
-    }
-  }
-
-  // Get beta attributes.
-  if (activationBeta) {
-    ArrayAttr activationArrAttr = activationBeta.value();
-    if (direction == FORWARD || direction == BIDIRECTIONAL) {
-      // Forward activations.
-      if (activationArrAttr.size() > 0) {
-        activationForward.f.beta = activationArrAttr[0].cast<FloatAttr>();
-      }
-      if (activationArrAttr.size() > 1) {
-        activationForward.g.beta = activationArrAttr[1].cast<FloatAttr>();
-      }
-      if (activationArrAttr.size() > 2) {
-        activationForward.h.beta = activationArrAttr[2].cast<FloatAttr>();
-      }
-    }
-
-    // Reverse activations.
-    if (direction == REVERSE || direction == BIDIRECTIONAL) {
-      unsigned int startIndex = (direction == REVERSE) ? 0 : 3;
-      if (activationArrAttr.size() > startIndex) {
-        activationReverse.f.beta =
-            activationArrAttr[startIndex].cast<FloatAttr>();
-      }
-      if (activationArrAttr.size() > startIndex + 1) {
-        activationReverse.g.beta =
-            activationArrAttr[startIndex + 1].cast<FloatAttr>();
-      }
-      if (activationArrAttr.size() > startIndex + 2) {
-        activationReverse.h.beta =
-            activationArrAttr[startIndex + 2].cast<FloatAttr>();
-      }
-    }
-  }
-
-  return std::make_tuple(activationForward, activationReverse);
-}
-
 template <>
 std::tuple<LstmWeightPack, LstmWeightPack>
 getWeightPack<ONNXLSTMOp, LstmWeightPack>(
@@ -205,8 +46,8 @@ getWeightPack<ONNXLSTMOp, LstmWeightPack>(
   // direction
   StringRef direction = op->getDirection();
 
-  ArrayRef<int64_t> wShape = W.getType().cast<ShapedType>().getShape();
-  Type elementType = W.getType().cast<ShapedType>().getElementType();
+  ArrayRef<int64_t> wShape = mlir::cast<ShapedType>(W.getType()).getShape();
+  Type elementType = mlir::cast<ShapedType>(W.getType()).getElementType();
   int64_t hiddenSize = wShape[1] / 4;
   int64_t inputSize = wShape[2];
 
@@ -227,41 +68,45 @@ getWeightPack<ONNXLSTMOp, LstmWeightPack>(
   // Squeeze the direction axis from W and R.
   Value fW, bW, fR, bR;
   if (direction == FORWARD) {
-    fW = foldOrEmitONNXSqueezeV11Op(rewriter, loc, w2DTy, W, /*axis=*/0);
-    fR = foldOrEmitONNXSqueezeV11Op(rewriter, loc, r2DTy, R, /*axis=*/0);
+    fW = foldOrEmitONNXSqueezeV11OpKrnl(rewriter, loc, w2DTy, W, /*axis=*/0);
+    fR = foldOrEmitONNXSqueezeV11OpKrnl(rewriter, loc, r2DTy, R, /*axis=*/0);
   } else if (direction == REVERSE) {
-    bW = foldOrEmitONNXSqueezeV11Op(rewriter, loc, w2DTy, W, /*axis=*/0);
-    bR = foldOrEmitONNXSqueezeV11Op(rewriter, loc, r2DTy, R, /*axis=*/0);
+    bW = foldOrEmitONNXSqueezeV11OpKrnl(rewriter, loc, w2DTy, W, /*axis=*/0);
+    bR = foldOrEmitONNXSqueezeV11OpKrnl(rewriter, loc, r2DTy, R, /*axis=*/0);
   } else { // BIDIRECTIONAL
     // W
     std::vector<Value> vals =
-        foldOrEmitONNXSplitOp(rewriter, loc, w3D2Ty, W, 0);
-    fW = foldOrEmitONNXSqueezeV11Op(rewriter, loc, w2DTy, vals[0], /*axis=*/0);
-    bW = foldOrEmitONNXSqueezeV11Op(rewriter, loc, w2DTy, vals[1], /*axis=*/0);
+        foldOrEmitONNXSplitV11OpKrnl(rewriter, loc, w3D2Ty, W, 0);
+    fW = foldOrEmitONNXSqueezeV11OpKrnl(
+        rewriter, loc, w2DTy, vals[0], /*axis=*/0);
+    bW = foldOrEmitONNXSqueezeV11OpKrnl(
+        rewriter, loc, w2DTy, vals[1], /*axis=*/0);
     // R
     vals.clear();
-    vals = foldOrEmitONNXSplitOp(rewriter, loc, r3D2Ty, R, 0);
-    fR = foldOrEmitONNXSqueezeV11Op(rewriter, loc, r2DTy, vals[0], /*axis=*/0);
-    bR = foldOrEmitONNXSqueezeV11Op(rewriter, loc, r2DTy, vals[1], /*axis=*/0);
+    vals = foldOrEmitONNXSplitV11OpKrnl(rewriter, loc, r3D2Ty, R, 0);
+    fR = foldOrEmitONNXSqueezeV11OpKrnl(
+        rewriter, loc, r2DTy, vals[0], /*axis=*/0);
+    bR = foldOrEmitONNXSqueezeV11OpKrnl(
+        rewriter, loc, r2DTy, vals[1], /*axis=*/0);
   }
 
   // Transpose W and R.
   ArrayAttr permAttr = rewriter.getI64ArrayAttr({1, 0});
   if (direction == FORWARD || direction == BIDIRECTIONAL) {
     // W
-    weightForward.WT =
-        foldOrEmitONNXTransposeOp(rewriter, loc, wTranspose2DTy, fW, permAttr);
+    weightForward.WT = foldOrEmitONNXTransposeOpKrnl(
+        rewriter, loc, wTranspose2DTy, fW, permAttr);
     // R
-    weightForward.RT =
-        foldOrEmitONNXTransposeOp(rewriter, loc, rTranspose2DTy, fR, permAttr);
+    weightForward.RT = foldOrEmitONNXTransposeOpKrnl(
+        rewriter, loc, rTranspose2DTy, fR, permAttr);
   }
   if (direction == REVERSE || direction == BIDIRECTIONAL) {
     // W
-    weightReverse.WT =
-        foldOrEmitONNXTransposeOp(rewriter, loc, wTranspose2DTy, bW, permAttr);
+    weightReverse.WT = foldOrEmitONNXTransposeOpKrnl(
+        rewriter, loc, wTranspose2DTy, bW, permAttr);
     // R
-    weightReverse.RT =
-        foldOrEmitONNXTransposeOp(rewriter, loc, rTranspose2DTy, bR, permAttr);
+    weightReverse.RT = foldOrEmitONNXTransposeOpKrnl(
+        rewriter, loc, rTranspose2DTy, bR, permAttr);
   }
   return std::make_tuple(weightForward, weightReverse);
 }
@@ -282,8 +127,8 @@ std::tuple<LstmBiasPack, LstmBiasPack> getBiasPack<ONNXLSTMOp, LstmBiasPack>(
 
   // Split B.
   if (!isNoneValue(B)) {
-    ArrayRef<int64_t> bShape = B.getType().cast<ShapedType>().getShape();
-    Type elementType = B.getType().cast<ShapedType>().getElementType();
+    ArrayRef<int64_t> bShape = mlir::cast<ShapedType>(B.getType()).getShape();
+    Type elementType = mlir::cast<ShapedType>(B.getType()).getElementType();
     int64_t hiddenSize = bShape[1] / 8;
 
     // MemRef types.
@@ -296,22 +141,24 @@ std::tuple<LstmBiasPack, LstmBiasPack> getBiasPack<ONNXLSTMOp, LstmBiasPack>(
     // Squeeze the direction axis from B.
     Value fB, bB;
     if (direction == FORWARD) {
-      fB = foldOrEmitONNXSqueezeV11Op(rewriter, loc, bType1D, B, /*axis=*/0);
+      fB =
+          foldOrEmitONNXSqueezeV11OpKrnl(rewriter, loc, bType1D, B, /*axis=*/0);
     } else if (direction == REVERSE) {
-      bB = foldOrEmitONNXSqueezeV11Op(rewriter, loc, bType1D, B, /*axis=*/0);
+      bB =
+          foldOrEmitONNXSqueezeV11OpKrnl(rewriter, loc, bType1D, B, /*axis=*/0);
     } else { // BIDIRECTIONAL
       std::vector<Value> vals;
-      vals = foldOrEmitONNXSplitOp(rewriter, loc, split2D2Ty, B, 0);
-      fB = foldOrEmitONNXSqueezeV11Op(
+      vals = foldOrEmitONNXSplitV11OpKrnl(rewriter, loc, split2D2Ty, B, 0);
+      fB = foldOrEmitONNXSqueezeV11OpKrnl(
           rewriter, loc, bType1D, vals[0], /*axis=*/0);
-      bB = foldOrEmitONNXSqueezeV11Op(
+      bB = foldOrEmitONNXSqueezeV11OpKrnl(
           rewriter, loc, bType1D, vals[1], /*axis=*/0);
     }
 
     // Split B into individual bias tensors.
     if (direction == FORWARD || direction == BIDIRECTIONAL) {
       std::vector<Value> vals =
-          foldOrEmitONNXSplitOp(rewriter, loc, split1D8Ty, fB, 0);
+          foldOrEmitONNXSplitV11OpKrnl(rewriter, loc, split1D8Ty, fB, 0);
       biasForward.Wbi = vals[0];
       biasForward.Wbo = vals[1];
       biasForward.Wbf = vals[2];
@@ -324,7 +171,7 @@ std::tuple<LstmBiasPack, LstmBiasPack> getBiasPack<ONNXLSTMOp, LstmBiasPack>(
     }
     if (direction == REVERSE || direction == BIDIRECTIONAL) {
       std::vector<Value> vals =
-          foldOrEmitONNXSplitOp(rewriter, loc, split1D8Ty, bB, 0);
+          foldOrEmitONNXSplitV11OpKrnl(rewriter, loc, split1D8Ty, bB, 0);
       biasReverse.Wbi = vals[0];
       biasReverse.Wbo = vals[1];
       biasReverse.Wbf = vals[2];
@@ -339,8 +186,8 @@ std::tuple<LstmBiasPack, LstmBiasPack> getBiasPack<ONNXLSTMOp, LstmBiasPack>(
 
   // Split P.
   if (!isNoneValue(P)) {
-    ArrayRef<int64_t> pShape = P.getType().cast<ShapedType>().getShape();
-    Type elementType = P.getType().cast<ShapedType>().getElementType();
+    ArrayRef<int64_t> pShape = mlir::cast<ShapedType>(P.getType()).getShape();
+    Type elementType = mlir::cast<ShapedType>(P.getType()).getElementType();
     int64_t hiddenSize = pShape[1] / 3;
 
     // MemRef types.
@@ -353,22 +200,24 @@ std::tuple<LstmBiasPack, LstmBiasPack> getBiasPack<ONNXLSTMOp, LstmBiasPack>(
     // Squeeze the direction axis from P.
     Value fP, bP;
     if (direction == FORWARD) {
-      fP = foldOrEmitONNXSqueezeV11Op(rewriter, loc, pType1D, P, /*axis=*/0);
+      fP =
+          foldOrEmitONNXSqueezeV11OpKrnl(rewriter, loc, pType1D, P, /*axis=*/0);
     } else if (direction == REVERSE) {
-      bP = foldOrEmitONNXSqueezeV11Op(rewriter, loc, pType1D, P, /*axis=*/0);
+      bP =
+          foldOrEmitONNXSqueezeV11OpKrnl(rewriter, loc, pType1D, P, /*axis=*/0);
     } else { // BIDIRECTIONAL
       std::vector<Value> vals =
-          foldOrEmitONNXSplitOp(rewriter, loc, split2D2Ty, P, 0);
-      fP = foldOrEmitONNXSqueezeV11Op(
+          foldOrEmitONNXSplitV11OpKrnl(rewriter, loc, split2D2Ty, P, 0);
+      fP = foldOrEmitONNXSqueezeV11OpKrnl(
           rewriter, loc, pType1D, vals[0], /*axis=*/0);
-      bP = foldOrEmitONNXSqueezeV11Op(
+      bP = foldOrEmitONNXSqueezeV11OpKrnl(
           rewriter, loc, pType1D, vals[1], /*axis=*/0);
     }
 
     // Split P into individual tensors.
     if (direction == FORWARD || direction == BIDIRECTIONAL) {
       std::vector<Value> vals =
-          foldOrEmitONNXSplitOp(rewriter, loc, split1D3Ty, fP, 0);
+          foldOrEmitONNXSplitV11OpKrnl(rewriter, loc, split1D3Ty, fP, 0);
       biasForward.Pi = vals[0];
       biasForward.Po = vals[1];
       biasForward.Pf = vals[2];
@@ -376,7 +225,7 @@ std::tuple<LstmBiasPack, LstmBiasPack> getBiasPack<ONNXLSTMOp, LstmBiasPack>(
     }
     if (direction == REVERSE || direction == BIDIRECTIONAL) {
       std::vector<Value> vals =
-          foldOrEmitONNXSplitOp(rewriter, loc, split1D3Ty, bP, 0);
+          foldOrEmitONNXSplitV11OpKrnl(rewriter, loc, split1D3Ty, bP, 0);
       biasReverse.Pi = vals[0];
       biasReverse.Po = vals[1];
       biasReverse.Pf = vals[2];
@@ -433,7 +282,7 @@ LstmState allocAndInitializeStates<ONNXLSTMOp, LstmState>(
   initializeIntermediateStates(rewriter, loc, state.forwardHt, state.reverseHt,
       state.forwardCt, state.reverseCt, operandAdaptor.getInitialH(),
       operandAdaptor.getInitialC(),
-      operandAdaptor.getX().getType().cast<MemRefType>().getElementType(),
+      mlir::cast<MemRefType>(operandAdaptor.getX().getType()).getElementType(),
       direction, /*onlyHidden=*/false);
   return state;
 }
@@ -463,18 +312,18 @@ void calculateState<LstmState, LstmActivationPack, LstmWeightPack,
   MultiDialectBuilder<KrnlBuilder, MathBuilder, MemRefBuilder, OnnxBuilder>
       create(rewriter, loc);
 
-  ArrayRef<int64_t> xtShape = Xt.getType().cast<ShapedType>().getShape();
+  ArrayRef<int64_t> xtShape = mlir::cast<ShapedType>(Xt.getType()).getShape();
   int64_t batchSize = xtShape[0];
 
   // Get Ht, Ct.
   Value Ht = (isForward) ? state.forwardHt : state.reverseHt;
   Value Ct = (isForward) ? state.forwardCt : state.reverseCt;
 
-  ArrayRef<int64_t> htShape = Ht.getType().cast<ShapedType>().getShape();
+  ArrayRef<int64_t> htShape = mlir::cast<ShapedType>(Ht.getType()).getShape();
   int64_t hiddenSize = htShape[1];
 
   // Frequently used types.
-  MemRefType matrixType = Ht.getType().cast<MemRefType>();
+  MemRefType matrixType = mlir::cast<MemRefType>(Ht.getType());
   Type elementType = matrixType.getElementType();
   MemRefType matrixAllGatesType =
       MemRefType::get({batchSize, 4 * hiddenSize}, elementType);

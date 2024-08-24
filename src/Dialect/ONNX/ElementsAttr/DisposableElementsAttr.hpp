@@ -8,7 +8,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#pragma once
+#ifndef ONNX_MLIR_DISPOSABLE_ELEMENTS_ATTR_H
+#define ONNX_MLIR_DISPOSABLE_ELEMENTS_ATTR_H
 
 #include "src/Dialect/ONNX/ElementsAttr/BType.hpp"
 #include "src/Dialect/ONNX/ElementsAttr/WideNum.hpp"
@@ -103,6 +104,8 @@ public:
   // construct new instances with new metadata around the same underlying data.
   friend class onnx_mlir::ElementsAttrBuilder;
 
+  static constexpr const char *name = "disposable.attr";
+
   //===--------------------------------------------------------------------===//
   // Instantiation:
   //===--------------------------------------------------------------------===//
@@ -110,7 +113,7 @@ public:
 
   // Allow implicit conversion to ElementsAttr.
   operator ElementsAttr() const {
-    return *this ? cast<ElementsAttr>() : nullptr;
+    return *this ? mlir::cast<ElementsAttr>(*this) : nullptr;
   }
 
 private:
@@ -324,3 +327,4 @@ private:
 } // namespace mlir
 
 MLIR_DECLARE_EXPLICIT_TYPE_ID(::mlir::DisposableElementsAttr)
+#endif

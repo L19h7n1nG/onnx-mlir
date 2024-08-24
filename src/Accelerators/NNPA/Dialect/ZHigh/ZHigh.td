@@ -28,12 +28,12 @@ def ZHigh_Dialect : Dialect {
   let name = "zhigh";
   let summary = "A high-level dialect for the ONNX NNPA accelerator ISA.";
   let cppNamespace = "::onnx_mlir::zhigh";
-  let useDefaultAttributePrinterParser = 1;  
+  let useDefaultAttributePrinterParser = 1;
   let usePropertiesForAttributes = 0;
 }
 
 //===----------------------------------------------------------------------===//
-// ZHigh Attribute 
+// ZHigh Attribute
 //===----------------------------------------------------------------------===//
 
 // All of the Tensor attributes will extend this class.
@@ -83,12 +83,10 @@ def ZTensorEncodingAttr : ZHigh_Attr<"ZTensorEncoding"> {
 
 // Whether a ztensor type has the specified layout.
 class DataLayoutOfPred<string layout> : And<[
-  CPred<"($_self.cast<::mlir::RankedTensorType>()) &&"
-        "($_self.cast<::mlir::RankedTensorType>()."
-        "getEncoding().dyn_cast_or_null<ZTensorEncodingAttr>()) &&"
-        "($_self.cast<::mlir::RankedTensorType>()."
-        "getEncoding().cast<ZTensorEncodingAttr>().getDataLayout()"
-        " == ZTensorEncodingAttr::DataLayout::" # layout # ")"> 
+  CPred<"(mlir::cast<::mlir::RankedTensorType>($_self)) &&"
+        "(mlir::dyn_cast_or_null<ZTensorEncodingAttr>(mlir::cast<::mlir::RankedTensorType>($_self).getEncoding())) &&"
+        "(mlir::cast<ZTensorEncodingAttr>(mlir::cast<::mlir::RankedTensorType>($_self).getEncoding()).getDataLayout()"
+        " == ZTensorEncodingAttr::DataLayout::" # layout # ")">
 ]>;
 
 // So far ZTensor supports only F16 for stickified data.
@@ -144,20 +142,30 @@ def ZHighStickOp:ZHigh_Op<"Stick", [Pure,
   let summary = "ZHigh Stick operation";
   let description = [{
     ZHigh operation to perform a Stick."
+
     If `layout`=`NHWC`, input must be in `NCHW` and output will be in `NHWC`.
+
+    Optional `saturation` indicates whether the CPU tensor is saturated before stickification
+    or not. If it is saturated, the dlfloat16 range would be used.
+    Saturation if off if `saturation == 0` or it is not given. Otherwise, it is on.
   }];
   let arguments = (ins AnyTypeOf<[TensorOf<[F32]>, NoneType]>:$In,
-                       OptionalAttr<StrAttr>:$layout);
+                       OptionalAttr<StrAttr>:$layout,
+                       OptionalAttr<SI64Attr>:$saturation);
   let results = (outs AnyTypeOf<[ZTensor_1D, ZTensor_2D, ZTensor_3D, ZTensor_4D,
                                  ZTensor_2DS, ZTensor_3DS, ZTensor_4DS,
                                  ZTensor_NHWC,  ZTensor_NCHW, ZTensor_HWCK,
                                  NoneType]>:$Out);
   let builders = [
-    OpBuilder<(ins "::mlir::Value":$In, "::mlir::StringAttr":$layout)>
+    OpBuilder<(ins "::mlir::Value":$In, "::mlir::StringAttr":$layout), [{
+      build($_builder, $_state, In, layout, IntegerAttr());
+    }]>,
+    OpBuilder<(ins "::mlir::Value":$In, "::mlir::StringAttr":$layout,
+               "::mlir::IntegerAttr":$saturation)>
   ];
   let hasCanonicalizer = 1;
   let extraClassDefinition = [{
-    onnx_mlir::ONNXOpShapeHelper * ZHighStickOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper, 
+    onnx_mlir::ONNXOpShapeHelper * ZHighStickOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper,
         onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
       onnx_mlir::ONNXOpShapeHelper *sh = new ZHighStickOpShapeHelper(op, oper, ieb, scope);
       assert(sh && "failed to allocate shape helper");
@@ -182,9 +190,63 @@ def ZHighUnstickOp:ZHigh_Op<"Unstick", [Pure,
   ];
   let hasCanonicalizer = 1;
   let extraClassDefinition = [{
-    onnx_mlir::ONNXOpShapeHelper * ZHighUnstickOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper, 
+    onnx_mlir::ONNXOpShapeHelper * ZHighUnstickOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper,
         onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
       onnx_mlir::ONNXOpShapeHelper *sh = new ZHighUnstickOpShapeHelper(op, oper, ieb, scope);
+      assert(sh && "failed to allocate shape helper");
+      return sh;
+    }
+  }];
+}
+
+def ZHighF32ToDLF16Op:ZHigh_Op<"F32ToDLF16", [Pure,
+    DeclareOpInterfaceMethods<ShapeInferenceOpInterface>,
+    DeclareOpInterfaceMethods<ShapeHelperOpInterface>]> {
+  let summary = "ZHigh F32ToDLF16 operation";
+  let description = [{
+    ZHigh operation to convert a tensor of f32 to a tensor of dlfloat16.
+
+    Optional `saturation` indicates whether the CPU tensor is saturated before stickification
+    or not. If it is saturated, the dlfloat16 range would be used.
+    Saturation if off if `saturation == 0` or it is not given. Otherwise, it is on.
+  }];
+  let arguments = (ins TensorOf<[F32]>: $In,
+                       OptionalAttr<SI64Attr>:$saturation);
+  let results = (outs TensorOf<[F16]>:$Out);
+  let builders = [
+    OpBuilder<(ins "::mlir::Value":$In), [{
+      build($_builder, $_state, In, IntegerAttr());
+    }]>,
+    OpBuilder<(ins "::mlir::Value":$In, "::mlir::IntegerAttr":$saturation)>
+  ];
+  let hasCanonicalizer = 1;
+  let extraClassDefinition = [{
+    onnx_mlir::ONNXOpShapeHelper * ZHighF32ToDLF16Op::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper,
+        onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
+      onnx_mlir::ONNXOpShapeHelper *sh = new ZHighUnaryOpShapeHelper(op, oper, ieb, scope);
+      assert(sh && "failed to allocate shape helper");
+      return sh;
+    }
+  }];
+}
+
+def ZHighDLF16ToF32Op:ZHigh_Op<"DLF16ToF32", [Pure,
+    DeclareOpInterfaceMethods<ShapeInferenceOpInterface>,
+    DeclareOpInterfaceMethods<ShapeHelperOpInterface>]> {
+  let summary = "ZHigh DLF16ToF32 operation";
+  let description = [{
+    ZHigh operation to convert a tensor of dlfloat16 to a tensor of f32.
+  }];
+  let arguments = (ins TensorOf<[F16]>: $In);
+  let results = (outs TensorOf<[F32]>:$Out);
+  let builders = [
+    OpBuilder<(ins "::mlir::Value":$In)>,
+  ];
+  let hasCanonicalizer = 1;
+  let extraClassDefinition = [{
+    onnx_mlir::ONNXOpShapeHelper * ZHighDLF16ToF32Op::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper,
+        onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
+      onnx_mlir::ONNXOpShapeHelper *sh = new ZHighUnaryOpShapeHelper(op, oper, ieb, scope);
       assert(sh && "failed to allocate shape helper");
       return sh;
     }
@@ -203,7 +265,7 @@ def ZHighAddOp:ZHigh_Op<"Add", [Pure, SameOperandsAndResultLayout,
                        AnyTypeOf<[AnyZTensor]>:$Y);
   let results = (outs AnyTypeOf<[AnyZTensor]>:$Out);
   let extraClassDefinition = [{
-    onnx_mlir::ONNXOpShapeHelper * ZHighAddOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper, 
+    onnx_mlir::ONNXOpShapeHelper * ZHighAddOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper,
         onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
       onnx_mlir::ONNXOpShapeHelper *sh = new ZHighBinaryOpShapeHelper(op, oper, ieb, scope);
       assert(sh && "failed to allocate shape helper");
@@ -224,7 +286,7 @@ def ZHighSubOp:ZHigh_Op<"Sub", [Pure, SameOperandsAndResultLayout,
                        AnyTypeOf<[AnyZTensor]>:$Y);
   let results = (outs AnyTypeOf<[AnyZTensor]>:$Out);
   let extraClassDefinition = [{
-    onnx_mlir::ONNXOpShapeHelper * ZHighSubOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper, 
+    onnx_mlir::ONNXOpShapeHelper * ZHighSubOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper,
         onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
       onnx_mlir::ONNXOpShapeHelper *sh = new ZHighBinaryOpShapeHelper(op, oper, ieb, scope);
       assert(sh && "failed to allocate shape helper");
@@ -245,7 +307,7 @@ def ZHighMulOp:ZHigh_Op<"Mul", [Pure, SameOperandsAndResultLayout,
                        AnyTypeOf<[AnyZTensor]>:$Y);
   let results = (outs AnyTypeOf<[AnyZTensor]>:$Out);
   let extraClassDefinition = [{
-    onnx_mlir::ONNXOpShapeHelper * ZHighMulOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper, 
+    onnx_mlir::ONNXOpShapeHelper * ZHighMulOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper,
         onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
       onnx_mlir::ONNXOpShapeHelper *sh = new ZHighBinaryOpShapeHelper(op, oper, ieb, scope);
       assert(sh && "failed to allocate shape helper");
@@ -266,7 +328,7 @@ def ZHighDivOp:ZHigh_Op<"Div", [Pure, SameOperandsAndResultLayout,
                        AnyTypeOf<[AnyZTensor]>:$Y);
   let results = (outs AnyTypeOf<[AnyZTensor]>:$Out);
   let extraClassDefinition = [{
-    onnx_mlir::ONNXOpShapeHelper * ZHighDivOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper, 
+    onnx_mlir::ONNXOpShapeHelper * ZHighDivOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper,
         onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
       onnx_mlir::ONNXOpShapeHelper *sh = new ZHighBinaryOpShapeHelper(op, oper, ieb, scope);
       assert(sh && "failed to allocate shape helper");
@@ -287,7 +349,7 @@ def ZHighMinOp:ZHigh_Op<"Min", [Pure, SameOperandsAndResultLayout,
                        AnyTypeOf<[AnyZTensor]>:$Y);
   let results = (outs AnyTypeOf<[AnyZTensor]>:$Out);
   let extraClassDefinition = [{
-    onnx_mlir::ONNXOpShapeHelper * ZHighMinOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper, 
+    onnx_mlir::ONNXOpShapeHelper * ZHighMinOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper,
         onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
       onnx_mlir::ONNXOpShapeHelper *sh = new ZHighBinaryOpShapeHelper(op, oper, ieb, scope);
       assert(sh && "failed to allocate shape helper");
@@ -308,7 +370,7 @@ def ZHighMaxOp:ZHigh_Op<"Max", [Pure, SameOperandsAndResultLayout,
                        AnyTypeOf<[AnyZTensor]>:$Y);
   let results = (outs AnyTypeOf<[AnyZTensor]>:$Out);
   let extraClassDefinition = [{
-    onnx_mlir::ONNXOpShapeHelper * ZHighMaxOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper, 
+    onnx_mlir::ONNXOpShapeHelper * ZHighMaxOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper,
         onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
       onnx_mlir::ONNXOpShapeHelper *sh = new ZHighBinaryOpShapeHelper(op, oper, ieb, scope);
       assert(sh && "failed to allocate shape helper");
@@ -327,7 +389,7 @@ def ZHighLogOp:ZHigh_Op<"Log", [Pure, SameOperandsAndResultLayout,
   let arguments = (ins AnyTypeOf<[AnyZTensor]>:$X);
   let results = (outs AnyTypeOf<[AnyZTensor]>:$Out);
   let extraClassDefinition = [{
-    onnx_mlir::ONNXOpShapeHelper * ZHighLogOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper, 
+    onnx_mlir::ONNXOpShapeHelper * ZHighLogOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper,
         onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
       onnx_mlir::ONNXOpShapeHelper *sh = new ZHighUnaryOpShapeHelper(op, oper, ieb, scope);
       assert(sh && "failed to allocate shape helper");
@@ -346,7 +408,7 @@ def ZHighExpOp:ZHigh_Op<"Exp", [Pure, SameOperandsAndResultLayout,
   let arguments = (ins AnyTypeOf<[AnyZTensor]>:$X);
   let results = (outs AnyTypeOf<[AnyZTensor]>:$Out);
   let extraClassDefinition = [{
-    onnx_mlir::ONNXOpShapeHelper * ZHighExpOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper, 
+    onnx_mlir::ONNXOpShapeHelper * ZHighExpOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper,
         onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
       onnx_mlir::ONNXOpShapeHelper *sh = new ZHighUnaryOpShapeHelper(op, oper, ieb, scope);
       assert(sh && "failed to allocate shape helper");
@@ -365,7 +427,7 @@ def ZHighReluOp:ZHigh_Op<"Relu", [Pure, SameOperandsAndResultLayout,
   let arguments = (ins AnyTypeOf<[AnyZTensor]>:$X);
   let results = (outs AnyTypeOf<[AnyZTensor]>:$Out);
   let extraClassDefinition = [{
-    onnx_mlir::ONNXOpShapeHelper * ZHighReluOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper, 
+    onnx_mlir::ONNXOpShapeHelper * ZHighReluOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper,
         onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
       onnx_mlir::ONNXOpShapeHelper *sh = new ZHighUnaryOpShapeHelper(op, oper, ieb, scope);
       assert(sh && "failed to allocate shape helper");
@@ -384,7 +446,7 @@ def ZHighTanhOp:ZHigh_Op<"Tanh", [Pure, SameOperandsAndResultLayout,
   let arguments = (ins AnyTypeOf<[AnyZTensor]>:$X);
   let results = (outs AnyTypeOf<[AnyZTensor]>:$Out);
   let extraClassDefinition = [{
-    onnx_mlir::ONNXOpShapeHelper * ZHighTanhOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper, 
+    onnx_mlir::ONNXOpShapeHelper * ZHighTanhOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper,
         onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
       onnx_mlir::ONNXOpShapeHelper *sh = new ZHighUnaryOpShapeHelper(op, oper, ieb, scope);
       assert(sh && "failed to allocate shape helper");
@@ -403,7 +465,7 @@ def ZHighSigmoidOp:ZHigh_Op<"Sigmoid", [Pure, SameOperandsAndResultLayout,
   let arguments = (ins AnyTypeOf<[AnyZTensor]>:$X);
   let results = (outs AnyTypeOf<[AnyZTensor]>:$Out);
   let extraClassDefinition = [{
-    onnx_mlir::ONNXOpShapeHelper * ZHighSigmoidOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper, 
+    onnx_mlir::ONNXOpShapeHelper * ZHighSigmoidOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper,
         onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
       onnx_mlir::ONNXOpShapeHelper *sh = new ZHighUnaryOpShapeHelper(op, oper, ieb, scope);
       assert(sh && "failed to allocate shape helper");
@@ -424,7 +486,7 @@ def ZHighSoftmaxOp:ZHigh_Op<"Softmax", [Pure, SameOperandsAndResultLayout,
                        DefaultValuedStrAttr<StrAttr, "ACT_NONE">:$act_func);
   let results = (outs ZTensor_3DS:$Out);
   let extraClassDefinition = [{
-    onnx_mlir::ONNXOpShapeHelper * ZHighSoftmaxOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper, 
+    onnx_mlir::ONNXOpShapeHelper * ZHighSoftmaxOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper,
         onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
       onnx_mlir::ONNXOpShapeHelper *sh = new ZHighUnaryOpShapeHelper(op, oper, ieb, scope);
       assert(sh && "failed to allocate shape helper");
@@ -438,8 +500,8 @@ def ZHighMeanReduce2DOp:ZHigh_Op<"MeanReduce2d", [Pure,
     DeclareOpInterfaceMethods<ShapeHelperOpInterface>]> {
   let summary = "ZHigh 2D mean reduce operation";
   let description = [{
-    ZHigh operation to perform 2D mean reduce. Given an input 4D tensor, 
-    returns a downsampled tensor reducing the middle 2nd and 3rd dimensions 
+    ZHigh operation to perform 2D mean reduce. Given an input 4D tensor,
+    returns a downsampled tensor reducing the middle 2nd and 3rd dimensions
     to a size of 1 based on the mean of the original values.
      Input and Output tensors should be in the 3D layout.
   }];
@@ -447,13 +509,13 @@ def ZHighMeanReduce2DOp:ZHigh_Op<"MeanReduce2d", [Pure,
   let results = (outs ZTensor_NHWC:$output);
   let builders = [
     OpBuilder<(ins "::mlir::Value":$input), [{
-      Type elementType = input.getType().cast<ShapedType>().getElementType();
+      Type elementType = mlir::cast<ShapedType>(input.getType()).getElementType();
       UnrankedTensorType resType = UnrankedTensorType::get(elementType);
       build($_builder, $_state, resType, input);
     }]>
   ];
   let extraClassDefinition = [{
-    onnx_mlir::ONNXOpShapeHelper * ZHighMeanReduce2DOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper, 
+    onnx_mlir::ONNXOpShapeHelper * ZHighMeanReduce2DOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper,
         onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
       onnx_mlir::ONNXOpShapeHelper *sh = new ZHighMeanReduce2DOpShapeHelper(op, oper, ieb, scope);
       assert(sh && "failed to allocate shape helper");
@@ -478,13 +540,13 @@ def ZHighMaxPool2DOp:ZHigh_Op<"MaxPool2D", [Pure,
   let builders = [
     OpBuilder<(ins "::mlir::Value":$input, "::mlir::ArrayAttr":$kernel_shape,
                    "::mlir::ArrayAttr":$strides, "::mlir::StringAttr":$padding_type), [{
-      Type elementType = input.getType().cast<ShapedType>().getElementType();
+      Type elementType = mlir::cast<ShapedType>(input.getType()).getElementType();
       UnrankedTensorType resType = UnrankedTensorType::get(elementType);
       build($_builder, $_state, resType, input, kernel_shape, strides, padding_type);
     }]>
   ];
   let extraClassDefinition = [{
-    onnx_mlir::ONNXOpShapeHelper * ZHighMaxPool2DOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper, 
+    onnx_mlir::ONNXOpShapeHelper * ZHighMaxPool2DOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper,
         onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
       onnx_mlir::ONNXOpShapeHelper *sh = new ZHighPoolingOpShapeHelper<ZHighMaxPool2DOp>(op, oper, ieb, scope);
       assert(sh && "failed to allocate shape helper");
@@ -509,13 +571,13 @@ def ZHighAvgPool2DOp:ZHigh_Op<"AvgPool2D", [Pure,
   let builders = [
     OpBuilder<(ins "::mlir::Value":$input, "::mlir::ArrayAttr":$kernel_shape,
                    "::mlir::ArrayAttr":$strides, "::mlir::StringAttr":$padding_type), [{
-      Type elementType = input.getType().cast<ShapedType>().getElementType();
+      Type elementType = mlir::cast<ShapedType>(input.getType()).getElementType();
       UnrankedTensorType resType = UnrankedTensorType::get(elementType);
       build($_builder, $_state, resType, input, kernel_shape, strides, padding_type);
     }]>
   ];
   let extraClassDefinition = [{
-    onnx_mlir::ONNXOpShapeHelper * ZHighAvgPool2DOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper, 
+    onnx_mlir::ONNXOpShapeHelper * ZHighAvgPool2DOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper,
         onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
       onnx_mlir::ONNXOpShapeHelper *sh = new ZHighPoolingOpShapeHelper<ZHighAvgPool2DOp>(op, oper, ieb, scope);
       assert(sh && "failed to allocate shape helper");
@@ -538,14 +600,14 @@ def ZHighMatMulOp:ZHigh_Op<"MatMul", [Pure,
   let results = (outs AnyTypeOf<[ZTensor_2D, ZTensor_3DS]>:$Out);
   let builders = [
     OpBuilder<(ins "::mlir::Value":$X, "::mlir::Value":$Y, "::mlir::Value":$B), [{
-      Type elementType = X.getType().cast<ShapedType>().getElementType();
+      Type elementType = mlir::cast<ShapedType>(X.getType()).getElementType();
       UnrankedTensorType resType = UnrankedTensorType::get(elementType);
       build($_builder, $_state, resType, X, Y, B);
     }]>
   ];
   let hasVerifier = 1;
   let extraClassDefinition = [{
-    onnx_mlir::ONNXOpShapeHelper * ZHighMatMulOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper, 
+    onnx_mlir::ONNXOpShapeHelper * ZHighMatMulOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper,
         onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
       onnx_mlir::ONNXOpShapeHelper *sh = new ZHighMatMulOpShapeHelper(op, oper, ieb, scope);
       assert(sh && "failed to allocate shape helper");
@@ -564,11 +626,11 @@ def ZHighLSTMOp:ZHigh_Op<"LSTM", [Pure,
     * Shape for input_weights is  `[D, I, 4*H]`.
     * Shape for hidden_weights is  `[D, H, 4*H]`.
     * Shape for input_bias and hidden_bias is `[D, 4*H]`.
-    * Shape for hn_output is `[S, D, B, H]` if return all timesteps 
+    * Shape for hn_output is `[S, D, B, H]` if return all timesteps
       and `[1, D, B, H]` if return the final step only.
     * Shape for cf_output is `[1, D, B, H]`.
-    * S is timesteps, D is the number of directions (1 for unidirectional and 
-    * 2 for bidirectional), B is batch size, I is input size, and 
+    * S is timesteps, D is the number of directions (1 for unidirectional and
+    * 2 for bidirectional), B is batch size, I is input size, and
     * H is hidden size.
     * direction accepts "forward", "reverse", or "bidirectional
     * return_all_steps: -1 returns all timesteps, 0: returns only the last timestep.
@@ -591,7 +653,7 @@ def ZHighLSTMOp:ZHigh_Op<"LSTM", [Pure,
             		   "::mlir::Value":$hidden_weights, "::mlir::Value":$hidden_bias,
                    "::mlir::IntegerAttr":$hidden_size, "::mlir::StringAttr":$direction,
                    "::mlir::IntegerAttr":$return_all_steps), [{
-      Type elementType = input.getType().cast<ShapedType>().getElementType();
+      Type elementType = mlir::cast<ShapedType>(input.getType()).getElementType();
       UnrankedTensorType resType = UnrankedTensorType::get(elementType);
       build($_builder, $_state, resType, resType,
             input, h0, c0, input_weights, input_bias, hidden_weights,
@@ -600,7 +662,7 @@ def ZHighLSTMOp:ZHigh_Op<"LSTM", [Pure,
   ];
   let hasVerifier = 1;
   let extraClassDefinition = [{
-    onnx_mlir::ONNXOpShapeHelper * ZHighLSTMOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper, 
+    onnx_mlir::ONNXOpShapeHelper * ZHighLSTMOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper,
         onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
       onnx_mlir::ONNXOpShapeHelper *sh = new ZHighLSTMOpShapeHelper(op, oper, ieb, scope);
       assert(sh && "failed to allocate shape helper");
@@ -619,10 +681,10 @@ def ZHighGRUOp:ZHigh_Op<"GRU", [Pure,
     * Shape for input_weights is `[D, I, 3*H]`.
     * Shape for hidden_weights is `[D, H, 3*H]`.
     * Shape for input_bias and hidden_bias is `[D, 3*H]`.
-    * Shape for hn_output is `[S, D, B, H]` if return all timesteps 
+    * Shape for hn_output is `[S, D, B, H]` if return all timesteps
       and `[1, D, B, H]` if return the final step only.
-    * S is timesteps, D is the number of directions (1 for unidirectional and 
-    * 2 for bidirectional), B is batch size, I is input size, and 
+    * S is timesteps, D is the number of directions (1 for unidirectional and
+    * 2 for bidirectional), B is batch size, I is input size, and
     * H is hidden size.
     * direction accepts "forward", "reverse", or "bidirectional
     * return_all_steps: -1 returns all timesteps, 0: returns only the last timestep."
@@ -642,7 +704,7 @@ def ZHighGRUOp:ZHigh_Op<"GRU", [Pure,
                    "::mlir::Value":$input_bias, "::mlir::Value":$hidden_weights,
                    "::mlir::Value":$hidden_bias, "::mlir::IntegerAttr":$hidden_size,
                    "::mlir::StringAttr":$direction, "::mlir::IntegerAttr":$return_all_steps), [{
-      Type elementType = input.getType().cast<ShapedType>().getElementType();
+      Type elementType = mlir::cast<ShapedType>(input.getType()).getElementType();
       UnrankedTensorType resType = UnrankedTensorType::get(elementType);
       build($_builder, $_state, resType,
             input, h0, input_weights, input_bias, hidden_weights,
@@ -651,7 +713,7 @@ def ZHighGRUOp:ZHigh_Op<"GRU", [Pure,
   ];
   let hasVerifier = 1;
   let extraClassDefinition = [{
-    onnx_mlir::ONNXOpShapeHelper * ZHighGRUOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper, 
+    onnx_mlir::ONNXOpShapeHelper * ZHighGRUOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper,
         onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
       onnx_mlir::ONNXOpShapeHelper *sh = new ZHighGRUOpShapeHelper(op, oper, ieb, scope);
       assert(sh && "failed to allocate shape helper");
@@ -666,9 +728,9 @@ def ZHighStickForLSTMOp:ZHigh_Op<"StickForLSTM", [Pure,
   let summary = "ZHigh stick operation for LSTM";
   let description = [{
     ZHigh operation to perform a stick for LSTM.
-    Variadic: list of pointers for input data to be transformed: 
-      - LSTM concatenated: 4 data pointers, one for each input gate in 
-    Forget, Input, Cell, Output (FICO) order, 
+    Variadic: list of pointers for input data to be transformed:
+      - LSTM concatenated: 4 data pointers, one for each input gate in
+    Forget, Input, Cell, Output (FICO) order,
   }];
   let arguments = (ins TensorOf<[F32]>:$f_gate,
                        TensorOf<[F32]>:$i_gate,
@@ -684,7 +746,7 @@ def ZHighStickForLSTMOp:ZHigh_Op<"StickForLSTM", [Pure,
     }]>
   ];
   let extraClassDefinition = [{
-    onnx_mlir::ONNXOpShapeHelper * ZHighStickForLSTMOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper, 
+    onnx_mlir::ONNXOpShapeHelper * ZHighStickForLSTMOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper,
         onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
       onnx_mlir::ONNXOpShapeHelper *sh = new ZHighStickForLSTMOpShapeHelper(op, oper, ieb, scope);
       assert(sh && "failed to allocate shape helper");
@@ -699,7 +761,7 @@ def ZHighStickForGRUOp:ZHigh_Op<"StickForGRU", [Pure,
   let summary = "ZHigh stick operation for GRU";
   let description = [{
     ZHigh operation to perform a stick for GRU.
-    Variadic: list of pointers for input data to be transformed: 
+    Variadic: list of pointers for input data to be transformed:
       - GRU concatenated: 3 data pointers, one for each input gate in
     (Z)update, Reset, Hidden, (ZRH) gate order
   }];
@@ -715,7 +777,7 @@ def ZHighStickForGRUOp:ZHigh_Op<"StickForGRU", [Pure,
     }]>
   ];
   let extraClassDefinition = [{
-    onnx_mlir::ONNXOpShapeHelper * ZHighStickForGRUOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper, 
+    onnx_mlir::ONNXOpShapeHelper * ZHighStickForGRUOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper,
         onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
       onnx_mlir::ONNXOpShapeHelper *sh = new ZHighStickForGRUOpShapeHelper(op, oper, ieb, scope);
       assert(sh && "failed to allocate shape helper");
@@ -729,14 +791,14 @@ def ZHighConv2DOp:ZHigh_Op<"Conv2D", [Pure,
     DeclareOpInterfaceMethods<ShapeHelperOpInterface>]> {
   let summary = "ZHigh 2D convolution operation";
   let description = [{
-    ZHigh operation to perform 2D convolution. 
+    ZHigh operation to perform 2D convolution.
     * input: `[num_batches, height_in, width_in, channels_in]`
-    * input_kernel: `[kernel_height, kernel_width, channels_in, channels_out]` 
+    * input_kernel: `[kernel_height, kernel_width, channels_in, channels_out]`
     * input_bias: `[channels_out] `
-    * kernel_shape: 1D array of kernel height and width 
-    * strides: 1D array of stride height and width 
-    * padding_type: SAME_PADDING or VALID_PADDING 
-    * act_func: ACT_NONE or ACT_RELU 
+    * kernel_shape: 1D array of kernel height and width
+    * strides: 1D array of stride height and width
+    * padding_type: SAME_PADDING or VALID_PADDING
+    * act_func: ACT_NONE or ACT_RELU
     * output: `[num_batches, height_out, width_out, channels_out]`
   }];
   let arguments = (ins ZTensor_NHWC:$input,
@@ -752,7 +814,7 @@ def ZHighConv2DOp:ZHigh_Op<"Conv2D", [Pure,
     OpBuilder<(ins "::mlir::Value":$input, "::mlir::Value":$input_kernel, "::mlir::Value":$input_bias,
                    "::mlir::ArrayAttr":$kernel_shape, "::mlir::ArrayAttr":$strides,
                    "::mlir::StringAttr":$padding_type, "::mlir::StringAttr":$act_func), [{
-      Type elementType = input.getType().cast<ShapedType>().getElementType();
+      Type elementType = mlir::cast<ShapedType>(input.getType()).getElementType();
       UnrankedTensorType resType = UnrankedTensorType::get(elementType);
       build($_builder, $_state, resType, input, input_kernel, input_bias,
             kernel_shape, strides, padding_type, act_func);
@@ -760,7 +822,7 @@ def ZHighConv2DOp:ZHigh_Op<"Conv2D", [Pure,
   ];
   let hasVerifier = 1;
   let extraClassDefinition = [{
-    onnx_mlir::ONNXOpShapeHelper * ZHighConv2DOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper, 
+    onnx_mlir::ONNXOpShapeHelper * ZHighConv2DOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper,
         onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
       onnx_mlir::ONNXOpShapeHelper *sh = new ZHighConv2DOpShapeHelper(op, oper, ieb, scope);
       assert(sh && "failed to allocate shape helper");
@@ -787,7 +849,7 @@ def ZHighBatchNormOp:ZHigh_Op<"BatchNorm", [Pure,
     }]>
   ];
   let extraClassDefinition = [{
-    onnx_mlir::ONNXOpShapeHelper * ZHighBatchNormOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper, 
+    onnx_mlir::ONNXOpShapeHelper * ZHighBatchNormOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper,
         onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
       onnx_mlir::ONNXOpShapeHelper *sh = new ZHighUnaryOpShapeHelper(op, oper, ieb, scope);
       assert(sh && "failed to allocate shape helper");
@@ -815,7 +877,7 @@ def ZHighStickifiedConstantOfShapeOp:ZHigh_Op<"StickifiedConstantOfShape", [Pure
   let summary = "ZHigh Stickified Constant operation for a dynamic shape";
   let description = [{
     This operator produces a constant tensor to store stickified data.
-    The stickified data is defined by a f32 scalar value, a dynamic shape 
+    The stickified data is defined by a f32 scalar value, a dynamic shape
     and a layout. Stickified data is 4K-aligned.
   }];
   let arguments = (ins TensorOf<[I64]>:$shape,
@@ -827,7 +889,7 @@ def ZHighStickifiedConstantOfShapeOp:ZHigh_Op<"StickifiedConstantOfShape", [Pure
                "::mlir::StringAttr":$layout)>
   ];
   let extraClassDefinition = [{
-    onnx_mlir::ONNXOpShapeHelper * ZHighStickifiedConstantOfShapeOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper, 
+    onnx_mlir::ONNXOpShapeHelper * ZHighStickifiedConstantOfShapeOp::getShapeHelper(mlir::Operation *op, mlir::ArrayRef<mlir::Value> oper,
         onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
       onnx_mlir::ONNXOpShapeHelper *sh = new ZHighStickifiedConstantOfShapeOpShapeHelper(op, oper, ieb, scope);
       assert(sh && "failed to allocate shape helper");

@@ -137,16 +137,50 @@ func.func @replace_leakyrelu_2(%arg0 : tensor<1x104x128x104xf16, #zhigh.layout<{
 
 // -----
 
-// Do not replace onnx.LeakyRelu if alpha < 0
-func.func @donot_replace_leakyrelu(%arg0 : tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>> {
-  %0 = "zhigh.Unstick"(%arg0) : (tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<1x104x128x104xf32>
-  %1 = "onnx.LeakyRelu"(%0) {alpha = -1.000000e-01 : f32} : (tensor<1x104x128x104xf32>) -> tensor<1x104x128x104xf32>
-  %2 = "zhigh.Stick"(%1) {layout = "NHWC"} : (tensor<1x104x128x104xf32>) -> tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>>
+// Replace onnx.Softplus
+func.func @replace_softplus_1(%arg0 : tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>> {
+  %0 = "zhigh.Unstick"(%arg0) : (tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<1x104x104x128xf32>
+  %1 = "onnx.Softplus"(%0) {alpha = 1.000000e-01 : f32} : (tensor<1x104x104x128xf32>) -> tensor<1x104x104x128xf32>
+  %2 = "zhigh.Stick"(%1) {layout = "NHWC"} : (tensor<1x104x104x128xf32>) -> tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>>
   return %2 : tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>>
-  // CHECK-LABEL: donot_replace_leakyrelu
-  // CHECK: zhigh.Unstick
-  // CHECK: onnx.LeakyRelu
-  // CHECK: zhigh.Stick
+// mlir2FileCheck.py
+// CHECK-LABEL:  func.func @replace_softplus_1
+// CHECK-SAME:   ([[PARAM_0_:%.+]]: tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>> {
+// CHECK:           [[VAR_0_:%.+]] = onnx.Constant dense<-1.000000e+00> : tensor<1x104x104x128xf32>
+// CHECK:           [[VAR_1_:%.+]] = "zhigh.Stick"([[VAR_0_]]) {layout = "NHWC"} : (tensor<1x104x104x128xf32>) -> tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>
+// CHECK-DAG:       [[VAR_2_:%.+]] = "zhigh.Mul"([[PARAM_0_]], [[VAR_1_]]) : (tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>>, tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>>
+// CHECK-DAG:       [[VAR_3_:%.+]] = "zhigh.Relu"([[PARAM_0_]]) : (tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>>
+// CHECK:           [[VAR_4_:%.+]] = "zhigh.Min"([[PARAM_0_]], [[VAR_2_]]) : (tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>>, tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>>
+// CHECK:           [[VAR_5_:%.+]] = "zhigh.Exp"([[VAR_4_]]) : (tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>>
+// CHECK:           [[VAR_6_:%.+]] = "zhigh.Sub"([[VAR_5_]], [[VAR_1_]]) : (tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>>, tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>>
+// CHECK:           [[VAR_7_:%.+]] = "zhigh.Log"([[VAR_6_]]) : (tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>>
+// CHECK:           [[VAR_8_:%.+]] = "zhigh.Add"([[VAR_3_]], [[VAR_7_]]) : (tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>>, tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>>
+// CHECK:           return [[VAR_8_]] : tensor<1x104x104x128xf16, #zhigh.layout<{dataLayout = "NHWC"}>>
+// CHECK:         }
+}
+
+// -----
+
+// Replace onnx.Softplus
+func.func @replace_softplus_2(%arg0 : tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>> {
+  %0 = "zhigh.Unstick"(%arg0) : (tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<1x104x104x128xf32>
+  %1 = "onnx.Softplus"(%0) {alpha = 1.000000e-01 : f32} : (tensor<1x104x104x128xf32>) -> tensor<1x104x104x128xf32>
+  %2 = "zhigh.Stick"(%1) {layout = "NHWC"} : (tensor<1x104x104x128xf32>) -> tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>
+  return %2 : tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>
+// mlir2FileCheck.py
+// CHECK-LABEL:  func.func @replace_softplus_2
+// CHECK-SAME:   ([[PARAM_0_:%.+]]: tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>> {
+// CHECK:           [[VAR_0_:%.+]] = onnx.Constant dense<-1.000000e+00> : tensor<1x104x104x128xf32>
+// CHECK:           [[VAR_1_:%.+]] = "zhigh.Stick"([[VAR_0_]]) {layout = "NHWC"} : (tensor<1x104x104x128xf32>) -> tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>
+// CHECK-DAG:       [[VAR_2_:%.+]] = "zhigh.Mul"([[PARAM_0_]], [[VAR_1_]]) : (tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>, tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>
+// CHECK-DAG:       [[VAR_3_:%.+]] = "zhigh.Relu"([[PARAM_0_]]) : (tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>
+// CHECK:           [[VAR_4_:%.+]] = "zhigh.Min"([[PARAM_0_]], [[VAR_2_]]) : (tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>, tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>
+// CHECK:           [[VAR_5_:%.+]] = "zhigh.Exp"([[VAR_4_]]) : (tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>
+// CHECK:           [[VAR_6_:%.+]] = "zhigh.Sub"([[VAR_5_]], [[VAR_1_]]) : (tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>, tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>
+// CHECK:           [[VAR_7_:%.+]] = "zhigh.Log"([[VAR_6_]]) : (tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>
+// CHECK:           [[VAR_8_:%.+]] = "zhigh.Add"([[VAR_3_]], [[VAR_7_]]) : (tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>, tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>
+// CHECK:           return [[VAR_8_]] : tensor<1x104x128x104xf16, #zhigh.layout<{dataLayout = "NHWC"}>>
+// CHECK:         }
 }
 
 // -----
@@ -235,28 +269,67 @@ func.func @reshape_transpose_reshape_3ds_to_2d(%arg0: tensor<48x256x64xf16, #zhi
 
 // -----
 
-func.func @test_unstick_dim(%arg0: tensor<?x?x?xf16, #zhigh.layout<{dataLayout = "3D"}>>) -> tensor<1xi64> {
+func.func @test_unstick_dim(%arg0: tensor<?x?x?xf16, #zhigh.layout<{dataLayout = "3D"}>>) -> (tensor<?x?x?xf16, #zhigh.layout<{dataLayout = "3D"}>>, tensor<1xi64>) {
   %0 = "zhigh.Unstick"(%arg0) : (tensor<?x?x?xf16, #zhigh.layout<{dataLayout = "3D"}>>) -> tensor<?x?x?xf32>
-  %1 = "onnx.Dim"(%0) {axis = 1 : si64}: (tensor<?x?x?xf32>) -> tensor<1xi64>
-  return %1 : tensor<1xi64>
+  %1 = "zhigh.Relu"(%arg0) : (tensor<?x?x?xf16, #zhigh.layout<{dataLayout = "3D"}>>) -> (tensor<?x?x?xf16, #zhigh.layout<{dataLayout = "3D"}>>)
+  %2 = "onnx.Dim"(%0) {axis = 1 : si64}: (tensor<?x?x?xf32>) -> tensor<1xi64>
+  return %1, %2 : tensor<?x?x?xf16, #zhigh.layout<{dataLayout = "3D"}>>, tensor<1xi64>
 
 // CHECK-LABEL:  func.func @test_unstick_dim
-// CHECK-SAME:   ([[PARAM_0_:%.+]]: tensor<?x?x?xf16, #zhigh.layout<{dataLayout = "3D"}>>) -> tensor<1xi64> {
-// CHECK:           [[VAR_0_:%.+]] = "onnx.Dim"([[PARAM_0_]]) {axis = 1 : si64} : (tensor<?x?x?xf16, #zhigh.layout<{dataLayout = "3D"}>>) -> tensor<1xi64>
-// CHECK:           return [[VAR_0_]] : tensor<1xi64>
+// CHECK-SAME:   ([[PARAM_0_:%.+]]: tensor<?x?x?xf16, #zhigh.layout<{dataLayout = "3D"}>>) -> (tensor<?x?x?xf16, #zhigh.layout<{dataLayout = "3D"}>>, tensor<1xi64>) {
+// CHECK-DAG:       [[VAR_0_:%.+]] = "zhigh.Relu"([[PARAM_0_]]) : (tensor<?x?x?xf16, #zhigh.layout<{dataLayout = "3D"}>>) -> tensor<?x?x?xf16, #zhigh.layout<{dataLayout = "3D"}>>
+// CHECK-DAG:       [[VAR_1_:%.+]] = "onnx.Dim"([[PARAM_0_]]) {axis = 1 : si64} : (tensor<?x?x?xf16, #zhigh.layout<{dataLayout = "3D"}>>) -> tensor<1xi64>
+// CHECK:           return [[VAR_0_]], [[VAR_1_]] : tensor<?x?x?xf16, #zhigh.layout<{dataLayout = "3D"}>>, tensor<1xi64>
 // CHECK:         }
 }
 
 // -----
 
-func.func @test_unstick_dim_nchw(%arg0: tensor<?x?x?x?xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<1xi64> {
+func.func @test_unstick_dim_nchw(%arg0: tensor<?x?x?x?xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> (tensor<?x?x?x?xf16, #zhigh.layout<{dataLayout = "NHWC"}>>, tensor<1xi64>) {
   %0 = "zhigh.Unstick"(%arg0) : (tensor<?x?x?x?xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<?x?x?x?xf32>
-  %1 = "onnx.Dim"(%0) {axis = 1 : si64}: (tensor<?x?x?x?xf32>) -> tensor<1xi64>
-  return %1 : tensor<1xi64>
+  %1 = "zhigh.Relu"(%arg0) : (tensor<?x?x?x?xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> (tensor<?x?x?x?xf16, #zhigh.layout<{dataLayout = "NHWC"}>>)
+  %2 = "onnx.Dim"(%0) {axis = 1 : si64}: (tensor<?x?x?x?xf32>) -> tensor<1xi64>
+  return %1, %2 : tensor<?x?x?x?xf16, #zhigh.layout<{dataLayout = "NHWC"}>>, tensor<1xi64>
 
 // CHECK-LABEL:  func.func @test_unstick_dim_nchw
-// CHECK-SAME:   ([[PARAM_0_:%.+]]: tensor<?x?x?x?xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<1xi64> {
-// CHECK:           [[VAR_0_:%.+]] = "onnx.Dim"([[PARAM_0_]]) {axis = 3 : si64} : (tensor<?x?x?x?xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<1xi64>
-// CHECK:           return [[VAR_0_]] : tensor<1xi64>
+// CHECK-SAME:   ([[PARAM_0_:%.+]]: tensor<?x?x?x?xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> (tensor<?x?x?x?xf16, #zhigh.layout<{dataLayout = "NHWC"}>>, tensor<1xi64>) {
+// CHECK-DAG:       [[VAR_0_:%.+]] = "zhigh.Relu"([[PARAM_0_]]) : (tensor<?x?x?x?xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<?x?x?x?xf16, #zhigh.layout<{dataLayout = "NHWC"}>>
+// CHECK-DAG:       [[VAR_1_:%.+]] = "onnx.Dim"([[PARAM_0_]]) {axis = 3 : si64} : (tensor<?x?x?x?xf16, #zhigh.layout<{dataLayout = "NHWC"}>>) -> tensor<1xi64>
+// CHECK:           return [[VAR_0_]], [[VAR_1_]] : tensor<?x?x?x?xf16, #zhigh.layout<{dataLayout = "NHWC"}>>, tensor<1xi64>
+// CHECK:         }
+}
+
+// -----
+
+// COM: Remove all LayoutTransform and data conversion since the whole computation is identity.
+func.func @test_dlf16_to_f32(%arg0: tensor<1x3x5x?xf16, #zhigh.layout<{dataLayout = "4D"}>>) -> tensor<1x3x5x?xf16, #zhigh.layout<{dataLayout = "4D"}>> {
+  %0 = "onnx.LayoutTransform"(%arg0) : (tensor<1x3x5x?xf16, #zhigh.layout<{dataLayout = "4D"}>>) -> tensor<1x3x5x?xf16>
+  %1 = "zhigh.DLF16ToF32"(%0) : (tensor<1x3x5x?xf16>) -> tensor<1x3x5x?xf32>
+  %2 = "zhigh.F32ToDLF16"(%1) : (tensor<1x3x5x?xf32>) -> tensor<1x3x5x?xf16>
+  %3 = "onnx.LayoutTransform"(%2) {target_layout = "4D"} : (tensor<1x3x5x?xf16>) -> tensor<1x3x5x?xf16, #zhigh.layout<{dataLayout = "4D"}>>
+  onnx.Return %3 : tensor<1x3x5x?xf16, #zhigh.layout<{dataLayout = "4D"}>>
+
+// CHECK-LABEL:  func.func @test_dlf16_to_f32
+// CHECK-SAME:   ([[PARAM_0_:%.+]]: tensor<1x3x5x?xf16, #zhigh.layout<{dataLayout = "4D"}>>) -> tensor<1x3x5x?xf16, #zhigh.layout<{dataLayout = "4D"}>> {
+// CHECK:           onnx.Return [[PARAM_0_]] : tensor<1x3x5x?xf16, #zhigh.layout<{dataLayout = "4D"}>>
+// CHECK:         }
+}
+
+// -----
+
+// COM: DLF16ToF32 is delayed and pushed down through Reshape and Transpose,
+// and it is removed when combined with F32ToDLF16.
+func.func @test_delay_dlf16_to_f32(%arg0: tensor<1x3x5x?xf16>, %arg1: tensor<3xi64>) -> tensor<5x3x?xf16> {
+  %1 = "zhigh.DLF16ToF32"(%arg0) : (tensor<1x3x5x?xf16>) -> tensor<1x3x5x?xf32>
+  %2 = "onnx.Reshape"(%1, %arg1) {allowzero = 0 : si64} : (tensor<1x3x5x?xf32>, tensor<3xi64>) -> tensor<3x5x?xf32>
+  %3 = "onnx.Transpose"(%2) {perm = [1, 0, 2]} : (tensor<3x5x?xf32>) -> tensor<5x3x?xf32>
+  %4 = "zhigh.F32ToDLF16"(%3) : (tensor<5x3x?xf32>) -> tensor<5x3x?xf16>
+  onnx.Return %4 : tensor<5x3x?xf16>
+
+// CHECK-LABEL:  func.func @test_delay_dlf16_to_f32
+// CHECK-SAME:   ([[PARAM_0_:%.+]]: tensor<1x3x5x?xf16>, [[PARAM_1_:%.+]]: tensor<3xi64>) -> tensor<5x3x?xf16> {
+// CHECK:           [[VAR_0_:%.+]] = "onnx.Reshape"([[PARAM_0_]], [[PARAM_1_]]) {allowzero = 0 : si64} : (tensor<1x3x5x?xf16>, tensor<3xi64>) -> tensor<3x5x?xf16>
+// CHECK:           [[VAR_1_:%.+]] = "onnx.Transpose"([[VAR_0_]]) {perm = [1, 0, 2]} : (tensor<3x5x?xf16>) -> tensor<5x3x?xf16>
+// CHECK:           onnx.Return [[VAR_1_]] : tensor<5x3x?xf16>
 // CHECK:         }
 }

@@ -35,14 +35,14 @@ include "src/Accelerators/NNPA/Dialect/ZHigh/ZHighOps/OpHelper.td"
 //===----------------------------------------------------------------------===//
 
 def NoneTypeStickRemovalPattern : Pat<
-  (ZHighStickOp:$stick $arg, $layout1),
+  (ZHighStickOp:$stick $arg, $layout1, $_),
   (replaceWithValue $arg),
   [(IsNoneType:$arg)]
 >;
 
 // zhigh.Stick (zhigh.Unstick (%X)) = %X
 def StickUnstickSameLayoutRemovalPattern : Pat<
-  (ZHighStickOp:$stick (ZHighUnstickOp:$unstick $arg), $_),
+  (ZHighStickOp:$stick (ZHighUnstickOp:$unstick $arg), $_, $_),
   (replaceWithValue $arg),
   [(SameLayout $arg, $stick)]
 >;
@@ -52,7 +52,7 @@ def StickUnstickSameLayoutRemovalPattern : Pat<
 // the input and output must have the same shape, but NHWC stickify/unstickify
 // transposes the shape.
 def StickUnstickDiffLayoutRemovalPattern : Pat<
-  (ZHighStickOp:$stick (ZHighUnstickOp:$unstick $arg), $_),
+  (ZHighStickOp:$stick (ZHighUnstickOp:$unstick $arg), $_, $_),
   (ONNXLayoutTransformOp $arg, (GetEncodingAttr $stick)),
   [(NotSameLayout $arg, $stick), (NoOneIsOfNHWCLayout $arg, $stick),
    // Do not support 1D and 2DS because of this issue: https://github.com/onnx/onnx-mlir/issues/1940
@@ -70,17 +70,56 @@ def StickUnstickDiffLayoutRemovalPattern : Pat<
 //
 def ReplaceONNXLeakyReluPattern: Pat<
   (ZHighStickOp:$stickout (ONNXLeakyReluOp:$out (ZHighUnstickOp $X), $alpha),
-                $layout),
+                $layout, $_),
   (ZHighSubOp
      (ZHighReluOp $X, (returnType $X)),
      (ZHighReluOp (ZHighMulOp $X,
                               (ZHighStickOp (GetMinusBcastConst $alpha,
                                              $out),
-                                            $layout),
+                                            $layout,
+                                            // Donot saturate since input orignally from NNPA
+                                            (NoneIntegerAttr)), 
                               (returnType $X)),
                   (returnType $X))),
   [(IsStaticShapeTensor $X), (IsPlusConstantFloat $alpha),
    (SameLayout $X, $stickout)]
+>;
+
+// The pattern
+//   zhigh.Stick (onnx.Softplus (zhigh.Unstick (%X)))
+// can be replaced by
+//   %minusOne = zhigh.Stick(GetConstantOfType<"-1.0">, %X)
+//   %minusX = zhigh.Mul(%X, %minusOne)
+//   zhigh.Add (
+//       zhigh.Relu(%X),
+//       zhigh.log(zhigh.Sub(zhigh.Exp(zhigh.Min(%X,%minusX)), %minusOne)))
+// References:
+// http://www.beam2d.net/blog/2014/03/02/softplus/ (Japanese)
+// https://www-beam2d-net.translate.goog/blog/2014/03/02/softplus/?_x_tr_sch=http&_x_tr_sl=ja&_x_tr_tl=en&_x_tr_hl=ja&_x_tr_pto=wapp (Translated English)
+// c.f.
+// -|x| is replaced by min(x, -x), since NNPA does not have the abs(x) function.
+// Constraints:
+//   - %X should have static shape
+//
+def ReplaceONNXSoftplusPattern: Pattern<
+  (ZHighStickOp:$stickout (ONNXSoftplusOp:$out (ZHighUnstickOp $X)), $layout, $_),
+  [
+   // Get stickified constant of minus one with input shape.
+   // Donot saturate since input orignally from NNPA.
+   (ZHighStickOp:$minusOne (GetConstantOfType<"-1.0"> $out), $layout, (NoneIntegerAttr)),
+   // Get minus X with input shape.
+   (ZHighMulOp:$minusX $X, $minusOne, (returnType $X)),
+
+   // Get Softplus
+   (ZHighAddOp
+      (ZHighReluOp $X, (returnType $X)),
+      (ZHighLogOp (ZHighSubOp (ZHighExpOp (ZHighMinOp $X, $minusX,
+                                                      (returnType $X)),
+                                          (returnType $X)),
+                              $minusOne, (returnType $X)),
+                  (returnType $X))),
+  ],
+  [(IsStaticShapeTensor $X), (SameLayout $X, $stickout)]
 >;
 
 // Calulation of `1/sqrt(X)` or reciprocal square root is often found in
@@ -103,9 +142,9 @@ def ReplaceONNXLeakyReluPattern: Pat<
 //   - %X should have static shape, and %alpha should be constant.
 //
 def ReplaceONNXReciprocalSqrtPattern: Pat<
-  (ZHighStickOp:$stick (ONNXReciprocalOp (ONNXSqrtOp (ZHighUnstickOp:$unstick $X))), $layout),
+  (ZHighStickOp:$stick (ONNXReciprocalOp (ONNXSqrtOp (ZHighUnstickOp:$unstick $X))), $layout, $saturation),
   (ZHighExpOp (ZHighMulOp (ZHighLogOp $X, (returnType $X)),
-                          (ZHighStickOp (GetConstantOfType<"-0.5"> $unstick), $layout),
+                          (ZHighStickOp (GetConstantOfType<"-0.5"> $unstick), $layout, $saturation),
                           (returnType $X))),
   [(IsStaticShapeTensor $X), (SameLayout $X, $stick)]
 >;
@@ -137,7 +176,7 @@ def ReshapeTransposeReshape2DTo3DSPattern : Pat<
           $shape1, $_),
         $perm),
       $shape2, $_),
-    $layout3DS),
+    $layout3DS, $saturation),
   (ZHighStickOp
     (ONNXShapeTransformOp // reshape
       (ONNXShapeTransformOp // transpose
@@ -149,7 +188,7 @@ def ReshapeTransposeReshape2DTo3DSPattern : Pat<
         (returnType (GetResultType $transpose))),
       (GetCollapsing4DTo3DMap $reshape2),
       (returnType (GetResultType $reshape2))),
-    $layout3DS),
+    $layout3DS, $saturation),
   [(TensorHas2DLayout $X), (Is3DSLayout $layout3DS),
    (IsStaticShapeTensor $X), (IsStaticShapeTensor $unstick),
    (IsStaticShapeTensor $reshape1), (IsStaticShapeTensor $transpose),
@@ -169,7 +208,7 @@ def ReshapeTransposeReshape3DSTo2DPattern : Pat<
           $shape1, $_),
         $perm),
       $shape2, $_),
-    $layout2D),
+    $layout2D, $saturation),
   (ZHighStickOp
     (ONNXShapeTransformOp // reshape
       (ONNXShapeTransformOp // transpose
@@ -181,7 +220,7 @@ def ReshapeTransposeReshape3DSTo2DPattern : Pat<
         (returnType (GetResultType $transpose))),
       (GetCollapsing4DTo2DMap $reshape2),
       (returnType (GetResultType $reshape2))),
-    $layout2D),
+    $layout2D, $saturation),
   [(TensorHas3DSLayout $X), (Is2DLayout $layout2D),
    (IsStaticShapeTensor $X), (IsStaticShapeTensor $unstick),
    (IsStaticShapeTensor $reshape1), (IsStaticShapeTensor $transpose),

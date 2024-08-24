@@ -4,14 +4,14 @@
 _ONNX Abs operation_
 
 Absolute takes one input data (Tensor<T>) and produces one output data
-(Tensor<T>) where the absolute is, y = abs(x), is applied to
+(Tensor<T>) where absolute value, y = abs(x), is applied to
 the tensor elementwise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -31,11 +31,11 @@ _ONNX Acos operation_
 
 Calculates the arccosine (inverse of cosine) of the given input tensor, element-wise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -55,11 +55,11 @@ _ONNX Acosh operation_
 
 Calculates the hyperbolic arccosine of the given input tensor element-wise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -128,19 +128,20 @@ Compute one iteration of ADAGRAD, a stochastic gradient based optimization
     In that reference paper, this operator is a special case of the Figure 1's composite mirror
     descent update.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `decay_factor` | ::mlir::FloatAttr | 32-bit float attribute
-| `epsilon` | ::mlir::FloatAttr | 32-bit float attribute
-| `norm_coefficient` | ::mlir::FloatAttr | 32-bit float attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>decay_factor</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>epsilon</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>norm_coefficient</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -148,13 +149,13 @@ Effects: MemoryEffects::Effect{}
 | :-----: | ----------- |
 | `R` | tensor of 32-bit float values or tensor of 64-bit float values
 | `T` | tensor of 64-bit signless integer values
-| `inputs` | tensor of 32-bit float values or tensor of 64-bit float values
+| `inputs` | variadic of tensor of 32-bit float values or tensor of 64-bit float values
 
 #### Results:
 
 | Result | Description |
 | :----: | ----------- |
-| `outputs` | tensor of 32-bit float values or tensor of 64-bit float values
+| `outputs` | variadic of tensor of 32-bit float values or tensor of 64-bit float values
 
 ### `onnx.Adam` (ONNXAdamOp)
 
@@ -222,21 +223,22 @@ Compute one iteration of Adam, a stochastic gradient based optimization
     If there are multiple inputs to be optimized, the pseudo code will be applied
     independently to each of them.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `alpha` | ::mlir::FloatAttr | 32-bit float attribute
-| `beta` | ::mlir::FloatAttr | 32-bit float attribute
-| `epsilon` | ::mlir::FloatAttr | 32-bit float attribute
-| `norm_coefficient` | ::mlir::FloatAttr | 32-bit float attribute
-| `norm_coefficient_post` | ::mlir::FloatAttr | 32-bit float attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>alpha</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>beta</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>epsilon</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>norm_coefficient</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>norm_coefficient_post</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -244,13 +246,13 @@ Effects: MemoryEffects::Effect{}
 | :-----: | ----------- |
 | `R` | tensor of 32-bit float values or tensor of 64-bit float values
 | `T` | tensor of 64-bit signless integer values
-| `inputs` | tensor of 32-bit float values or tensor of 64-bit float values
+| `inputs` | variadic of tensor of 32-bit float values or tensor of 64-bit float values
 
 #### Results:
 
 | Result | Description |
 | :----: | ----------- |
-| `outputs` | tensor of 32-bit float values or tensor of 64-bit float values
+| `outputs` | variadic of tensor of 32-bit float values or tensor of 64-bit float values
 
 ### `onnx.Add` (ONNXAddOp)
 
@@ -262,11 +264,11 @@ This operator supports **multidirectional (i.e., Numpy-style) broadcasting**; fo
 
 (Opset 14 change): Extend supported types to include uint8, int8, uint16, and int16.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -290,11 +292,11 @@ elementwise on the input tensors `A` and `B` (with Numpy-style broadcasting supp
 
 This operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -321,19 +323,20 @@ is selected if the max appears more than once in the input. Otherwise the index 
 first occurrence is selected.
 The type of the output tensor is integer.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `keepdims` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `select_last_index` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>keepdims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>select_last_index</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -359,19 +362,20 @@ is selected if the min appears more than once in the input. Otherwise the index 
 first occurrence is selected.
 The type of the output tensor is integer.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `keepdims` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `select_last_index` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>keepdims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>select_last_index</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -392,11 +396,11 @@ _ONNX ArrayFeatureExtractor operation_
 Select elements of the input tensor based on the indices passed.<br>
     The indices are applied to the last axes of the tensor.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -417,11 +421,11 @@ _ONNX Asin operation_
 
 Calculates the arcsine (inverse of sine) of the given input tensor, element-wise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -441,11 +445,11 @@ _ONNX Asinh operation_
 
 Calculates the hyperbolic arcsine of the given input tensor element-wise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -465,11 +469,11 @@ _ONNX Atan operation_
 
 Calculates the arctangent (inverse of tangent) of the given input tensor, element-wise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -489,11 +493,11 @@ _ONNX Atanh operation_
 
 Calculates the hyperbolic arctangent of the given input tensor element-wise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -515,20 +519,27 @@ AveragePool consumes an input tensor X and applies average pooling across
  the tensor according to kernel sizes, stride sizes, and pad lengths.
  average pooling consisting of computing the average on all values of a
  subset of the input tensor according to the kernel size and downsampling the
- data into the output tensor Y for further processing. The output spatial shape will be following:
+ data into the output tensor Y for further processing. The output spatial shape is calculated differently
+ depending on whether explicit padding is used, where pads is employed, or auto padding is used, where auto_pad is utilized.
+ With explicit padding (https://pytorch.org/docs/stable/generated/torch.nn.MaxPool2d.html?highlight=maxpool#torch.nn.MaxPool2d):
  ```
- output_spatial_shape[i] = floor((input_spatial_shape[i] + pad_shape[i] - ((kernel_spatial_shape[i] - 1) * dilations[i] + 1)) / strides_spatial_shape[i] + 1)
+ output_spatial_shape[i] = floor((input_spatial_shape[i] + pad_shape[i] - dilation[i] * (kernel_shape[i] - 1) - 1) / strides_spatial_shape[i] + 1)
  ```
  or
  ```
- output_spatial_shape[i] = ceil((input_spatial_shape[i] + pad_shape[i] - ((kernel_spatial_shape[i] - 1) * dilations[i] + 1)) / strides_spatial_shape[i] + 1)
+ output_spatial_shape[i] = ceil((input_spatial_shape[i] + pad_shape[i] - dilation[i] * (kernel_shape[i] - 1) - 1) / strides_spatial_shape[i] + 1)
  ```
- if ceil_mode is enabled `pad_shape[i]` is the sum of pads along axis `i`.
+ if ceil_mode is enabled. `pad_shape[i]` is the sum of pads along axis `i`. Sliding windows that would start in the right padded region are ignored.
 
- `auto_pad` is a DEPRECATED attribute. If you are using them currently, the output spatial shape will be following:
+ `auto_pad` is a DEPRECATED attribute. If you are using them currently, the output spatial shape will be following when ceil_mode is enabled:
  ```
  VALID: output_spatial_shape[i] = ceil((input_spatial_shape[i] - ((kernel_spatial_shape[i] - 1) * dilations[i] + 1) + 1) / strides_spatial_shape[i])
  SAME_UPPER or SAME_LOWER: output_spatial_shape[i] = ceil(input_spatial_shape[i] / strides_spatial_shape[i])
+ ```
+ or when ceil_mode is disabled (https://www.tensorflow.org/api_docs/python/tf/keras/layers/AveragePooling2D):
+ ```
+ VALID: output_spatial_shape[i] = floor((input_spatial_shape[i] - ((kernel_spatial_shape[i] - 1) * dilations[i] + 1)) / strides_spatial_shape[i]) + 1
+ SAME_UPPER or SAME_LOWER: output_spatial_shape[i] = floor((input_spatial_shape[i] - 1) / strides_spatial_shape[i]) + 1
  ```
  And pad shape will be following if `SAME_UPPER` or `SAME_LOWER`:
  ```
@@ -537,23 +548,24 @@ AveragePool consumes an input tensor X and applies average pooling across
  The output of each pooling window is divided by the number of elements (exclude pad when attribute count_include_pad is zero).
 
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `auto_pad` | ::mlir::StringAttr | string attribute
-| `ceil_mode` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `count_include_pad` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `dilations` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `kernel_shape` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `pads` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `strides` | ::mlir::ArrayAttr | 64-bit integer array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>auto_pad</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>ceil_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>count_include_pad</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>dilations</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>kernel_shape</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>pads</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -588,18 +600,19 @@ by an argument that is present) may also be simply omitted.
 
 This operation is not part of the standard and was added to assist onnx-mlir.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `epsilon` | ::mlir::FloatAttr | 32-bit float attribute
-| `momentum` | ::mlir::FloatAttr | 32-bit float attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>epsilon</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>momentum</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -661,19 +674,20 @@ For previous (depreciated) non-spatial cases, implementors are suggested
 to flatten the input shape to (N x C * D1 * D2 * ... * Dn) before a BatchNormalization Op.
 This operator has **optional** inputs/outputs. See [the doc](IR.md) for more details about the representation of optional arguments. An empty string may be used in the place of an actual argument's name to indicate a missing argument. Trailing optional arguments (those not followed by an argument that is present) may also be simply omitted.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `epsilon` | ::mlir::FloatAttr | 32-bit float attribute
-| `momentum` | ::mlir::FloatAttr | 32-bit float attribute
-| `training_mode` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>epsilon</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>momentum</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>training_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -704,18 +718,19 @@ where an output of 1 is produced with probability p and an output of 0 is produc
 This operator is non-deterministic and may not produce the same values in different
 implementations (even if a seed is specified).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `dtype` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `seed` | ::mlir::FloatAttr | 32-bit float attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>dtype</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>seed</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -735,17 +750,18 @@ _ONNX Binarizer operation_
 
 Maps the values of the input tensor to either 0 or 1, element-wise, based on the outcome of a comparison against a threshold value.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `threshold` | ::mlir::FloatAttr | 32-bit float attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>threshold</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -776,17 +792,18 @@ Because this operator supports Numpy-style broadcasting, X's and Y's shapes are
 not necessarily identical.
 This operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `direction` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>direction</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -810,11 +827,11 @@ elementwise on the input tensors `A` and `B` (with Numpy-style broadcasting supp
 
 This operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -835,11 +852,11 @@ _ONNX BitwiseNot operation_
 
 Returns the bitwise not of the input tensor element-wise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -862,11 +879,11 @@ elementwise on the input tensors `A` and `B` (with Numpy-style broadcasting supp
 
 This operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -890,11 +907,11 @@ elementwise on the input tensors `A` and `B` (with Numpy-style broadcasting supp
 
 This operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -915,18 +932,19 @@ _ONNX BlackmanWindow operation_
 
 Generates a Blackman window as described in the paper https://ieeexplore.ieee.org/document/1455106.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `output_datatype` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `periodic` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>output_datatype</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>periodic</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -948,17 +966,18 @@ The operator casts the elements of a given input tensor (the first input) to
 the same data type as the elements of the second input tensor.
 See documentation of the Cast operator for further details.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `saturate` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>saturate</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -981,19 +1000,20 @@ Converts a map to a tensor.<br>The map key must be an int64 and the values will 
     in ascending order based on this key.<br>The operator supports dense packing or sparse packing.
     If using sparse packing, the key cannot exceed the max_map-1 value.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `cast_to` | ::mlir::StringAttr | string attribute
-| `map_form` | ::mlir::StringAttr | string attribute
-| `max_map` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>cast_to</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>map_form</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>max_map</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -1076,18 +1096,19 @@ The rules then become:
 | [x] < -FLT_MAX | NaN | NaN | -Inf | NaN |
 | else | RNE | RNE | RNE | RNE |
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ResultTypeInferenceOpInterface, ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ResultTypeInferenceOpInterface`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `saturate` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `to` | ::mlir::TypeAttr | any type attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>saturate</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>to</code></td><td>::mlir::TypeAttr</td><td>any type attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -1114,20 +1135,21 @@ Converts strings to integers and vice versa.<br>
     If the string default value is set, it will convert integers to strings.
     If the int default value is set, it will convert strings to integers.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `cats_int64s` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `cats_strings` | ::mlir::ArrayAttr | string array attribute
-| `default_int64` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `default_string` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>cats_int64s</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>cats_strings</code></td><td>::mlir::ArrayAttr</td><td>string array attribute</td></tr>
+<tr><td><code>default_int64</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>default_string</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -1149,11 +1171,11 @@ Ceil takes one input data (Tensor<T>) and produces one output data
 (Tensor<T>) where the ceil is, y = ceil(x), is applied to
 the tensor elementwise. If x is integral, +0, -0, NaN,  or infinite, x itself is returned.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -1179,17 +1201,18 @@ using formula:
 max(0,x) + min(0,alpha*(exp(x/alpha)-1))
 ```
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `alpha` | ::mlir::FloatAttr | 32-bit float attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>alpha</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -1216,17 +1239,18 @@ If the input dimensions are bigger than the crop shape, a centered cropping wind
 If the input dimensions are smaller than the crop shape, the input is padded on each side equally,
 so that the input is centered in the output.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axes` | ::mlir::ArrayAttr | 64-bit integer array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axes</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -1249,11 +1273,11 @@ Clip operator limits the given input within an interval. The interval is
 specified by the inputs 'min' and 'max'. They default to
 numeric_limits::lowest() and numeric_limits::max(), respectively.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -1277,11 +1301,11 @@ Clip operator limits the given input within an interval. The interval is
 specified by the inputs 'min' and 'max'. They default to
 numeric_limits::lowest() and numeric_limits::max(), respectively.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -1305,11 +1329,11 @@ Clip operator limits the given input within an interval. The interval is
 specified by the inputs 'min' and 'max'. They default to
 numeric_limits::lowest() and numeric_limits::max(), respectively.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -1333,18 +1357,19 @@ Clip operator limits the given input within an interval. The interval is
 specified with arguments 'min' and 'max'. They default to
 numeric_limits::lowest() and numeric_limits::max() respectively.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `max` | ::mlir::FloatAttr | 32-bit float attribute
-| `min` | ::mlir::FloatAttr | 32-bit float attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>max</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>min</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -1373,19 +1398,20 @@ NOTE:
   convolution formulas, it is required as input for more advanced scenarios as explained
   at PyTorch's implementation (https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/native/Col2Im.cpp#L10)
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `dilations` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `pads` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `strides` | ::mlir::ArrayAttr | 64-bit integer array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>dilations</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>pads</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -1410,17 +1436,18 @@ Selects slices from an input tensor along a given axis where condition evaluates
     Compress behaves like numpy.compress: https://docs.scipy.org/doc/numpy/reference/generated/numpy.compress.html
 
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -1444,18 +1471,19 @@ All input tensors must have the same shape, except for the dimension size of the
 By default 'new_axis' is 0, the behavior is similar to numpy.concatenate.
 When 'new_axis' is 1, the behavior is similar to numpy.stack.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `new_axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>new_axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -1475,23 +1503,24 @@ _ONNX Concat operation_
 
 Concatenate a list of tensors into a single tensor. All input tensors must have the same shape, except for the dimension size of the axis to concatenate on.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `inputs` | tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of bfloat16 type values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of string type values or tensor of 1-bit signless integer values or tensor of complex type with 32-bit float elements values or tensor of complex type with 64-bit float elements values
+| `inputs` | variadic of tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of bfloat16 type values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of string type values or tensor of 1-bit signless integer values or tensor of complex type with 32-bit float elements values or tensor of complex type with 64-bit float elements values
 
 #### Results:
 
@@ -1510,26 +1539,27 @@ v3 = onnx.transpose(v1)
 
 This operation is not part of the standard and was added to assist onnx-mlir.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `end` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `start` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `perm` | ::mlir::ArrayAttr | 64-bit integer array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>end</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>start</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>perm</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `inputs` | tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of bfloat16 type values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of string type values or tensor of 1-bit signless integer values or tensor of complex type with 32-bit float elements values or tensor of complex type with 64-bit float elements values
+| `inputs` | variadic of tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of bfloat16 type values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of string type values or tensor of 1-bit signless integer values or tensor of complex type with 32-bit float elements values or tensor of complex type with 64-bit float elements values
 
 #### Results:
 
@@ -1544,17 +1574,18 @@ _ONNX ConstantOfShape operation_
 
 Generate a tensor with given value and shape.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ResultTypeInferenceOpInterface, ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ResultTypeInferenceOpInterface`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `value` | ::mlir::Attribute | any attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>value</code></td><td>::mlir::Attribute</td><td>any attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -1566,7 +1597,7 @@ Effects: MemoryEffects::Effect{}
 
 | Result | Description |
 | :----: | ----------- |
-| `output` | tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 1-bit signless integer values
+| `output` | tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 1-bit signless integer values or tensor of bfloat16 type values or tensor of f8E4M3FN type values or tensor of f8E4M3FNUZ type values or tensor of f8E5M2 type values or tensor of f8E5M2FNUZ type values
 
 ### `onnx.Constant` (ONNXConstantOp)
 
@@ -1575,24 +1606,25 @@ _ONNX Constant operation_
 This operator produces a constant tensor. Exactly one of the provided attributes, either value, sparse_value,
 or value_* must be specified.
 
-Traits: AlwaysSpeculatableImplTrait, ConstantLike
+Traits: `AlwaysSpeculatableImplTrait`, `ConstantLike`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ResultTypeInferenceOpInterface, ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ResultTypeInferenceOpInterface`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `sparse_value` | ::mlir::Attribute | any attribute
-| `value` | ::mlir::Attribute | any attribute
-| `value_float` | ::mlir::FloatAttr | 32-bit float attribute
-| `value_floats` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `value_int` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `value_ints` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `value_string` | ::mlir::StringAttr | string attribute
-| `value_strings` | ::mlir::ArrayAttr | string array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>sparse_value</code></td><td>::mlir::Attribute</td><td>any attribute</td></tr>
+<tr><td><code>value</code></td><td>::mlir::Attribute</td><td>any attribute</td></tr>
+<tr><td><code>value_float</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>value_floats</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>value_int</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>value_ints</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>value_string</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>value_strings</code></td><td>::mlir::ArrayAttr</td><td>string array attribute</td></tr>
+</table>
 
 #### Results:
 
@@ -1607,22 +1639,23 @@ _ONNX ConvInteger operation_
 The integer convolution operator consumes an input tensor, its zero-point, a filter, and its zero-point,
 and computes the output. The production MUST never overflow. The accumulation may overflow if and only if in 32 bits.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `auto_pad` | ::mlir::StringAttr | string attribute
-| `dilations` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `group` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `kernel_shape` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `pads` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `strides` | ::mlir::ArrayAttr | 64-bit integer array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>auto_pad</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>dilations</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>group</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>kernel_shape</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>pads</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -1646,22 +1679,23 @@ _ONNX Conv operation_
 The convolution operator consumes an input tensor and a filter, and
 computes the output.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `auto_pad` | ::mlir::StringAttr | string attribute
-| `dilations` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `group` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `kernel_shape` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `pads` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `strides` | ::mlir::ArrayAttr | 64-bit integer array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>auto_pad</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>dilations</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>group</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>kernel_shape</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>pads</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -1696,24 +1730,25 @@ output_shape can also be explicitly specified in which case pads values are auto
 
 
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `auto_pad` | ::mlir::StringAttr | string attribute
-| `dilations` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `group` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `kernel_shape` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `output_padding` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `output_shape` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `pads` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `strides` | ::mlir::ArrayAttr | 64-bit integer array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>auto_pad</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>dilations</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>group</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>kernel_shape</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>output_padding</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>output_shape</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>pads</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -1735,11 +1770,11 @@ _ONNX Cos operation_
 
 Calculates the cosine of the given input tensor, element-wise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -1759,11 +1794,11 @@ _ONNX Cosh operation_
 
 Calculates the hyperbolic cosine of the given input tensor element-wise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -1802,18 +1837,19 @@ output = [5, 3, 0]
 ```
 
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `exclusive` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `reverse` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>exclusive</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>reverse</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -1884,52 +1920,104 @@ All of these additional attributes are optional, designed to be less
 intrusive. The .mlir file can remain the same when a new attribute is
 added.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `function_name` | ::mlir::StringAttr | string attribute
-| `output_element_type` | ::mlir::TypeAttr | any type attribute
-| `shape_infer_pattern` | ::mlir::StringAttr | string attribute
-| `inputs_for_infer` | ::mlir::ArrayAttr | 64-bit integer array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>function_name</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>output_element_type</code></td><td>::mlir::TypeAttr</td><td>any type attribute</td></tr>
+<tr><td><code>shape_infer_pattern</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>inputs_for_infer</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `inputs` | tensor of any type values or memref of any type values or none type
+| `inputs` | variadic of tensor of any type values or memref of any type values or none type
 
 #### Results:
 
 | Result | Description |
 | :----: | ----------- |
-| `outputs` | tensor of any type values or memref of any type values or none type
+| `outputs` | variadic of tensor of any type values or memref of any type values or none type
 
 ### `onnx.DFT` (ONNXDFTOp)
 
 _ONNX DFT operation_
 
-Computes the discrete Fourier transform of input.
+Computes the discrete Fourier Transform (DFT) of the input.
 
-Traits: AlwaysSpeculatableImplTrait
+Assuming the input has shape `[M, N]`, where `N` is the dimension over which the
+DFT is computed and `M` denotes the conceptual \"all other dimensions,\"
+the DFT `y[m, k]` of shape `[M, N]` is defined as
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+$$y[m, k] = \sum_{n=0}^{N-1} e^{-2 \pi j \frac{k n}{N} } x[m, n] ,$$
 
-Effects: MemoryEffects::Effect{}
+and the inverse transform is defined as
+
+$$x[m, n] = \frac{1}{N} \sum_{k=0}^{N-1} e^{2 \pi j \frac{k n}{N} } y[m, k] ,$$
+
+where $j$ is the imaginary unit.
+
+The actual shape of the output is specified in the \"output\" section.
+
+Reference: https://docs.scipy.org/doc/scipy/tutorial/fft.html
+
+Traits: `AlwaysSpeculatableImplTrait`
+
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
+
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `inverse` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `onesided` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>inverse</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>onesided</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `input` | tensor of bfloat16 type values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values
+| `dft_length` | tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or none type
+| `axis` | tensor of 64-bit signless integer values or none type
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `output` | tensor of bfloat16 type values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values
+
+### `onnx.DFTV17` (ONNXDFTV17Op)
+
+_ONNX DFT operation_
+
+Computes the discrete Fourier transform of input.
+
+Traits: `AlwaysSpeculatableImplTrait`
+
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
+
+Effects: `MemoryEffects::Effect{}`
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>inverse</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>onesided</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -1951,22 +2039,23 @@ _ONNX DeformConv operation_
 Performs deformable convolution as described in https://arxiv.org/abs/1703.06211 and https://arxiv.org/abs/1811.11168.
 This operator specification supports the general N-D case. Note that most common use cases have 2D or 3D data.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `dilations` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `group` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `kernel_shape` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `offset_group` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `pads` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `strides` | ::mlir::ArrayAttr | 64-bit integer array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>dilations</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>group</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>kernel_shape</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>offset_group</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>pads</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -2012,18 +2101,19 @@ tmp = np.transpose(tmp, [0, 1, 4, 2, 5, 3])
 y = np.reshape(tmp, [b, c // (blocksize ** 2), h * blocksize, w * blocksize])
 ```
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `blocksize` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `mode` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>blocksize</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>mode</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -2049,17 +2139,18 @@ there's no zero point (zero point is supposed to be 0).
 `zero-point` is usually not used in the case of float8e4m3fn, float8e4m3fnuz, float8e5m2, float8e5m2fnuz quantization,
 but the dequantization formula remains the same for consistency and 'x_scale' still determines the output type.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -2085,11 +2176,11 @@ and the inner-most 2 dimensions form square matrices.
 The output is a tensor of shape `[*]`, containing the determinants of all input submatrices.
 e.g., When the input is 2-D, the output is a scalar(shape is empty: `[]`).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -2120,18 +2211,19 @@ Uses an index mapping to convert a dictionary to an array.<br>
     then an input of ``{\"a\": 4, \"c\": 8}`` will produce an output of ``[4, 8, 0, 0]``.
 
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `int64_vocabulary` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `string_vocabulary` | ::mlir::ArrayAttr | string array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>int64_vocabulary</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>string_vocabulary</code></td><td>::mlir::ArrayAttr</td><td>string array attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -2169,10 +2261,11 @@ This operation is not part of the standard and was added to assist onnx-mlir.
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `group_id` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>group_id</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -2194,17 +2287,18 @@ The axis identifies the dimension within the shape which is going to be obtained
 
 This operation is not part of the standard and was added to assist onnx-mlir.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -2228,11 +2322,11 @@ This operator supports **multidirectional (i.e., Numpy-style) broadcasting**; fo
 
 (Opset 14 change): Extend supported types to include uint8, int8, uint16, and int16.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -2264,17 +2358,18 @@ scale = 1. / (1. - ratio).
 ```
 This operator has **optional** inputs/outputs. See [the doc](IR.md) for more details about the representation of optional arguments. An empty string may be used in the place of an actual argument's name to indicate a missing argument. Trailing optional arguments (those not followed by an argument that is present) may also be simply omitted.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `seed` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>seed</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -2295,14 +2390,14 @@ Effects: MemoryEffects::Effect{}
 
 _ONNX DynamicQuantizeLinear operation_
 
-A Function to fuse calculation for Scale, Zero Point and FP32->8Bit convertion of FP32 Input data.
+A Function to fuse calculation for Scale, Zero Point and FP32->8Bit conversion of FP32 Input data.
 Outputs Scale, ZeroPoint and Quantized Input for a given FP32 Input.
 Scale is calculated as:
 ```
-y_scale = (max(x) - min(x))/(qmax - qmin)
+y_scale = (maximum(0, max(x)) - minimum(0, min(x))) / (qmax - qmin)
 ```
 
-* where qmax and qmin are max and min values for quantization range .i.e [0, 255] in case of uint8
+* where qmax and qmin are max and min values for quantization range i.e. [0, 255] in case of uint8
 * data range is adjusted to include 0.
 
 Zero point is calculated as:
@@ -2323,11 +2418,11 @@ y = saturate (round (x / y_scale) + y_zero_point)
 * for saturation, it saturates to [0, 255] if it's uint8, or [-127, 127] if it's int8. Right now only uint8 is supported.
 * rounding to nearest ties to even.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -2350,7 +2445,7 @@ _ONNX Einsum operation_
 An einsum of the form `term1, term2 -> output-term` produces an output tensor using the following equation
 
 ```
-output[output-term] = reduce-sum( input1[term1] * input2[term] )
+output[output-term] = reduce-sum( input1[term1] * input2[term2] )
 ```
 
 where the reduce-sum performs a summation over all the indices occurring in the input terms (term1, term2)
@@ -2373,23 +2468,24 @@ Specifically, every occurrence of ellipsis in the equation must represent the sa
 The right-hand side may contain exactly one ellipsis. In implicit mode, the ellipsis dimensions are set to the
 beginning of the output. The equation string may contain space (U+0020) character.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `equation` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>equation</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `Inputs` | tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values
+| `Inputs` | variadic of tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values
 
 #### Results:
 
@@ -2406,17 +2502,18 @@ Elu takes one input data (Tensor<T>) and produces one output data
 0`, `f(x) = x for x >= 0`., is applied to the tensor elementwise.
 
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `alpha` | ::mlir::FloatAttr | 32-bit float attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>alpha</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -2440,9 +2537,10 @@ This operation is not part of the standard and was added to assist onnx-mlir.
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `func` | ::mlir::SymbolRefAttr | symbol reference attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>func</code></td><td>::mlir::SymbolRefAttr</td><td>symbol reference attribute</td></tr>
+</table>
 
 ### `onnx.Equal` (ONNXEqualOp)
 
@@ -2453,11 +2551,11 @@ elementwise on the input tensors `A` and `B` (with Numpy-style broadcasting supp
 
 This operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -2478,11 +2576,11 @@ _ONNX Erf operation_
 
 Computes the error function of the given input tensor element-wise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -2502,11 +2600,11 @@ _ONNX Exp operation_
 
 Calculates the exponential of the given input tensor, element-wise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -2533,11 +2631,11 @@ but the major difference is numpy.broadcast_to() does not allow shape to be smal
 It is possible that the output.shape is not equal to shape, when some dimensions in shape is equal to 1,
 or the shape.ndim < input.shape.ndim.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -2564,18 +2662,19 @@ is populated with ones, but attribute 'k' can be used to populate upper or lower
 The 'dtype' argument must be one of the data types specified in the 'DataType' enum field in the
 TensorProto message and be valid as an output type.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `dtype` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `k` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>dtype</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>k</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -2594,27 +2693,28 @@ Effects: MemoryEffects::Effect{}
 _ONNX FeatureVectorizer operation_
 
 Concatenates input tensors into one continuous output.<br>
-    All input shapes are 2-D and are concatenated along the second dimention. 1-D tensors are treated as [1,C].
+    All input shapes are 2-D and are concatenated along the second dimension. 1-D tensors are treated as [1,C].
     Inputs are copied to the output maintaining the order of the input arguments.<br>
     All inputs must be integers or floats, while the output will be all floating point values.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `inputdimensions` | ::mlir::ArrayAttr | 64-bit integer array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>inputdimensions</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `X` | tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 32-bit float values or tensor of 64-bit float values
+| `X` | variadic of tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 32-bit float values or tensor of 64-bit float values
 
 #### Results:
 
@@ -2630,17 +2730,18 @@ Flattens the input tensor into a 2D matrix. If input tensor has shape
 (d_0, d_1, ... d_n) then the output will have shape
 (d_0 X d_1 ... d_(axis-1), d_axis X d_(axis+1) ... X dn).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -2662,11 +2763,11 @@ Floor takes one input data (Tensor<T>) and produces one output data
 (Tensor<T>) where the floor is, y = floor(x), is applied to
 the tensor elementwise. If x is integral, +0, -0, NaN,  or infinite, x itself is returned.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -2732,24 +2833,25 @@ Equations (Default: f=Sigmoid, g=Tanh):
 * Ht = (1 - zt) (.) ht + zt (.) Ht-1
 This operator has **optional** inputs/outputs. See [the doc](IR.md) for more details about the representation of optional arguments. An empty string may be used in the place of an actual argument's name to indicate a missing argument. Trailing optional arguments (those not followed by an argument that is present) may also be simply omitted.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `activation_alpha` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `activation_beta` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `activations` | ::mlir::ArrayAttr | string array attribute
-| `clip` | ::mlir::FloatAttr | 32-bit float attribute
-| `direction` | ::mlir::StringAttr | string attribute
-| `hidden_size` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `layout` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `linear_before_reset` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>activation_alpha</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>activation_beta</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>activations</code></td><td>::mlir::ArrayAttr</td><td>string array attribute</td></tr>
+<tr><td><code>clip</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>direction</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>hidden_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>layout</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>linear_before_reset</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -2825,17 +2927,18 @@ output = [
 ]
 ```
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -2894,69 +2997,63 @@ The output tensor is obtained by mapping each index-tuple in the `indices` tenso
 
 This operator is the inverse of `ScatterND`.
 
-`Example 1`
+**Example 1**
 
-  batch_dims = 0
+```
+batch_dims = 0
+data    = [[0,1],[2,3]]   # data_shape    = [2, 2]
+indices = [[0,0],[1,1]]   # indices_shape = [2, 2]
+output  = [0,3]           # output_shape  = [2]
+```
 
-  data    = [[0,1],[2,3]]   # data_shape = [2, 2]
+**Example 2**
 
-  indices = [[0,0],[1,1]]   # indices_shape = [2, 2]
+```
+batch_dims = 0
+data    = [[0,1],[2,3]]  # data_shape    = [2, 2]
+indices = [[1],[0]]      # indices_shape = [2, 1]
+output  = [[2,3],[0,1]]  # output_shape  = [2, 2]
+```
 
-  output  = [0,3]           # output_shape = [2]
+**Example 3**
 
-`Example 2`
+```
+batch_dims = 0
+data    = [[[0,1],[2,3]],[[4,5],[6,7]]] # data_shape    = [2, 2, 2]
+indices = [[0,1],[1,0]]                 # indices_shape = [2, 2]
+output  = [[2,3],[4,5]]                 # output_shape  = [2, 2]
+```
 
-  batch_dims = 0
+**Example 4**
 
-  data    = [[0,1],[2,3]]  # data_shape = [2, 2]
+```
+batch_dims = 0
+data    = [[[0,1],[2,3]],[[4,5],[6,7]]] # data_shape    = [2, 2, 2]
+indices = [[[0,1]],[[1,0]]]             # indices_shape = [2, 1, 2]
+output  = [[[2,3]],[[4,5]]]             # output_shape  = [2, 1, 2]
+```
 
-  indices = [[1],[0]]      # indices_shape = [2, 1]
+**Example 5**
 
-  output  = [[2,3],[0,1]]  # output_shape = [2, 2]
+```
+batch_dims = 1
+data    = [[[0,1],[2,3]],[[4,5],[6,7]]] # data_shape    = [2, 2, 2]
+indices = [[1],[0]]                     # indices_shape = [2, 1]
+output  = [[2,3],[4,5]]                 # output_shape  = [2, 2]
+```
 
-`Example 3`
+Traits: `AlwaysSpeculatableImplTrait`
 
-  batch_dims = 0
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-  data    = [[[0,1],[2,3]],[[4,5],[6,7]]] # data_shape = [2, 2, 2]
-
-  indices = [[0,1],[1,0]]                 # indices_shape = [2, 2]
-
-  output  = [[2,3],[4,5]]                 # output_shape = [2, 2]
-
-`Example 4`
-
-  batch_dims = 0
-
-  data    = [[[0,1],[2,3]],[[4,5],[6,7]]] # data_shape = [2, 2, 2]
-
-  indices = [[[0,1]],[[1,0]]]             # indices_shape = [2, 1, 2]
-
-  output  = [[[2,3]],[[4,5]]]             # output_shape = [2, 1, 2]
-
-`Example 5`
-
-  batch_dims = 1
-
-  data    = [[[0,1],[2,3]],[[4,5],[6,7]]] # data_shape = [2, 2, 2]
-
-  indices = [[1],[0]]             # indices_shape = [2, 1]
-
-  output  = [[2,3],[4,5]]             # output_shape = [2, 2]
-
-
-
-Traits: AlwaysSpeculatableImplTrait
-
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
-
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `batch_dims` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>batch_dims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -3024,17 +3121,18 @@ output = [
 ]
 ```
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -3048,6 +3146,43 @@ Effects: MemoryEffects::Effect{}
 | Result | Description |
 | :----: | ----------- |
 | `output` | tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of bfloat16 type values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of string type values or tensor of 1-bit signless integer values or tensor of complex type with 32-bit float elements values or tensor of complex type with 64-bit float elements values
+
+### `onnx.Gelu` (ONNXGeluOp)
+
+_ONNX Gelu operation_
+
+Gelu takes one input data (Tensor<T>) and produces one
+output data (Tensor<T>) where the gaussian error linear units function,
+$y = 0.5 * x * (1 + erf(x/sqrt(2)))$ is applied to the tensor elementwise.
+If the attribute \"approximate\" is set to \"tanh\", the function estimation,
+$y = 0.5 * x * (1 + Tanh(sqrt(2/\pi) * (x + 0.044715 * x^3)))$ is used and applied
+to the tensor elementwise.
+
+
+Traits: `AlwaysSpeculatableImplTrait`
+
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
+
+Effects: `MemoryEffects::Effect{}`
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>approximate</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `X` | tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `Y` | tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values
 
 ### `onnx.Gemm` (ONNXGemmOp)
 
@@ -3066,20 +3201,21 @@ computation if attribute transA is non-zero, same for B and transB.
 This operator supports **unidirectional broadcasting** (tensor C should be unidirectional broadcastable to tensor A * B); for more details please check [the doc](Broadcasting.md).
 This operator has **optional** inputs/outputs. See [the doc](IR.md) for more details about the representation of optional arguments. An empty string may be used in the place of an actual argument's name to indicate a missing argument. Trailing optional arguments (those not followed by an argument that is present) may also be simply omitted.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `alpha` | ::mlir::FloatAttr | 32-bit float attribute
-| `beta` | ::mlir::FloatAttr | 32-bit float attribute
-| `transA` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `transB` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>alpha</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>beta</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>transA</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>transB</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -3103,11 +3239,11 @@ GlobalAveragePool consumes an input tensor X and applies average pooling across
  the values in the same channel. This is equivalent to AveragePool with kernel size
  equal to the spatial dimension of input tensor.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -3129,17 +3265,18 @@ GlobalLpPool consumes an input tensor X and applies lp pool pooling across
  the values in the same channel. This is equivalent to LpPool with kernel size
  equal to the spatial dimension of input tensor.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `p` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>p</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -3161,11 +3298,11 @@ GlobalMaxPool consumes an input tensor X and applies max pooling across
  the values in the same channel. This is equivalent to MaxPool with kernel size
  equal to the spatial dimension of input tensor.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -3307,31 +3444,32 @@ forward pass can be reused if the gradient is computed via reverse-mode
 auto-differentiation.
 
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `xs` | ::mlir::ArrayAttr | string array attribute
-| `y` | ::mlir::StringAttr | string attribute
-| `zs` | ::mlir::ArrayAttr | string array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>xs</code></td><td>::mlir::ArrayAttr</td><td>string array attribute</td></tr>
+<tr><td><code>y</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>zs</code></td><td>::mlir::ArrayAttr</td><td>string array attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `Inputs` | tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of string type values or tensor of 1-bit signless integer values or tensor of complex type with 32-bit float elements values or tensor of complex type with 64-bit float elements values
+| `Inputs` | variadic of tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of string type values or tensor of 1-bit signless integer values or tensor of complex type with 32-bit float elements values or tensor of complex type with 64-bit float elements values
 
 #### Results:
 
 | Result | Description |
 | :----: | ----------- |
-| `Outputs` | tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values
+| `Outputs` | variadic of tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values
 
 ### `onnx.Greater` (ONNXGreaterOp)
 
@@ -3342,11 +3480,11 @@ elementwise on the input tensors `A` and `B` (with Numpy-style broadcasting supp
 
 This operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -3370,11 +3508,11 @@ elementwise on the input tensors `A` and `B` (with Numpy-style broadcasting supp
 
 This operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -3407,19 +3545,20 @@ They are used to interpolate output values of `Y[N, C, H_out, W_out]`.
 The GridSample operator is often used in doing grid generator and sampler in the [Spatial Transformer Networks](https://arxiv.org/abs/1506.02025).
 See also in [torch.nn.functional.grid_sample](https://pytorch.org/docs/master/generated/torch.nn.functional.grid_sample.html#torch-nn-functional-grid-sample).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `align_corners` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `mode` | ::mlir::StringAttr | string attribute
-| `padding_mode` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>align_corners</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>mode</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>padding_mode</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -3454,18 +3593,19 @@ When the number of groups is the same as the number of channels, this operator i
 equivalent to InstanceNormalization. When there is only one group, this operator
 is equivalent to LayerNormalization.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `epsilon` | ::mlir::FloatAttr | 32-bit float attribute
-| `num_groups` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>epsilon</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>num_groups</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -3487,18 +3627,19 @@ _ONNX HammingWindow operation_
 
 Generates a Hamming window as described in the paper https://ieeexplore.ieee.org/document/1455106.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `output_datatype` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `periodic` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>output_datatype</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>periodic</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -3518,18 +3659,19 @@ _ONNX HannWindow operation_
 
 Generates a Hann window as described in the paper https://ieeexplore.ieee.org/document/1455106.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `output_datatype` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `periodic` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>output_datatype</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>periodic</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -3551,18 +3693,19 @@ HardSigmoid takes one input data (Tensor<T>) and produces one output data
 (Tensor<T>) where the HardSigmoid function, y = max(0, min(1, alpha * x + beta)),
 is applied to the tensor elementwise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `alpha` | ::mlir::FloatAttr | 32-bit float attribute
-| `beta` | ::mlir::FloatAttr | 32-bit float attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>alpha</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>beta</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -3584,11 +3727,11 @@ HardSwish takes one input data (Tensor<T>) and produces one output data (Tensor<
 the HardSwish function, y = x * max(0, min(1, alpha * x + beta)) = x * HardSigmoid<alpha, beta>(x),
 where alpha = 1/6 and beta = 0.5, is applied to the tensor elementwise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -3614,17 +3757,18 @@ The \"axis\" attribute indicates the dimension along which Hardmax
 will be performed. The output tensor has the same shape
 and contains the Hardmax values of the corresponding input.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -3644,11 +3788,11 @@ _ONNX Identity operation_
 
 Identity operator
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -3668,11 +3812,11 @@ _ONNX If operation_
 
 If conditional
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, HasOnnxSubgraphOpInterface, NoMemoryEffect (MemoryEffectOpInterface), ResultTypeInferenceOpInterface, ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `HasOnnxSubgraphOpInterface`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ResultTypeInferenceOpInterface`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -3684,7 +3828,7 @@ Effects: MemoryEffects::Effect{}
 
 | Result | Description |
 | :----: | ----------- |
-| `outputs` | tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of bfloat16 type values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of string type values or tensor of 1-bit signless integer values or tensor of complex type with 32-bit float elements values or tensor of complex type with 64-bit float elements values or tensor of f8E4M3FN type values or tensor of f8E4M3FNUZ type values or tensor of f8E5M2 type values or tensor of f8E5M2FNUZ type values or SeqType of tensor of 8-bit unsigned integer values values or SeqType of tensor of 16-bit unsigned integer values values or SeqType of tensor of 32-bit unsigned integer values values or SeqType of tensor of 64-bit unsigned integer values values or SeqType of tensor of 8-bit signless integer values values or SeqType of tensor of 16-bit signless integer values values or SeqType of tensor of 32-bit signless integer values values or SeqType of tensor of 64-bit signless integer values values or SeqType of tensor of bfloat16 type values values or SeqType of tensor of 16-bit float values values or SeqType of tensor of 32-bit float values values or SeqType of tensor of 64-bit float values values or SeqType of tensor of string type values values or SeqType of tensor of 1-bit signless integer values values or SeqType of tensor of complex type with 32-bit float elements values values or SeqType of tensor of complex type with 64-bit float elements values values or SeqType of tensor of f8E4M3FN type values values or SeqType of tensor of f8E4M3FNUZ type values values or SeqType of tensor of f8E5M2 type values values or SeqType of tensor of f8E5M2FNUZ type values values or OptType of SeqType of tensor of 8-bit unsigned integer values values values or OptType of SeqType of tensor of 16-bit unsigned integer values values values or OptType of SeqType of tensor of 32-bit unsigned integer values values values or OptType of SeqType of tensor of 64-bit unsigned integer values values values or OptType of SeqType of tensor of 8-bit signless integer values values values or OptType of SeqType of tensor of 16-bit signless integer values values values or OptType of SeqType of tensor of 32-bit signless integer values values values or OptType of SeqType of tensor of 64-bit signless integer values values values or OptType of SeqType of tensor of bfloat16 type values values values or OptType of SeqType of tensor of 16-bit float values values values or OptType of SeqType of tensor of 32-bit float values values values or OptType of SeqType of tensor of 64-bit float values values values or OptType of SeqType of tensor of string type values values values or OptType of SeqType of tensor of 1-bit signless integer values values values or OptType of SeqType of tensor of complex type with 32-bit float elements values values values or OptType of SeqType of tensor of complex type with 64-bit float elements values values values or OptType of tensor of 8-bit unsigned integer values values or OptType of tensor of 16-bit unsigned integer values values or OptType of tensor of 32-bit unsigned integer values values or OptType of tensor of 64-bit unsigned integer values values or OptType of tensor of 8-bit signless integer values values or OptType of tensor of 16-bit signless integer values values or OptType of tensor of 32-bit signless integer values values or OptType of tensor of 64-bit signless integer values values or OptType of tensor of bfloat16 type values values or OptType of tensor of 16-bit float values values or OptType of tensor of 32-bit float values values or OptType of tensor of 64-bit float values values or OptType of tensor of string type values values or OptType of tensor of 1-bit signless integer values values or OptType of tensor of complex type with 32-bit float elements values values or OptType of tensor of complex type with 64-bit float elements values values or OptType of tensor of f8E4M3FN type values values or OptType of tensor of f8E4M3FNUZ type values values or OptType of tensor of f8E5M2 type values values or OptType of tensor of f8E5M2FNUZ type values values
+| `outputs` | variadic of tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of bfloat16 type values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of string type values or tensor of 1-bit signless integer values or tensor of complex type with 32-bit float elements values or tensor of complex type with 64-bit float elements values or tensor of f8E4M3FN type values or tensor of f8E4M3FNUZ type values or tensor of f8E5M2 type values or tensor of f8E5M2FNUZ type values or SeqType of tensor of 8-bit unsigned integer values values or SeqType of tensor of 16-bit unsigned integer values values or SeqType of tensor of 32-bit unsigned integer values values or SeqType of tensor of 64-bit unsigned integer values values or SeqType of tensor of 8-bit signless integer values values or SeqType of tensor of 16-bit signless integer values values or SeqType of tensor of 32-bit signless integer values values or SeqType of tensor of 64-bit signless integer values values or SeqType of tensor of bfloat16 type values values or SeqType of tensor of 16-bit float values values or SeqType of tensor of 32-bit float values values or SeqType of tensor of 64-bit float values values or SeqType of tensor of string type values values or SeqType of tensor of 1-bit signless integer values values or SeqType of tensor of complex type with 32-bit float elements values values or SeqType of tensor of complex type with 64-bit float elements values values or SeqType of tensor of f8E4M3FN type values values or SeqType of tensor of f8E4M3FNUZ type values values or SeqType of tensor of f8E5M2 type values values or SeqType of tensor of f8E5M2FNUZ type values values or OptType of SeqType of tensor of 8-bit unsigned integer values values values or OptType of SeqType of tensor of 16-bit unsigned integer values values values or OptType of SeqType of tensor of 32-bit unsigned integer values values values or OptType of SeqType of tensor of 64-bit unsigned integer values values values or OptType of SeqType of tensor of 8-bit signless integer values values values or OptType of SeqType of tensor of 16-bit signless integer values values values or OptType of SeqType of tensor of 32-bit signless integer values values values or OptType of SeqType of tensor of 64-bit signless integer values values values or OptType of SeqType of tensor of bfloat16 type values values values or OptType of SeqType of tensor of 16-bit float values values values or OptType of SeqType of tensor of 32-bit float values values values or OptType of SeqType of tensor of 64-bit float values values values or OptType of SeqType of tensor of string type values values values or OptType of SeqType of tensor of 1-bit signless integer values values values or OptType of SeqType of tensor of complex type with 32-bit float elements values values values or OptType of SeqType of tensor of complex type with 64-bit float elements values values values or OptType of tensor of 8-bit unsigned integer values values or OptType of tensor of 16-bit unsigned integer values values or OptType of tensor of 32-bit unsigned integer values values or OptType of tensor of 64-bit unsigned integer values values or OptType of tensor of 8-bit signless integer values values or OptType of tensor of 16-bit signless integer values values or OptType of tensor of 32-bit signless integer values values or OptType of tensor of 64-bit signless integer values values or OptType of tensor of bfloat16 type values values or OptType of tensor of 16-bit float values values or OptType of tensor of 32-bit float values values or OptType of tensor of 64-bit float values values or OptType of tensor of string type values values or OptType of tensor of 1-bit signless integer values values or OptType of tensor of complex type with 32-bit float elements values values or OptType of tensor of complex type with 64-bit float elements values values or OptType of tensor of f8E4M3FN type values values or OptType of tensor of f8E4M3FNUZ type values values or OptType of tensor of f8E5M2 type values values or OptType of tensor of f8E5M2FNUZ type values values
 
 ### `onnx.Imputer` (ONNXImputerOp)
 
@@ -3699,20 +3843,21 @@ Replaces inputs that equal one value with another, leaving all other elements al
     which one depends on whether floats or integers are being processed.<br>
     The imputed_value attribute length can be 1 element, or it can have one element per input feature.<br>In other words, if the input tensor has the shape [*,F], then the length of the attribute array may be 1 or F. If it is 1, then it is broadcast along the last dimension and applied to each feature.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `imputed_value_floats` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `imputed_value_int64s` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `replaced_value_float` | ::mlir::FloatAttr | 32-bit float attribute
-| `replaced_value_int64` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>imputed_value_floats</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>imputed_value_int64s</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>replaced_value_float</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>replaced_value_int64</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -3737,17 +3882,18 @@ y = scale * (x - mean) / sqrt(variance + epsilon) + B,
 where mean and variance are computed per instance per channel.
 
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `epsilon` | ::mlir::FloatAttr | 32-bit float attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>epsilon</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -3769,24 +3915,25 @@ _ONNX IsInf operation_
 
 Map infinity to true and other values to false.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `detect_negative` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `detect_positive` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>detect_negative</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>detect_positive</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `X` | tensor of 32-bit float values or tensor of 64-bit float values
+| `X` | tensor of bfloat16 type values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of f8E4M3FN type values or tensor of f8E4M3FNUZ type values or tensor of f8E5M2 type values or tensor of f8E5M2FNUZ type values
 
 #### Results:
 
@@ -3800,17 +3947,17 @@ _ONNX IsNaN operation_
 
 Returns which elements of the input are NaN.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `X` | tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values
+| `X` | tensor of bfloat16 type values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of f8E4M3FN type values or tensor of f8E4M3FNUZ type values or tensor of f8E5M2 type values or tensor of f8E5M2FNUZ type values
 
 #### Results:
 
@@ -3833,20 +3980,21 @@ where `max(0, c - floor((size - 1) / 2)) <= i <= min(C - 1, c + ceil((size - 1) 
 
 `Y[n, c, d1, ..., dk] = X[n, c, d1, ..., dk] / (bias + alpha / size * square_sum[n, c, d1, ..., dk] ) ^ beta`
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `alpha` | ::mlir::FloatAttr | 32-bit float attribute
-| `beta` | ::mlir::FloatAttr | 32-bit float attribute
-| `bias` | ::mlir::FloatAttr | 32-bit float attribute
-| `size` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>alpha</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>beta</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>bias</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -3915,24 +4063,25 @@ Equations (Default: f=Sigmoid, g=Tanh, h=Tanh):
 * Ht = ot (.) h(Ct)
 This operator has **optional** inputs/outputs. See [the doc](IR.md) for more details about the representation of optional arguments. An empty string may be used in the place of an actual argument's name to indicate a missing argument. Trailing optional arguments (those not followed by an argument that is present) may also be simply omitted.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `activation_alpha` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `activation_beta` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `activations` | ::mlir::ArrayAttr | string array attribute
-| `clip` | ::mlir::FloatAttr | 32-bit float attribute
-| `direction` | ::mlir::StringAttr | string attribute
-| `hidden_size` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `input_forget` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `layout` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>activation_alpha</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>activation_beta</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>activations</code></td><td>::mlir::ArrayAttr</td><td>string array attribute</td></tr>
+<tr><td><code>clip</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>direction</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>hidden_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>input_forget</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>layout</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -3977,25 +4126,26 @@ Maps each element in the input tensor to another value.<br>
     For key look-up, bit-wise comparison is used so even a float NaN can be
     mapped to a value in 'values_*' attribute.<br>
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `default_float` | ::mlir::FloatAttr | 32-bit float attribute
-| `default_int64` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `default_string` | ::mlir::StringAttr | string attribute
-| `keys_floats` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `keys_int64s` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `keys_strings` | ::mlir::ArrayAttr | string array attribute
-| `values_floats` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `values_int64s` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `values_strings` | ::mlir::ArrayAttr | string array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>default_float</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>default_int64</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>default_string</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>keys_floats</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>keys_int64s</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>keys_strings</code></td><td>::mlir::ArrayAttr</td><td>string array attribute</td></tr>
+<tr><td><code>values_floats</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>values_int64s</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>values_strings</code></td><td>::mlir::ArrayAttr</td><td>string array attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -4051,21 +4201,24 @@ This is layer normalization defined in ONNX as function.
       Let `d[i]` indicate the i-th dimension of `X`.
       If `X`'s shape is `[d[0], ..., d[axis-1], d[axis], ..., d[rank-1]]`,
       the shape of `Mean` and `InvStdDev` is `[d[0], ..., d[axis-1], 1, ..., 1]`.
-      `Y` and `X` have the same shape.
+      `Y` and `X` have the same shape. This operator supports unidirectional broadcasting
+      (tensors `Scale` and `B` should be unidirectional broadcastable to tensor `X`);
+      for more details please check [the doc](Broadcasting.md).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `epsilon` | ::mlir::FloatAttr | 32-bit float attribute
-| `stash_type` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>epsilon</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>stash_type</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -4101,29 +4254,30 @@ The input and output tensors must have the same shape.
 
 This operation is not part of the standard and was added to assist onnx-mlir.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `target_layout` | ::mlir::Attribute | layout attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>target_layout</code></td><td>::mlir::Attribute</td><td>layout attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `data` | tensor of 32-bit float values
+| `data` | tensor of 16-bit float or 32-bit float values
 
 #### Results:
 
 | Result | Description |
 | :----: | ----------- |
-| `output` | tensor of 32-bit float values
+| `output` | tensor of 16-bit float or 32-bit float values
 
 ### `onnx.LeakyRelu` (ONNXLeakyReluOp)
 
@@ -4133,17 +4287,18 @@ LeakyRelu takes input data (Tensor<T>) and an argument alpha, and produces one
 output data (Tensor<T>) where the function `f(x) = alpha * x for x < 0`,
 `f(x) = x for x >= 0`, is applied to the data tensor elementwise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `alpha` | ::mlir::FloatAttr | 32-bit float attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>alpha</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -4166,11 +4321,11 @@ elementwise on the input tensors `A` and `B` (with Numpy-style broadcasting supp
 
 This operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -4194,11 +4349,11 @@ elementwise on the input tensors `A` and `B` (with Numpy-style broadcasting supp
 
 This operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -4219,22 +4374,23 @@ _ONNX LinearClassifier operation_
 
 Linear classifier
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `classlabels_ints` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `classlabels_strings` | ::mlir::ArrayAttr | string array attribute
-| `coefficients` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `intercepts` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `multi_class` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `post_transform` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>classlabels_ints</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>classlabels_strings</code></td><td>::mlir::ArrayAttr</td><td>string array attribute</td></tr>
+<tr><td><code>coefficients</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>intercepts</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>multi_class</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>post_transform</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -4260,20 +4416,21 @@ Generalized linear regression evaluation.<br>
     The coefficients array is of length n, and the coefficients for each target are contiguous.
     Intercepts are optional but if provided must match the number of targets.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `coefficients` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `intercepts` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `post_transform` | ::mlir::StringAttr | string attribute
-| `targets` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>coefficients</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>intercepts</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>post_transform</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>targets</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -4293,11 +4450,11 @@ _ONNX Log operation_
 
 Calculates the natural log of the given input tensor, element-wise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -4323,17 +4480,18 @@ The \"axis\" attribute indicates the dimension along which LogSoftmax
 will be performed. The output tensor has the same shape
 and contains the LogSoftmax values of the corresponding input.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -4487,11 +4645,11 @@ point-wise operators (e.g. dropout, residual connections, linear layer).
 
 The input/output of subgraph (produced by loop node) matching is based on order instead of name. The implementation will figure out the names based on this order.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, HasOnnxSubgraphOpInterface, NoMemoryEffect (MemoryEffectOpInterface), ResultTypeInferenceOpInterface, ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `HasOnnxSubgraphOpInterface`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ResultTypeInferenceOpInterface`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -4499,13 +4657,13 @@ Effects: MemoryEffects::Effect{}
 | :-----: | ----------- |
 | `M` | tensor of 64-bit signless integer values or none type
 | `cond` | tensor of 1-bit signless integer values or none type
-| `v_initial` | tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of bfloat16 type values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of string type values or tensor of 1-bit signless integer values or tensor of complex type with 32-bit float elements values or tensor of complex type with 64-bit float elements values or tensor of f8E4M3FN type values or tensor of f8E4M3FNUZ type values or tensor of f8E5M2 type values or tensor of f8E5M2FNUZ type values or SeqType of tensor of 8-bit unsigned integer values values or SeqType of tensor of 16-bit unsigned integer values values or SeqType of tensor of 32-bit unsigned integer values values or SeqType of tensor of 64-bit unsigned integer values values or SeqType of tensor of 8-bit signless integer values values or SeqType of tensor of 16-bit signless integer values values or SeqType of tensor of 32-bit signless integer values values or SeqType of tensor of 64-bit signless integer values values or SeqType of tensor of bfloat16 type values values or SeqType of tensor of 16-bit float values values or SeqType of tensor of 32-bit float values values or SeqType of tensor of 64-bit float values values or SeqType of tensor of string type values values or SeqType of tensor of 1-bit signless integer values values or SeqType of tensor of complex type with 32-bit float elements values values or SeqType of tensor of complex type with 64-bit float elements values values or SeqType of tensor of f8E4M3FN type values values or SeqType of tensor of f8E4M3FNUZ type values values or SeqType of tensor of f8E5M2 type values values or SeqType of tensor of f8E5M2FNUZ type values values or OptType of SeqType of tensor of 8-bit unsigned integer values values values or OptType of SeqType of tensor of 16-bit unsigned integer values values values or OptType of SeqType of tensor of 32-bit unsigned integer values values values or OptType of SeqType of tensor of 64-bit unsigned integer values values values or OptType of SeqType of tensor of 8-bit signless integer values values values or OptType of SeqType of tensor of 16-bit signless integer values values values or OptType of SeqType of tensor of 32-bit signless integer values values values or OptType of SeqType of tensor of 64-bit signless integer values values values or OptType of SeqType of tensor of bfloat16 type values values values or OptType of SeqType of tensor of 16-bit float values values values or OptType of SeqType of tensor of 32-bit float values values values or OptType of SeqType of tensor of 64-bit float values values values or OptType of SeqType of tensor of string type values values values or OptType of SeqType of tensor of 1-bit signless integer values values values or OptType of SeqType of tensor of complex type with 32-bit float elements values values values or OptType of SeqType of tensor of complex type with 64-bit float elements values values values or OptType of tensor of 8-bit unsigned integer values values or OptType of tensor of 16-bit unsigned integer values values or OptType of tensor of 32-bit unsigned integer values values or OptType of tensor of 64-bit unsigned integer values values or OptType of tensor of 8-bit signless integer values values or OptType of tensor of 16-bit signless integer values values or OptType of tensor of 32-bit signless integer values values or OptType of tensor of 64-bit signless integer values values or OptType of tensor of bfloat16 type values values or OptType of tensor of 16-bit float values values or OptType of tensor of 32-bit float values values or OptType of tensor of 64-bit float values values or OptType of tensor of string type values values or OptType of tensor of 1-bit signless integer values values or OptType of tensor of complex type with 32-bit float elements values values or OptType of tensor of complex type with 64-bit float elements values values or OptType of tensor of f8E4M3FN type values values or OptType of tensor of f8E4M3FNUZ type values values or OptType of tensor of f8E5M2 type values values or OptType of tensor of f8E5M2FNUZ type values values
+| `v_initial` | variadic of tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of bfloat16 type values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of string type values or tensor of 1-bit signless integer values or tensor of complex type with 32-bit float elements values or tensor of complex type with 64-bit float elements values or tensor of f8E4M3FN type values or tensor of f8E4M3FNUZ type values or tensor of f8E5M2 type values or tensor of f8E5M2FNUZ type values or SeqType of tensor of 8-bit unsigned integer values values or SeqType of tensor of 16-bit unsigned integer values values or SeqType of tensor of 32-bit unsigned integer values values or SeqType of tensor of 64-bit unsigned integer values values or SeqType of tensor of 8-bit signless integer values values or SeqType of tensor of 16-bit signless integer values values or SeqType of tensor of 32-bit signless integer values values or SeqType of tensor of 64-bit signless integer values values or SeqType of tensor of bfloat16 type values values or SeqType of tensor of 16-bit float values values or SeqType of tensor of 32-bit float values values or SeqType of tensor of 64-bit float values values or SeqType of tensor of string type values values or SeqType of tensor of 1-bit signless integer values values or SeqType of tensor of complex type with 32-bit float elements values values or SeqType of tensor of complex type with 64-bit float elements values values or SeqType of tensor of f8E4M3FN type values values or SeqType of tensor of f8E4M3FNUZ type values values or SeqType of tensor of f8E5M2 type values values or SeqType of tensor of f8E5M2FNUZ type values values or OptType of SeqType of tensor of 8-bit unsigned integer values values values or OptType of SeqType of tensor of 16-bit unsigned integer values values values or OptType of SeqType of tensor of 32-bit unsigned integer values values values or OptType of SeqType of tensor of 64-bit unsigned integer values values values or OptType of SeqType of tensor of 8-bit signless integer values values values or OptType of SeqType of tensor of 16-bit signless integer values values values or OptType of SeqType of tensor of 32-bit signless integer values values values or OptType of SeqType of tensor of 64-bit signless integer values values values or OptType of SeqType of tensor of bfloat16 type values values values or OptType of SeqType of tensor of 16-bit float values values values or OptType of SeqType of tensor of 32-bit float values values values or OptType of SeqType of tensor of 64-bit float values values values or OptType of SeqType of tensor of string type values values values or OptType of SeqType of tensor of 1-bit signless integer values values values or OptType of SeqType of tensor of complex type with 32-bit float elements values values values or OptType of SeqType of tensor of complex type with 64-bit float elements values values values or OptType of tensor of 8-bit unsigned integer values values or OptType of tensor of 16-bit unsigned integer values values or OptType of tensor of 32-bit unsigned integer values values or OptType of tensor of 64-bit unsigned integer values values or OptType of tensor of 8-bit signless integer values values or OptType of tensor of 16-bit signless integer values values or OptType of tensor of 32-bit signless integer values values or OptType of tensor of 64-bit signless integer values values or OptType of tensor of bfloat16 type values values or OptType of tensor of 16-bit float values values or OptType of tensor of 32-bit float values values or OptType of tensor of 64-bit float values values or OptType of tensor of string type values values or OptType of tensor of 1-bit signless integer values values or OptType of tensor of complex type with 32-bit float elements values values or OptType of tensor of complex type with 64-bit float elements values values or OptType of tensor of f8E4M3FN type values values or OptType of tensor of f8E4M3FNUZ type values values or OptType of tensor of f8E5M2 type values values or OptType of tensor of f8E5M2FNUZ type values values
 
 #### Results:
 
 | Result | Description |
 | :----: | ----------- |
-| `v_final_and_scan_outputs` | tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of bfloat16 type values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of string type values or tensor of 1-bit signless integer values or tensor of complex type with 32-bit float elements values or tensor of complex type with 64-bit float elements values or tensor of f8E4M3FN type values or tensor of f8E4M3FNUZ type values or tensor of f8E5M2 type values or tensor of f8E5M2FNUZ type values or SeqType of tensor of 8-bit unsigned integer values values or SeqType of tensor of 16-bit unsigned integer values values or SeqType of tensor of 32-bit unsigned integer values values or SeqType of tensor of 64-bit unsigned integer values values or SeqType of tensor of 8-bit signless integer values values or SeqType of tensor of 16-bit signless integer values values or SeqType of tensor of 32-bit signless integer values values or SeqType of tensor of 64-bit signless integer values values or SeqType of tensor of bfloat16 type values values or SeqType of tensor of 16-bit float values values or SeqType of tensor of 32-bit float values values or SeqType of tensor of 64-bit float values values or SeqType of tensor of string type values values or SeqType of tensor of 1-bit signless integer values values or SeqType of tensor of complex type with 32-bit float elements values values or SeqType of tensor of complex type with 64-bit float elements values values or SeqType of tensor of f8E4M3FN type values values or SeqType of tensor of f8E4M3FNUZ type values values or SeqType of tensor of f8E5M2 type values values or SeqType of tensor of f8E5M2FNUZ type values values or OptType of SeqType of tensor of 8-bit unsigned integer values values values or OptType of SeqType of tensor of 16-bit unsigned integer values values values or OptType of SeqType of tensor of 32-bit unsigned integer values values values or OptType of SeqType of tensor of 64-bit unsigned integer values values values or OptType of SeqType of tensor of 8-bit signless integer values values values or OptType of SeqType of tensor of 16-bit signless integer values values values or OptType of SeqType of tensor of 32-bit signless integer values values values or OptType of SeqType of tensor of 64-bit signless integer values values values or OptType of SeqType of tensor of bfloat16 type values values values or OptType of SeqType of tensor of 16-bit float values values values or OptType of SeqType of tensor of 32-bit float values values values or OptType of SeqType of tensor of 64-bit float values values values or OptType of SeqType of tensor of string type values values values or OptType of SeqType of tensor of 1-bit signless integer values values values or OptType of SeqType of tensor of complex type with 32-bit float elements values values values or OptType of SeqType of tensor of complex type with 64-bit float elements values values values or OptType of tensor of 8-bit unsigned integer values values or OptType of tensor of 16-bit unsigned integer values values or OptType of tensor of 32-bit unsigned integer values values or OptType of tensor of 64-bit unsigned integer values values or OptType of tensor of 8-bit signless integer values values or OptType of tensor of 16-bit signless integer values values or OptType of tensor of 32-bit signless integer values values or OptType of tensor of 64-bit signless integer values values or OptType of tensor of bfloat16 type values values or OptType of tensor of 16-bit float values values or OptType of tensor of 32-bit float values values or OptType of tensor of 64-bit float values values or OptType of tensor of string type values values or OptType of tensor of 1-bit signless integer values values or OptType of tensor of complex type with 32-bit float elements values values or OptType of tensor of complex type with 64-bit float elements values values or OptType of tensor of f8E4M3FN type values values or OptType of tensor of f8E4M3FNUZ type values values or OptType of tensor of f8E5M2 type values values or OptType of tensor of f8E5M2FNUZ type values values
+| `v_final_and_scan_outputs` | variadic of tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of bfloat16 type values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of string type values or tensor of 1-bit signless integer values or tensor of complex type with 32-bit float elements values or tensor of complex type with 64-bit float elements values or tensor of f8E4M3FN type values or tensor of f8E4M3FNUZ type values or tensor of f8E5M2 type values or tensor of f8E5M2FNUZ type values or SeqType of tensor of 8-bit unsigned integer values values or SeqType of tensor of 16-bit unsigned integer values values or SeqType of tensor of 32-bit unsigned integer values values or SeqType of tensor of 64-bit unsigned integer values values or SeqType of tensor of 8-bit signless integer values values or SeqType of tensor of 16-bit signless integer values values or SeqType of tensor of 32-bit signless integer values values or SeqType of tensor of 64-bit signless integer values values or SeqType of tensor of bfloat16 type values values or SeqType of tensor of 16-bit float values values or SeqType of tensor of 32-bit float values values or SeqType of tensor of 64-bit float values values or SeqType of tensor of string type values values or SeqType of tensor of 1-bit signless integer values values or SeqType of tensor of complex type with 32-bit float elements values values or SeqType of tensor of complex type with 64-bit float elements values values or SeqType of tensor of f8E4M3FN type values values or SeqType of tensor of f8E4M3FNUZ type values values or SeqType of tensor of f8E5M2 type values values or SeqType of tensor of f8E5M2FNUZ type values values or OptType of SeqType of tensor of 8-bit unsigned integer values values values or OptType of SeqType of tensor of 16-bit unsigned integer values values values or OptType of SeqType of tensor of 32-bit unsigned integer values values values or OptType of SeqType of tensor of 64-bit unsigned integer values values values or OptType of SeqType of tensor of 8-bit signless integer values values values or OptType of SeqType of tensor of 16-bit signless integer values values values or OptType of SeqType of tensor of 32-bit signless integer values values values or OptType of SeqType of tensor of 64-bit signless integer values values values or OptType of SeqType of tensor of bfloat16 type values values values or OptType of SeqType of tensor of 16-bit float values values values or OptType of SeqType of tensor of 32-bit float values values values or OptType of SeqType of tensor of 64-bit float values values values or OptType of SeqType of tensor of string type values values values or OptType of SeqType of tensor of 1-bit signless integer values values values or OptType of SeqType of tensor of complex type with 32-bit float elements values values values or OptType of SeqType of tensor of complex type with 64-bit float elements values values values or OptType of tensor of 8-bit unsigned integer values values or OptType of tensor of 16-bit unsigned integer values values or OptType of tensor of 32-bit unsigned integer values values or OptType of tensor of 64-bit unsigned integer values values or OptType of tensor of 8-bit signless integer values values or OptType of tensor of 16-bit signless integer values values or OptType of tensor of 32-bit signless integer values values or OptType of tensor of 64-bit signless integer values values or OptType of tensor of bfloat16 type values values or OptType of tensor of 16-bit float values values or OptType of tensor of 32-bit float values values or OptType of tensor of 64-bit float values values or OptType of tensor of string type values values or OptType of tensor of 1-bit signless integer values values or OptType of tensor of complex type with 32-bit float elements values values or OptType of tensor of complex type with 64-bit float elements values values or OptType of tensor of f8E4M3FN type values values or OptType of tensor of f8E4M3FNUZ type values values or OptType of tensor of f8E5M2 type values values or OptType of tensor of f8E5M2FNUZ type values values
 
 ### `onnx.LpNormalization` (ONNXLpNormalizationOp)
 
@@ -4513,18 +4671,19 @@ _ONNX LpNormalization operation_
 
 Given a matrix, apply Lp-normalization along the provided axis.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `p` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>p</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -4566,23 +4725,24 @@ LpPool consumes an input tensor X and applies Lp pooling across
  pad_shape[i] = (output_spatial_shape[i] - 1) * strides_spatial_shape[i] + {kernelSpatialShape} - input_spatial_shape[i]
  ```
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `auto_pad` | ::mlir::StringAttr | string attribute
-| `ceil_mode` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `dilations` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `kernel_shape` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `p` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `pads` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `strides` | ::mlir::ArrayAttr | 64-bit integer array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>auto_pad</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>ceil_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>dilations</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>kernel_shape</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>p</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>pads</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -4603,11 +4763,11 @@ _ONNX MatMulInteger operation_
 Matrix product that behaves like numpy.matmul: https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.matmul.html.
 The production MUST never overflow. The accumulation may overflow if and only if in 32 bits.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -4630,11 +4790,11 @@ _ONNX MatMul operation_
 
 Matrix product that behaves like numpy.matmul: https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.matmul.html
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -4657,17 +4817,17 @@ Element-wise max of each of the input tensors (with Numpy-style broadcasting sup
 All inputs and outputs must have the same data type.
 This operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `data_0` | tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values
+| `data_0` | variadic of tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values
 
 #### Results:
 
@@ -4683,20 +4843,27 @@ MaxPool consumes an input tensor X and applies max pooling across
  the tensor according to kernel sizes, stride sizes, and pad lengths.
  max pooling consisting of computing the max on all values of a
  subset of the input tensor according to the kernel size and downsampling the
- data into the output tensor Y for further processing. The output spatial shape will be following:
+ data into the output tensor Y for further processing. The output spatial shape is calculated differently
+ depending on whether explicit padding is used, where pads is employed, or auto padding is used, where auto_pad is utilized.
+ With explicit padding (https://pytorch.org/docs/stable/generated/torch.nn.MaxPool2d.html?highlight=maxpool#torch.nn.MaxPool2d):
  ```
- output_spatial_shape[i] = floor((input_spatial_shape[i] + pad_shape[i] - ((kernel_spatial_shape[i] - 1) * dilations[i] + 1)) / strides_spatial_shape[i] + 1)
+ output_spatial_shape[i] = floor((input_spatial_shape[i] + pad_shape[i] - dilation[i] * (kernel_shape[i] - 1) - 1) / strides_spatial_shape[i] + 1)
  ```
  or
  ```
- output_spatial_shape[i] = ceil((input_spatial_shape[i] + pad_shape[i] - ((kernel_spatial_shape[i] - 1) * dilations[i] + 1)) / strides_spatial_shape[i] + 1)
+ output_spatial_shape[i] = ceil((input_spatial_shape[i] + pad_shape[i] - dilation[i] * (kernel_shape[i] - 1) - 1) / strides_spatial_shape[i] + 1)
  ```
- if ceil_mode is enabled `pad_shape[i]` is the sum of pads along axis `i`.
+ if ceil_mode is enabled. `pad_shape[i]` is the sum of pads along axis `i`. Sliding windows that would start in the right padded region are ignored.
 
- `auto_pad` is a DEPRECATED attribute. If you are using them currently, the output spatial shape will be following:
+ `auto_pad` is a DEPRECATED attribute. If you are using them currently, the output spatial shape will be following when ceil_mode is enabled:
  ```
  VALID: output_spatial_shape[i] = ceil((input_spatial_shape[i] - ((kernel_spatial_shape[i] - 1) * dilations[i] + 1) + 1) / strides_spatial_shape[i])
  SAME_UPPER or SAME_LOWER: output_spatial_shape[i] = ceil(input_spatial_shape[i] / strides_spatial_shape[i])
+ ```
+ or when ceil_mode is disabled (https://www.tensorflow.org/api_docs/python/tf/keras/layers/AveragePooling2D):
+ ```
+ VALID: output_spatial_shape[i] = floor((input_spatial_shape[i] - ((kernel_spatial_shape[i] - 1) * dilations[i] + 1)) / strides_spatial_shape[i]) + 1
+ SAME_UPPER or SAME_LOWER: output_spatial_shape[i] = floor((input_spatial_shape[i] - 1) / strides_spatial_shape[i]) + 1
  ```
  And pad shape will be following if `SAME_UPPER` or `SAME_LOWER`:
  ```
@@ -4705,23 +4872,24 @@ MaxPool consumes an input tensor X and applies max pooling across
  The output of each pooling window is maximum number of elements exclude pad. 
 
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `auto_pad` | ::mlir::StringAttr | string attribute
-| `ceil_mode` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `dilations` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `kernel_shape` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `pads` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `storage_order` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `strides` | ::mlir::ArrayAttr | 64-bit integer array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>auto_pad</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>ceil_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>dilations</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>kernel_shape</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>pads</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>storage_order</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -4745,23 +4913,24 @@ See ONNXMaxPoolOp for a full description of the MaxPool semantics.
 
 This operation is not part of the standard and was added to assist onnx-mlir.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `auto_pad` | ::mlir::StringAttr | string attribute
-| `ceil_mode` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `dilations` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `kernel_shape` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `pads` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `storage_order` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `strides` | ::mlir::ArrayAttr | 64-bit integer array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>auto_pad</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>ceil_mode</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>dilations</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>kernel_shape</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>pads</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>storage_order</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -4783,18 +4952,19 @@ ROI max pool consumes an input tensor X and region of interests (RoIs) to
  apply max pooling across each RoI, to produce output 4-D tensor of shape
  (num_rois, channels, pooled_shape[0], pooled_shape[1]).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `pooled_shape` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `spatial_scale` | ::mlir::FloatAttr | 32-bit float attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>pooled_shape</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>spatial_scale</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -4816,7 +4986,7 @@ _ONNX MaxUnpool operation_
 MaxUnpool essentially computes the partial inverse of the MaxPool op.
  The input information to this op is typically the output information from a MaxPool op. The first
  input tensor X is the tensor that needs to be unpooled, which is typically the pooled tensor (first output)
- from MaxPool. The second input tensor, I, contains the indices to the (locally maximal) elements corrsponding
+ from MaxPool. The second input tensor, I, contains the indices to the (locally maximal) elements corresponding
  to the elements in the first input tensor X. Input tensor I is typically the second output of the MaxPool op.
  The third (optional) input is a tensor that specifies the output size of the unpooling operation.
 
@@ -4829,22 +4999,23 @@ MaxUnpool can produce the same output size for several input sizes, which makes 
  known/predictable size.
 
 In addition to the inputs, MaxUnpool takes three attributes, namely kernel_shape, strides, and pads,
- which define the exact unpooling op. The attributes typically have the same values as the corrsponding
+ which define the exact unpooling op. The attributes typically have the same values as the corresponding
  pooling op that the unpooling op is trying to invert.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `kernel_shape` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `pads` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `strides` | ::mlir::ArrayAttr | 64-bit integer array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>kernel_shape</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>pads</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -4868,17 +5039,17 @@ Element-wise mean of each of the input tensors (with Numpy-style broadcasting su
 All inputs and outputs must have the same data type.
 This operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `data_0` | tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values
+| `data_0` | variadic of tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values
 
 #### Results:
 
@@ -4893,17 +5064,18 @@ _ONNX MeanVarianceNormalization operation_
 A MeanVarianceNormalization Function: Perform mean variance normalization
       on the input tensor X using formula: `(X-EX)/sqrt(E(X-EX)^2)`
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axes` | ::mlir::ArrayAttr | 64-bit integer array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axes</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -4930,17 +5102,18 @@ In the returned matrix, all the triangles (filterbanks) have a peak value of 1.0
 
 The returned MelWeightMatrix can be used to right-multiply a spectrogram S of shape [frames, num_spectrogram_bins] of linear scale spectrum values (e.g. STFT magnitudes) to generate a \"mel spectrogram\" M of shape [frames, num_mel_bins].
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `output_datatype` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>output_datatype</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -4966,17 +5139,17 @@ Element-wise min of each of the input tensors (with Numpy-style broadcasting sup
 All inputs and outputs must have the same data type.
 This operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `data_0` | tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values
+| `data_0` | variadic of tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values
 
 #### Results:
 
@@ -4996,11 +5169,11 @@ Perform the linear unit element-wise on the input tensor X using formula:
 mish(x) = x * tanh(softplus(x)) = x * tanh(ln(1 + e^{x}))
 ```
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -5032,17 +5205,18 @@ Performs element-wise binary modulus (with Numpy-style broadcasting support).
 
   This operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `fmod` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>fmod</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -5122,20 +5296,21 @@ Compute one iteration of stochastic gradient update with momentum.
     concatenation of \"X_1\" and \"X_2\" (of course, their gradient and accumulate gradient should
     be concatenated too) and then our pseudo code becomes applicable.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `alpha` | ::mlir::FloatAttr | 32-bit float attribute
-| `beta` | ::mlir::FloatAttr | 32-bit float attribute
-| `mode` | ::mlir::StringAttr | string attribute
-| `norm_coefficient` | ::mlir::FloatAttr | 32-bit float attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>alpha</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>beta</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>mode</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>norm_coefficient</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -5143,13 +5318,13 @@ Effects: MemoryEffects::Effect{}
 | :-----: | ----------- |
 | `R` | tensor of 32-bit float values or tensor of 64-bit float values
 | `T` | tensor of 64-bit signless integer values
-| `inputs` | tensor of 32-bit float values or tensor of 64-bit float values
+| `inputs` | variadic of tensor of 32-bit float values or tensor of 64-bit float values
 
 #### Results:
 
 | Result | Description |
 | :----: | ----------- |
-| `outputs` | tensor of 32-bit float values or tensor of 64-bit float values
+| `outputs` | variadic of tensor of 32-bit float values or tensor of 64-bit float values
 
 ### `onnx.Mul` (ONNXMulOp)
 
@@ -5161,11 +5336,11 @@ This operator supports **multidirectional (i.e., Numpy-style) broadcasting**; fo
 
 (Opset 14 change): Extend supported types to include uint8, int8, uint16, and int16.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -5187,19 +5362,20 @@ _ONNX Multinomial operation_
 Generate a tensor of samples from a multinomial distribution according to the probabilities
 of each of the possible outcomes.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `dtype` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `sample_size` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `seed` | ::mlir::FloatAttr | 32-bit float attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>dtype</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>sample_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>seed</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -5221,11 +5397,11 @@ Neg takes one input data (Tensor<T>) and produces one output data
 (Tensor<T>) where each element flipped sign, y = -x, is applied to
 the tensor elementwise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -5345,18 +5521,19 @@ loss = np.sum(loss) / weight_total
 // -1.57
 ```
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `ignore_index` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `reduction` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>ignore_index</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>reduction</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -5384,17 +5561,18 @@ result in the same boxes being selected by the algorithm.
 The selected_indices output is a set of integers indexing into the input collection of bounding boxes representing the selected boxes.
 The bounding box coordinates corresponding to the selected indices can then be obtained using the Gather or GatherND operation.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `center_point_box` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>center_point_box</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -5422,11 +5600,11 @@ Returns the indices of the elements that are non-zero
     https://docs.scipy.org/doc/numpy/reference/generated/numpy.nonzero.html,
     but for scalar input, NonZero produces output shape (0, N) instead of (1, N), which is different from Numpy's behavior.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -5455,17 +5633,18 @@ Example:
 
 This operation is not part of the standard and was added to assist onnx-mlir.
 
-Traits: AlwaysSpeculatableImplTrait, ConstantLike
+Traits: `AlwaysSpeculatableImplTrait`, `ConstantLike`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface)
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `value` | ::mlir::UnitAttr | unit attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>value</code></td><td>::mlir::UnitAttr</td><td>unit attribute</td></tr>
+</table>
 
 #### Results:
 
@@ -5488,17 +5667,18 @@ Normalize the input.  There are three normalization modes, which have the corres
     For batches, that is, [N,C] tensors, normalization is done along the C axis. In other words, each row
     of the batch is normalized independently.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `norm` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>norm</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -5518,11 +5698,11 @@ _ONNX Not operation_
 
 Returns the negation of the input tensor element-wise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -5549,19 +5729,20 @@ Replace each input element with an array of ones and zeros, where a single
     If the input is a tensor of float, int32, or double, the data will be cast
     to integers and the cats_int64s category list will be used for the lookups.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `cats_int64s` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `cats_strings` | ::mlir::ArrayAttr | string array attribute
-| `zeros` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>cats_int64s</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>cats_strings</code></td><td>::mlir::ArrayAttr</td><td>string array attribute</td></tr>
+<tr><td><code>zeros</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -5599,17 +5780,18 @@ Produces a one-hot tensor based on inputs.
     output[i, j, k, input[i, j, k]] = 1 for all i, j, k and 0 otherwise.
 
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -5633,11 +5815,11 @@ If the input is a tensor or sequence type, it returns the input.
 If the input is an optional type, it outputs the element in the input.
 It is an error if the input is an empty optional-type (i.e. does not have an element) and the behavior is undefined in this case.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -5659,11 +5841,11 @@ Returns true if (1) the input is an optional-type and contains an element,
 or, (2) the input is a tensor or sequence type.
 If the input is not provided or is an empty optional-type, this op returns false.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -5684,17 +5866,18 @@ _ONNX Optional operation_
 Constructs an optional-type value containing either an empty optional of a certain type specified by the attribute,
 or a non-empty value containing the input element.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `type` | ::mlir::TypeAttr | any type attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>type</code></td><td>::mlir::TypeAttr</td><td>any type attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -5717,11 +5900,11 @@ elementwise on the input tensors `A` and `B` (with Numpy-style broadcasting supp
 
 This operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -5745,11 +5928,11 @@ output data (Tensor<T>) where the function `f(x) = slope * x for x < 0`,
 `f(x) = x for x >= 0`., is applied to the data tensor elementwise.
 This operator supports **unidirectional broadcasting** (tensor slope should be unidirectional broadcastable to input tensor X); for more details please check [the doc](Broadcasting.md).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -5869,17 +6052,18 @@ output = [
 ]
 ```
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `mode` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>mode</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -5976,17 +6160,18 @@ Example 3 (`edge` mode):
   ]
 
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `mode` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>mode</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -6082,17 +6267,18 @@ Example 3 (`edge` mode):
   ]
 
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `mode` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>mode</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -6188,17 +6374,18 @@ output = [
 ]
 ```
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `mode` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>mode</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -6236,19 +6423,20 @@ Example:
       ],
   ]
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `mode` | ::mlir::StringAttr | string attribute
-| `pads` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `value` | ::mlir::FloatAttr | 32-bit float attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>mode</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>pads</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>value</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -6271,11 +6459,11 @@ produces one output data (Tensor<T>) where the function `f(x) = x^exponent`,
 is applied to the data tensor elementwise.
 This operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -6301,15 +6489,16 @@ This operation is not part of the standard and was added to assist onnx-mlir.
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `op_name` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>op_name</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `input` | tensor of any type values or none type
+| `input` | variadic of tensor of any type values or none type
 
 ### `onnx.QLinearConv` (ONNXQLinearConvOp)
 
@@ -6323,22 +6512,23 @@ Each input or output and its related zero point must have same type.
 When bias is present it must be quantized using scale = input scale * weight scale and
 zero point as 0.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `auto_pad` | ::mlir::StringAttr | string attribute
-| `dilations` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `group` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `kernel_shape` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `pads` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `strides` | ::mlir::ArrayAttr | 64-bit integer array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>auto_pad</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>dilations</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>group</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>kernel_shape</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>pads</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>strides</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -6376,11 +6566,11 @@ for per column quantization. If the input is N-D tensor with shape [D1, D2, M, K
 have shape [D1, D2, M, 1] for per row quantization and shape [D1, D2, 1, K] for per column quantization.
 Production must never overflow, and accumulation may overflow if and only if in 32 bits.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -6415,18 +6605,19 @@ For (x / y_scale), it's rounding to the nearest even. Refer to https://en.wikipe
 but the quantization formula remains the same for consistency and
 the type of the attribute 'y_zero_point' still determines the quantization type.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `saturate` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>saturate</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -6441,6 +6632,78 @@ Effects: MemoryEffects::Effect{}
 | Result | Description |
 | :----: | ----------- |
 | `y` | tensor of 8-bit signless integer values or tensor of 8-bit unsigned integer values or tensor of f8E4M3FN type values or tensor of f8E4M3FNUZ type values or tensor of f8E5M2 type values or tensor of f8E5M2FNUZ type values
+
+### `onnx.RMSLayerNormalization` (ONNXRMSLayerNormalizationOp)
+
+_ONNX RMSLayerNormalization operation_
+
+This is RMS layer normalization defined in ONNX as function.
+      The overall computation can be split into two stages.
+      The first stage is an approximate standardization, which makes the
+      normalized elements have zero mean and unit variances.
+      See Equation (4) in [this paper](https://arxiv.org/pdf/1910.07467.pdf).
+      The computation required by standardization can be
+      described by the following equations.
+      ```
+      DD = Mul(X, X)
+      Var = ReduceMean<axes=normalized_axes>(DD)
+      VarEps = Add(Var, epsilon)
+      StdDev = Sqrt(VarEps)
+      InvStdDev = Reciprocal(StdDev)
+      Normalized = Mul(X, InvStdDev)
+      ```
+      where `normalized_axes` is `[axis, ..., rank of X - 1]`.
+      The variables `Var` and `StdDev` stand for approximate variance and
+      standard deviation, respectively.
+      Depending on `stash_type` attribute, the actual computation
+      must happen in different floating-point precision.
+      For example, if `stash_type` is 1, this operator casts
+      all input variables to 32-bit float, perform the computation, and
+      finally cast `Normalized` back to the original type of `X`.
+      The second stage then scales and shifts the outcome of the
+      first stage using
+      ```
+      NormalizedScaled = Mul(Normalized, Scale)
+      Y = Add(NormalizedScaled, B)
+      ```
+      The second stage doesn't depends on `stash_type`.
+      All equations are in [this syntax](https://github.com/onnx/onnx/blob/main/docs/Syntax.md).
+      The same variable (i.e., input, output, and attribute) uses
+      the same name in the equations above and this operator's definition.
+      Let `d[i]` indicate the i-th dimension of `X`.
+      If `X`'s shape is `[d[0], ..., d[axis-1], d[axis], ..., d[rank-1]]`,
+      the shape of `Mean` and `InvStdDev` is `[d[0], ..., d[axis-1], 1, ..., 1]`.
+      `Y` and `X` have the same shape.
+
+Traits: `AlwaysSpeculatableImplTrait`
+
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
+
+Effects: `MemoryEffects::Effect{}`
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>epsilon</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>stash_type</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `X` | tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values
+| `Scale` | tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values
+| `B` | tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values or none type
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `Y` | tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values
+| `InvStdDev` | tensor of 32-bit float values or tensor of bfloat16 type values or none type
 
 ### `onnx.RNN` (ONNXRNNOp)
 
@@ -6487,23 +6750,24 @@ Equations (Default: f=Tanh):
 * Ht = f(Xt*(Wi^T) + Ht-1*(Ri^T) + Wbi + Rbi)
 This operator has **optional** inputs/outputs. See [the doc](IR.md) for more details about the representation of optional arguments. An empty string may be used in the place of an actual argument's name to indicate a missing argument. Trailing optional arguments (those not followed by an argument that is present) may also be simply omitted.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `activation_alpha` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `activation_beta` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `activations` | ::mlir::ArrayAttr | string array attribute
-| `clip` | ::mlir::FloatAttr | 32-bit float attribute
-| `direction` | ::mlir::StringAttr | string attribute
-| `hidden_size` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `layout` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>activation_alpha</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>activation_beta</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>activations</code></td><td>::mlir::ArrayAttr</td><td>string array attribute</td></tr>
+<tr><td><code>clip</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>direction</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>hidden_size</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>layout</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -6535,20 +6799,21 @@ The data type is specified by the 'dtype' argument, or copied from the input ten
 The 'dtype' argument must be one of the data types specified in the 'DataType' enum field in the
 TensorProto message, and be valid as an output type.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `dtype` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `mean` | ::mlir::FloatAttr | 32-bit float attribute
-| `scale` | ::mlir::FloatAttr | 32-bit float attribute
-| `seed` | ::mlir::FloatAttr | 32-bit float attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>dtype</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>mean</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>scale</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>seed</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -6574,21 +6839,22 @@ The data type is specified by the 'dtype' argument. The 'dtype' argument must
 be one of the data types specified in the 'DataType' enum field in the
 TensorProto message.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ResultTypeInferenceOpInterface, ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ResultTypeInferenceOpInterface`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `dtype` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `mean` | ::mlir::FloatAttr | 32-bit float attribute
-| `scale` | ::mlir::FloatAttr | 32-bit float attribute
-| `seed` | ::mlir::FloatAttr | 32-bit float attribute
-| `shape` | ::mlir::ArrayAttr | 64-bit integer array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>dtype</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>mean</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>scale</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>seed</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>shape</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+</table>
 
 #### Results:
 
@@ -6608,20 +6874,21 @@ The data type is specified by the 'dtype' argument, or copied from the input ten
 The 'dtype' argument must be one of the data types specified in the 'DataType' enum field in the
 TensorProto message and be valid as an output type.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `dtype` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `high` | ::mlir::FloatAttr | 32-bit float attribute
-| `low` | ::mlir::FloatAttr | 32-bit float attribute
-| `seed` | ::mlir::FloatAttr | 32-bit float attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>dtype</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>high</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>low</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>seed</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -6646,21 +6913,22 @@ The data type is specified by the 'dtype' argument. The 'dtype' argument must
 be one of the data types specified in the 'DataType' enum field in the
 TensorProto message.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `dtype` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `high` | ::mlir::FloatAttr | 32-bit float attribute
-| `low` | ::mlir::FloatAttr | 32-bit float attribute
-| `seed` | ::mlir::FloatAttr | 32-bit float attribute
-| `shape` | ::mlir::ArrayAttr | 64-bit integer array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>dtype</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>high</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>low</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>seed</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>shape</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+</table>
 
 #### Results:
 
@@ -6703,11 +6971,11 @@ Inputs: start = 10, limit = 4, delta = -2
 Output: [10, 8, 6]
 ```
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -6731,11 +6999,11 @@ Reciprocal takes one input data (Tensor<T>) and produces one output data
 (Tensor<T>) where the reciprocal is, y = 1/x, is applied to
 the tensor elementwise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -6754,25 +7022,27 @@ Effects: MemoryEffects::Effect{}
 _ONNX ReduceL1 operation_
 
 Computes the L1 norm of the input tensor's elements along the provided axes. The resulting
-tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
 the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-valid.
+valid. Reduction over an empty set of values yields 0.
 
-The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-False instead of True.
 
-Traits: AlwaysSpeculatableImplTrait
+The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+to `False` instead of `True`.
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Traits: `AlwaysSpeculatableImplTrait`
 
-Effects: MemoryEffects::Effect{}
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
+
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `keepdims` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `noop_with_empty_axes` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>keepdims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>noop_with_empty_axes</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -6792,25 +7062,27 @@ Effects: MemoryEffects::Effect{}
 _ONNX ReduceL1 operation_
 
 Computes the L1 norm of the input tensor's elements along the provided axes. The resulting
-tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
 the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-valid.
+valid. Reduction over an empty set of values yields 0.
 
-The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-False instead of True.
 
-Traits: AlwaysSpeculatableImplTrait
+The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+to `False` instead of `True`.
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Traits: `AlwaysSpeculatableImplTrait`
 
-Effects: MemoryEffects::Effect{}
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
+
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axes` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `keepdims` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axes</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>keepdims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -6829,25 +7101,27 @@ Effects: MemoryEffects::Effect{}
 _ONNX ReduceL2 operation_
 
 Computes the L2 norm of the input tensor's elements along the provided axes. The resulting
-tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
 the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-valid.
+valid. Reduction over an empty set of values yields 0.
 
-The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-False instead of True.
 
-Traits: AlwaysSpeculatableImplTrait
+The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+to `False` instead of `True`.
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Traits: `AlwaysSpeculatableImplTrait`
 
-Effects: MemoryEffects::Effect{}
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
+
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `keepdims` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `noop_with_empty_axes` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>keepdims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>noop_with_empty_axes</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -6867,25 +7141,27 @@ Effects: MemoryEffects::Effect{}
 _ONNX ReduceL2 operation_
 
 Computes the L2 norm of the input tensor's elements along the provided axes. The resulting
-tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
 the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-valid.
+valid. Reduction over an empty set of values yields 0.
 
-The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-False instead of True.
 
-Traits: AlwaysSpeculatableImplTrait
+The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+to `False` instead of `True`.
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Traits: `AlwaysSpeculatableImplTrait`
 
-Effects: MemoryEffects::Effect{}
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
+
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axes` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `keepdims` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axes</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>keepdims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -6904,25 +7180,27 @@ Effects: MemoryEffects::Effect{}
 _ONNX ReduceLogSumExp operation_
 
 Computes the log sum exponent of the input tensor's elements along the provided axes. The resulting
-tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
 the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-valid.
+valid. Reduction over an empty set of values yields minus infinity (if supported by the datatype) or undefined otherwise.
 
-The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-False instead of True.
 
-Traits: AlwaysSpeculatableImplTrait
+The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+to `False` instead of `True`.
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Traits: `AlwaysSpeculatableImplTrait`
 
-Effects: MemoryEffects::Effect{}
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
+
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `keepdims` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `noop_with_empty_axes` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>keepdims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>noop_with_empty_axes</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -6942,25 +7220,27 @@ Effects: MemoryEffects::Effect{}
 _ONNX ReduceLogSumExp operation_
 
 Computes the log sum exponent of the input tensor's elements along the provided axes. The resulting
-tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
 the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-valid.
+valid. Reduction over an empty set of values yields minus infinity (if supported by the datatype) or undefined otherwise.
 
-The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-False instead of True.
 
-Traits: AlwaysSpeculatableImplTrait
+The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+to `False` instead of `True`.
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Traits: `AlwaysSpeculatableImplTrait`
 
-Effects: MemoryEffects::Effect{}
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
+
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axes` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `keepdims` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axes</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>keepdims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -6979,25 +7259,27 @@ Effects: MemoryEffects::Effect{}
 _ONNX ReduceLogSum operation_
 
 Computes the log sum of the input tensor's elements along the provided axes. The resulting
-tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
 the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-valid.
+valid. Reduction over an empty set of values yields minus infinity (if supported by the datatype) or undefined otherwise.
 
-The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-False instead of True.
 
-Traits: AlwaysSpeculatableImplTrait
+The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+to `False` instead of `True`.
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Traits: `AlwaysSpeculatableImplTrait`
 
-Effects: MemoryEffects::Effect{}
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
+
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `keepdims` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `noop_with_empty_axes` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>keepdims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>noop_with_empty_axes</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -7017,25 +7299,27 @@ Effects: MemoryEffects::Effect{}
 _ONNX ReduceLogSum operation_
 
 Computes the log sum of the input tensor's elements along the provided axes. The resulting
-tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
 the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-valid.
+valid. Reduction over an empty set of values yields minus infinity (if supported by the datatype) or undefined otherwise.
 
-The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-False instead of True.
 
-Traits: AlwaysSpeculatableImplTrait
+The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+to `False` instead of `True`.
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Traits: `AlwaysSpeculatableImplTrait`
 
-Effects: MemoryEffects::Effect{}
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
+
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axes` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `keepdims` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axes</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>keepdims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -7054,25 +7338,108 @@ Effects: MemoryEffects::Effect{}
 _ONNX ReduceMax operation_
 
 Computes the max of the input tensor's elements along the provided axes. The resulting
-tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
 the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-valid.
+valid. Reduction over an empty set of values yields minus infinity (if supported by the datatype) or the minimum value of the data type otherwise.
 
-The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-False instead of True.
 
-Traits: AlwaysSpeculatableImplTrait
+If the input data type is Boolean, the comparison should consider `False < True`.
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+to `False` instead of `True`.
 
-Effects: MemoryEffects::Effect{}
+Traits: `AlwaysSpeculatableImplTrait`
+
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
+
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `keepdims` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `noop_with_empty_axes` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>keepdims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>noop_with_empty_axes</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `data` | tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values or tensor of 8-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 1-bit signless integer values
+| `axes` | tensor of 64-bit signless integer values or none type
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `reduced` | tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values or tensor of 8-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 1-bit signless integer values
+
+### `onnx.ReduceMaxV13` (ONNXReduceMaxV13Op)
+
+_ONNX ReduceMax operation_
+
+Computes the max of the input tensor's elements along the provided axes. The resulting
+tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
+the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
+valid. Reduction over an empty set of values yields minus infinity (if supported by the datatype) or the minimum value of the data type otherwise.
+
+
+The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+to `False` instead of `True`.
+
+Traits: `AlwaysSpeculatableImplTrait`
+
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
+
+Effects: `MemoryEffects::Effect{}`
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axes</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>keepdims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `data` | tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values or tensor of 8-bit unsigned integer values or tensor of 8-bit signless integer values
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `reduced` | tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values or tensor of 8-bit unsigned integer values or tensor of 8-bit signless integer values
+
+### `onnx.ReduceMaxV18` (ONNXReduceMaxV18Op)
+
+_ONNX ReduceMax operation_
+
+Computes the max of the input tensor's elements along the provided axes. The resulting
+tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
+the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
+valid. Reduction over an empty set of values yields minus infinity (if supported by the datatype) or the minimum value of the data type otherwise.
+
+
+The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+to `False` instead of `True`.
+
+Traits: `AlwaysSpeculatableImplTrait`
+
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
+
+Effects: `MemoryEffects::Effect{}`
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>keepdims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>noop_with_empty_axes</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -7087,67 +7454,32 @@ Effects: MemoryEffects::Effect{}
 | :----: | ----------- |
 | `reduced` | tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values or tensor of 8-bit unsigned integer values or tensor of 8-bit signless integer values
 
-### `onnx.ReduceMaxV13` (ONNXReduceMaxV13Op)
-
-_ONNX ReduceMax operation_
-
-Computes the max of the input tensor's elements along the provided axes. The resulting
-tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
-the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-valid.
-
-The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-False instead of True.
-
-Traits: AlwaysSpeculatableImplTrait
-
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
-
-Effects: MemoryEffects::Effect{}
-
-#### Attributes:
-
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axes` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `keepdims` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-
-#### Operands:
-
-| Operand | Description |
-| :-----: | ----------- |
-| `data` | tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values or tensor of 8-bit unsigned integer values or tensor of 8-bit signless integer values
-
-#### Results:
-
-| Result | Description |
-| :----: | ----------- |
-| `reduced` | tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values or tensor of 8-bit unsigned integer values or tensor of 8-bit signless integer values
-
 ### `onnx.ReduceMean` (ONNXReduceMeanOp)
 
 _ONNX ReduceMean operation_
 
 Computes the mean of the input tensor's elements along the provided axes. The resulting
-tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
 the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-valid.
+valid. Reduction over an empty set of values yields undefined.
 
-The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-False instead of True.
 
-Traits: AlwaysSpeculatableImplTrait
+The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+to `False` instead of `True`.
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Traits: `AlwaysSpeculatableImplTrait`
 
-Effects: MemoryEffects::Effect{}
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
+
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `keepdims` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `noop_with_empty_axes` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>keepdims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>noop_with_empty_axes</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -7167,25 +7499,27 @@ Effects: MemoryEffects::Effect{}
 _ONNX ReduceMean operation_
 
 Computes the mean of the input tensor's elements along the provided axes. The resulting
-tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
 the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-valid.
+valid. Reduction over an empty set of values yields undefined.
 
-The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-False instead of True.
 
-Traits: AlwaysSpeculatableImplTrait
+The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+to `False` instead of `True`.
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Traits: `AlwaysSpeculatableImplTrait`
 
-Effects: MemoryEffects::Effect{}
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
+
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axes` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `keepdims` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axes</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>keepdims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -7204,25 +7538,108 @@ Effects: MemoryEffects::Effect{}
 _ONNX ReduceMin operation_
 
 Computes the min of the input tensor's elements along the provided axes. The resulting
-tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
 the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-valid.
+valid. Reduction over an empty set of values yields plus infinity (if supported by the datatype) or the maximum value of the data type otherwise.
 
-The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-False instead of True.
 
-Traits: AlwaysSpeculatableImplTrait
+If the input data type is Boolean, the comparison should consider `False < True`.
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+to `False` instead of `True`.
 
-Effects: MemoryEffects::Effect{}
+Traits: `AlwaysSpeculatableImplTrait`
+
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
+
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `keepdims` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `noop_with_empty_axes` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>keepdims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>noop_with_empty_axes</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `data` | tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values or tensor of 8-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 1-bit signless integer values
+| `axes` | tensor of 64-bit signless integer values or none type
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `reduced` | tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values or tensor of 8-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 1-bit signless integer values
+
+### `onnx.ReduceMinV13` (ONNXReduceMinV13Op)
+
+_ONNX ReduceMin operation_
+
+Computes the min of the input tensor's elements along the provided axes. The resulting
+tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
+the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
+valid. Reduction over an empty set of values yields plus infinity (if supported by the datatype) or the maximum value of the data type otherwise.
+
+
+The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+to `False` instead of `True`.
+
+Traits: `AlwaysSpeculatableImplTrait`
+
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
+
+Effects: `MemoryEffects::Effect{}`
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axes</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>keepdims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `data` | tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values or tensor of 8-bit unsigned integer values or tensor of 8-bit signless integer values
+
+#### Results:
+
+| Result | Description |
+| :----: | ----------- |
+| `reduced` | tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values or tensor of 8-bit unsigned integer values or tensor of 8-bit signless integer values
+
+### `onnx.ReduceMinV18` (ONNXReduceMinV18Op)
+
+_ONNX ReduceMin operation_
+
+Computes the min of the input tensor's elements along the provided axes. The resulting
+tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
+the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
+valid. Reduction over an empty set of values yields plus infinity (if supported by the datatype) or the maximum value of the data type otherwise.
+
+
+The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+to `False` instead of `True`.
+
+Traits: `AlwaysSpeculatableImplTrait`
+
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
+
+Effects: `MemoryEffects::Effect{}`
+
+#### Attributes:
+
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>keepdims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>noop_with_empty_axes</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -7237,67 +7654,32 @@ Effects: MemoryEffects::Effect{}
 | :----: | ----------- |
 | `reduced` | tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values or tensor of 8-bit unsigned integer values or tensor of 8-bit signless integer values
 
-### `onnx.ReduceMinV13` (ONNXReduceMinV13Op)
-
-_ONNX ReduceMin operation_
-
-Computes the min of the input tensor's elements along the provided axes. The resulting
-tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
-the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-valid.
-
-The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-False instead of True.
-
-Traits: AlwaysSpeculatableImplTrait
-
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
-
-Effects: MemoryEffects::Effect{}
-
-#### Attributes:
-
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axes` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `keepdims` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-
-#### Operands:
-
-| Operand | Description |
-| :-----: | ----------- |
-| `data` | tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values or tensor of 8-bit unsigned integer values or tensor of 8-bit signless integer values
-
-#### Results:
-
-| Result | Description |
-| :----: | ----------- |
-| `reduced` | tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values or tensor of 8-bit unsigned integer values or tensor of 8-bit signless integer values
-
 ### `onnx.ReduceProd` (ONNXReduceProdOp)
 
 _ONNX ReduceProd operation_
 
 Computes the product of the input tensor's elements along the provided axes. The resulting
-tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
 the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-valid.
+valid. Reduction over an empty set of values yields 1.
 
-The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-False instead of True.
 
-Traits: AlwaysSpeculatableImplTrait
+The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+to `False` instead of `True`.
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Traits: `AlwaysSpeculatableImplTrait`
 
-Effects: MemoryEffects::Effect{}
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
+
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `keepdims` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `noop_with_empty_axes` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>keepdims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>noop_with_empty_axes</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -7317,25 +7699,27 @@ Effects: MemoryEffects::Effect{}
 _ONNX ReduceProd operation_
 
 Computes the product of the input tensor's elements along the provided axes. The resulting
-tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
 the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-valid.
+valid. Reduction over an empty set of values yields 1.
 
-The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-False instead of True.
 
-Traits: AlwaysSpeculatableImplTrait
+The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+to `False` instead of `True`.
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Traits: `AlwaysSpeculatableImplTrait`
 
-Effects: MemoryEffects::Effect{}
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
+
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axes` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `keepdims` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axes</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>keepdims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -7354,25 +7738,27 @@ Effects: MemoryEffects::Effect{}
 _ONNX ReduceSum operation_
 
 Computes the sum of the input tensor's elements along the provided axes. The resulting
-tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
 the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-valid.
+valid. Reduction over an empty set of values yields 0.
 
-The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-False instead of True.
 
-Traits: AlwaysSpeculatableImplTrait
+The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+to `False` instead of `True`.
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Traits: `AlwaysSpeculatableImplTrait`
 
-Effects: MemoryEffects::Effect{}
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
+
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `keepdims` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `noop_with_empty_axes` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>keepdims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>noop_with_empty_axes</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -7392,25 +7778,27 @@ Effects: MemoryEffects::Effect{}
 _ONNX ReduceSumSquare operation_
 
 Computes the sum square of the input tensor's elements along the provided axes. The resulting
-tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
 the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-valid.
+valid. Reduction over an empty set of values yields 0.
 
-The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-False instead of True.
 
-Traits: AlwaysSpeculatableImplTrait
+The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+to `False` instead of `True`.
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Traits: `AlwaysSpeculatableImplTrait`
 
-Effects: MemoryEffects::Effect{}
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
+
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `keepdims` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `noop_with_empty_axes` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>keepdims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>noop_with_empty_axes</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -7430,25 +7818,27 @@ Effects: MemoryEffects::Effect{}
 _ONNX ReduceSumSquare operation_
 
 Computes the sum square of the input tensor's elements along the provided axes. The resulting
-tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
 the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-valid.
+valid. Reduction over an empty set of values yields 0.
 
-The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-False instead of True.
 
-Traits: AlwaysSpeculatableImplTrait
+The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+to `False` instead of `True`.
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Traits: `AlwaysSpeculatableImplTrait`
 
-Effects: MemoryEffects::Effect{}
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
+
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axes` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `keepdims` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axes</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>keepdims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -7473,18 +7863,19 @@ the resulted tensor have the reduced dimension pruned.
 The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
 False instead of True.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axes` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `keepdims` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axes</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>keepdims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -7506,11 +7897,11 @@ Relu takes one input data (Tensor<T>) and produces one output data
 (Tensor<T>) where the rectified linear function, y = max(0, x), is applied to
 the tensor elementwise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -7542,17 +7933,18 @@ If the attribute 'allowzero' is set, it is invalid for the specified shape to
 contain both a zero value and -1, as the value of the dimension corresponding
 to -1 cannot be determined uniquely.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `allowzero` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>allowzero</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -7578,25 +7970,26 @@ output_dimension = floor(input_dimension * (roi_end - roi_start) * scale)
 ```
 if input \\"sizes\\" is not specified.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `antialias` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `axes` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `coordinate_transformation_mode` | ::mlir::StringAttr | string attribute
-| `cubic_coeff_a` | ::mlir::FloatAttr | 32-bit float attribute
-| `exclude_outside` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `extrapolation_value` | ::mlir::FloatAttr | 32-bit float attribute
-| `keep_aspect_ratio_policy` | ::mlir::StringAttr | string attribute
-| `mode` | ::mlir::StringAttr | string attribute
-| `nearest_mode` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>antialias</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>axes</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>coordinate_transformation_mode</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>cubic_coeff_a</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>exclude_outside</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>extrapolation_value</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>keep_aspect_ratio_policy</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>mode</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>nearest_mode</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -7621,17 +8014,18 @@ Resize the input tensor.
 Each dimension value of the output tensor is:
   output_dimension = floor(input_dimension * scale).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `mode` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>mode</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -7654,22 +8048,23 @@ Resize the input tensor. In general, it calculates every value in the output ten
 Each dimension value of the output tensor is:
   output_dimension = floor(input_dimension * (roi_end - roi_start) * scale) if input \\"sizes\\" is not specified.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `coordinate_transformation_mode` | ::mlir::StringAttr | string attribute
-| `cubic_coeff_a` | ::mlir::FloatAttr | 32-bit float attribute
-| `exclude_outside` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `extrapolation_value` | ::mlir::FloatAttr | 32-bit float attribute
-| `mode` | ::mlir::StringAttr | string attribute
-| `nearest_mode` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>coordinate_transformation_mode</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>cubic_coeff_a</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>exclude_outside</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>extrapolation_value</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>mode</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>nearest_mode</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -7694,22 +8089,23 @@ Resize the input tensor. In general, it calculates every value in the output ten
 Each dimension value of the output tensor is:
   output_dimension = floor(input_dimension * (roi_end - roi_start) * scale) if input \\"sizes\\" is not specified.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `coordinate_transformation_mode` | ::mlir::StringAttr | string attribute
-| `cubic_coeff_a` | ::mlir::FloatAttr | 32-bit float attribute
-| `exclude_outside` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `extrapolation_value` | ::mlir::FloatAttr | 32-bit float attribute
-| `mode` | ::mlir::StringAttr | string attribute
-| `nearest_mode` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>coordinate_transformation_mode</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>cubic_coeff_a</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>exclude_outside</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>extrapolation_value</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>mode</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>nearest_mode</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -7735,25 +8131,26 @@ Each dimension value of the output tensor is: <br/>
   `output_dimension = floor(input_dimension * (roi_end - roi_start) * scale)` <br/>
 if input \\"sizes\\" is not specified.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `antialias` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `axes` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `coordinate_transformation_mode` | ::mlir::StringAttr | string attribute
-| `cubic_coeff_a` | ::mlir::FloatAttr | 32-bit float attribute
-| `exclude_outside` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `extrapolation_value` | ::mlir::FloatAttr | 32-bit float attribute
-| `keep_aspect_ratio_policy` | ::mlir::StringAttr | string attribute
-| `mode` | ::mlir::StringAttr | string attribute
-| `nearest_mode` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>antialias</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>axes</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>coordinate_transformation_mode</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>cubic_coeff_a</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>exclude_outside</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>extrapolation_value</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>keep_aspect_ratio_policy</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>mode</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>nearest_mode</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -7791,17 +8188,17 @@ This operation terminates a func::FuncOp in the ONNX dialect and is replaced
 by func::ReturnOp in StandardFuncReturnPass before lowering to Krnl or other
 dialects.
 
-Traits: AlwaysSpeculatableImplTrait, HasParent<func::FuncOp>, ReturnLike, Terminator
+Traits: `AlwaysSpeculatableImplTrait`, `HasParent<func::FuncOp>`, `ReturnLike`, `Terminator`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), RegionBranchTerminatorOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `RegionBranchTerminatorOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `operands` | any type
+| `operands` | variadic of any type
 
 ### `onnx.ReverseSequence` (ONNXReverseSequenceOp)
 
@@ -7841,18 +8238,19 @@ Example 2:
             [10.0, 9.0,  8.0,  11.0],
             [15.0, 14.0, 13.0, 12.0]]
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `batch_axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `time_axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>batch_axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>time_axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -7883,22 +8281,23 @@ map and from feature map into RoI feature; in each ROI bin,
 the value of the sampled locations are computed directly
 through bilinear interpolation.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `coordinate_transformation_mode` | ::mlir::StringAttr | string attribute
-| `mode` | ::mlir::StringAttr | string attribute
-| `output_height` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `output_width` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `sampling_ratio` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `spatial_scale` | ::mlir::FloatAttr | 32-bit float attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>coordinate_transformation_mode</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>mode</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>output_height</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>output_width</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>sampling_ratio</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>spatial_scale</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -7920,7 +8319,7 @@ _ONNX Round operation_
 
 Round takes one input Tensor and rounds the values, element-wise, meaning
 it finds the nearest integer for each value.
-In case of halfs, the rule is to round them to the nearest even integer.
+In case of halves, the rule is to round them to the nearest even integer.
 If input x is integral, +0, -0, NaN,  or infinite, x itself is returned.
 The output tensor has the same shape and type as the input.
 
@@ -7933,11 +8332,11 @@ round([1.5]) = [2.0]
 round([-4.5]) = [-4.0]
 ```
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -7957,17 +8356,18 @@ _ONNX STFT operation_
 
 Computes the Short-time Fourier Transform of the signal.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `onesided` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>onesided</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -7990,27 +8390,28 @@ _ONNX SVMClassifier operation_
 
 Support Vector Machine classifier
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `classlabels_ints` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `classlabels_strings` | ::mlir::ArrayAttr | string array attribute
-| `coefficients` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `kernel_params` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `kernel_type` | ::mlir::StringAttr | string attribute
-| `post_transform` | ::mlir::StringAttr | string attribute
-| `prob_a` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `prob_b` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `rho` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `support_vectors` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `vectors_per_class` | ::mlir::ArrayAttr | 64-bit integer array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>classlabels_ints</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>classlabels_strings</code></td><td>::mlir::ArrayAttr</td><td>string array attribute</td></tr>
+<tr><td><code>coefficients</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>kernel_params</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>kernel_type</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>post_transform</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>prob_a</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>prob_b</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>rho</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>support_vectors</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>vectors_per_class</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -8031,24 +8432,25 @@ _ONNX SVMRegressor operation_
 
 Support Vector Machine regression prediction and one-class SVM anomaly detection.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `coefficients` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `kernel_params` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `kernel_type` | ::mlir::StringAttr | string attribute
-| `n_supports` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `one_class` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `post_transform` | ::mlir::StringAttr | string attribute
-| `rho` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `support_vectors` | ::mlir::ArrayAttr | 32-bit float array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>coefficients</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>kernel_params</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>kernel_type</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>n_supports</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>one_class</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>post_transform</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>rho</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>support_vectors</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -8068,18 +8470,19 @@ _ONNX Scaler operation_
 
 Rescale input data, for example to standardize features by removing the mean and scaling to unit variance.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `offset` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `scale` | ::mlir::ArrayAttr | 32-bit float array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>offset</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>scale</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -8219,33 +8622,34 @@ values are computed in the outer graph, they need to be passed in as extra state
     }
 
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, HasOnnxSubgraphOpInterface, NoMemoryEffect (MemoryEffectOpInterface), ResultTypeInferenceOpInterface, ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `HasOnnxSubgraphOpInterface`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ResultTypeInferenceOpInterface`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `num_scan_inputs` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `scan_input_axes` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `scan_input_directions` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `scan_output_axes` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `scan_output_directions` | ::mlir::ArrayAttr | 64-bit integer array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>num_scan_inputs</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>scan_input_axes</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>scan_input_directions</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>scan_output_axes</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>scan_output_directions</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+</table>
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `initial_state_and_scan_inputs` | tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of bfloat16 type values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of string type values or tensor of 1-bit signless integer values or tensor of complex type with 32-bit float elements values or tensor of complex type with 64-bit float elements values or tensor of f8E4M3FN type values or tensor of f8E4M3FNUZ type values or tensor of f8E5M2 type values or tensor of f8E5M2FNUZ type values
+| `initial_state_and_scan_inputs` | variadic of tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of bfloat16 type values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of string type values or tensor of 1-bit signless integer values or tensor of complex type with 32-bit float elements values or tensor of complex type with 64-bit float elements values or tensor of f8E4M3FN type values or tensor of f8E4M3FNUZ type values or tensor of f8E5M2 type values or tensor of f8E5M2FNUZ type values
 
 #### Results:
 
 | Result | Description |
 | :----: | ----------- |
-| `final_state_and_scan_outputs` | tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of bfloat16 type values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of string type values or tensor of 1-bit signless integer values or tensor of complex type with 32-bit float elements values or tensor of complex type with 64-bit float elements values or tensor of f8E4M3FN type values or tensor of f8E4M3FNUZ type values or tensor of f8E5M2 type values or tensor of f8E5M2FNUZ type values
+| `final_state_and_scan_outputs` | variadic of tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of bfloat16 type values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of string type values or tensor of 1-bit signless integer values or tensor of complex type with 32-bit float elements values or tensor of complex type with 64-bit float elements values or tensor of f8E4M3FN type values or tensor of f8E4M3FNUZ type values or tensor of f8E5M2 type values or tensor of f8E5M2FNUZ type values
 
 ### `onnx.ScatterElements` (ONNXScatterElementsOp)
 
@@ -8275,8 +8679,8 @@ output[i][indices[i][j]] = updates[i][j] if axis = 1,
 ```
 When `reduction` is set to some reduction function `f`, the update corresponding to the [i][j] entry is performed as below:
 ```
-output[indices[i][j]][j] += f(output[indices[i][j]][j], updates[i][j]) if axis = 0,
-output[i][indices[i][j]] += f(output[i][indices[i][j]], updates[i][j]) if axis = 1,
+output[indices[i][j]][j] = f(output[indices[i][j]][j], updates[i][j]) if axis = 0,
+output[i][indices[i][j]] = f(output[i][indices[i][j]], updates[i][j]) if axis = 1,
 ```
 where the `f` is `+`, `*`, `max` or `min` as specified.
 
@@ -8314,18 +8718,19 @@ axis = 1
 output = [[1.0, 1.1, 3.0, 2.1, 5.0]]
 ```
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `reduction` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>reduction</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -8421,17 +8826,18 @@ output  = [[[5, 5, 5, 5], [6, 6, 6, 6], [7, 7, 7, 7], [8, 8, 8, 8]],
             [[8, 7, 6, 5], [4, 3, 2, 1], [1, 2, 3, 4], [5, 6, 7, 8]]]
 ```
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `reduction` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>reduction</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -8505,17 +8911,18 @@ Example 2:
   output = [[1.0, 1.1, 3.0, 2.1, 5.0]]
 ```
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -8540,18 +8947,19 @@ Selu takes one input data (Tensor<T>) and produces one output data
 `y = gamma * (alpha * e^x - alpha) for x <= 0`, `y = gamma * x for x > 0`,
 is applied to the tensor elementwise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `alpha` | ::mlir::FloatAttr | 32-bit float attribute
-| `gamma` | ::mlir::FloatAttr | 32-bit float attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>alpha</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>gamma</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -8573,11 +8981,11 @@ Outputs a tensor copy from the tensor at 'position' in 'input_sequence'.
 Accepted range for 'position' is in `[-n, n - 1]`, where `n` is the number of tensors in 'input_sequence'.
 Negative value means counting positions from the back.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -8599,17 +9007,17 @@ _ONNX SequenceConstruct operation_
 Construct a tensor sequence containing 'inputs' tensors.
 All tensors in 'inputs' must have the same data type.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `inputs` | tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of string type values or tensor of 1-bit signless integer values or tensor of complex type with 32-bit float elements values or tensor of complex type with 64-bit float elements values
+| `inputs` | variadic of tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of string type values or tensor of 1-bit signless integer values or tensor of complex type with 32-bit float elements values or tensor of complex type with 64-bit float elements values
 
 #### Results:
 
@@ -8623,17 +9031,18 @@ _ONNX SequenceEmpty operation_
 
 Construct an empty tensor sequence, with given data type.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `dtype` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>dtype</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Results:
 
@@ -8650,11 +9059,11 @@ Accepted range for 'position' is in `[-n, n - 1]`, where `n` is the number of te
 Negative value means counting positions from the back.
 'position' is optional, by default it erases the last tensor from 'input_sequence'.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -8679,11 +9088,11 @@ Accepted range for 'position' is in `[-n, n]`, where `n` is the number of tensor
 Negative value means counting positions from the back.
 'position' is optional, by default it inserts 'tensor' to the back of 'input_sequence'.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -8705,11 +9114,11 @@ _ONNX SequenceLength operation_
 
 Produces a scalar(tensor of empty shape) containing the number of tensors in 'input_sequence'.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -8742,24 +9151,24 @@ the input.
 This operator assumes that processing each sample is independent and could executed in parallel
 or in any order. Users cannot expect any specific ordering in which each subgraph is computed.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, HasOnnxSubgraphOpInterface, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `HasOnnxSubgraphOpInterface`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
 | `input_sequence` | SeqType of tensor of 8-bit unsigned integer values values or SeqType of tensor of 16-bit unsigned integer values values or SeqType of tensor of 32-bit unsigned integer values values or SeqType of tensor of 64-bit unsigned integer values values or SeqType of tensor of 8-bit signless integer values values or SeqType of tensor of 16-bit signless integer values values or SeqType of tensor of 32-bit signless integer values values or SeqType of tensor of 64-bit signless integer values values or SeqType of tensor of 16-bit float values values or SeqType of tensor of 32-bit float values values or SeqType of tensor of 64-bit float values values or SeqType of tensor of string type values values or SeqType of tensor of 1-bit signless integer values values or SeqType of tensor of complex type with 32-bit float elements values values or SeqType of tensor of complex type with 64-bit float elements values values
-| `additional_inputs` | tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of string type values or tensor of 1-bit signless integer values or tensor of complex type with 32-bit float elements values or tensor of complex type with 64-bit float elements values or SeqType of tensor of 8-bit unsigned integer values values or SeqType of tensor of 16-bit unsigned integer values values or SeqType of tensor of 32-bit unsigned integer values values or SeqType of tensor of 64-bit unsigned integer values values or SeqType of tensor of 8-bit signless integer values values or SeqType of tensor of 16-bit signless integer values values or SeqType of tensor of 32-bit signless integer values values or SeqType of tensor of 64-bit signless integer values values or SeqType of tensor of 16-bit float values values or SeqType of tensor of 32-bit float values values or SeqType of tensor of 64-bit float values values or SeqType of tensor of string type values values or SeqType of tensor of 1-bit signless integer values values or SeqType of tensor of complex type with 32-bit float elements values values or SeqType of tensor of complex type with 64-bit float elements values values
+| `additional_inputs` | variadic of tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of string type values or tensor of 1-bit signless integer values or tensor of complex type with 32-bit float elements values or tensor of complex type with 64-bit float elements values or SeqType of tensor of 8-bit unsigned integer values values or SeqType of tensor of 16-bit unsigned integer values values or SeqType of tensor of 32-bit unsigned integer values values or SeqType of tensor of 64-bit unsigned integer values values or SeqType of tensor of 8-bit signless integer values values or SeqType of tensor of 16-bit signless integer values values or SeqType of tensor of 32-bit signless integer values values or SeqType of tensor of 64-bit signless integer values values or SeqType of tensor of 16-bit float values values or SeqType of tensor of 32-bit float values values or SeqType of tensor of 64-bit float values values or SeqType of tensor of string type values values or SeqType of tensor of 1-bit signless integer values values or SeqType of tensor of complex type with 32-bit float elements values values or SeqType of tensor of complex type with 64-bit float elements values values
 
 #### Results:
 
 | Result | Description |
 | :----: | ----------- |
-| `out_sequence` | SeqType of tensor of 8-bit unsigned integer values values or SeqType of tensor of 16-bit unsigned integer values values or SeqType of tensor of 32-bit unsigned integer values values or SeqType of tensor of 64-bit unsigned integer values values or SeqType of tensor of 8-bit signless integer values values or SeqType of tensor of 16-bit signless integer values values or SeqType of tensor of 32-bit signless integer values values or SeqType of tensor of 64-bit signless integer values values or SeqType of tensor of 16-bit float values values or SeqType of tensor of 32-bit float values values or SeqType of tensor of 64-bit float values values or SeqType of tensor of string type values values or SeqType of tensor of 1-bit signless integer values values or SeqType of tensor of complex type with 32-bit float elements values values or SeqType of tensor of complex type with 64-bit float elements values values
+| `out_sequence` | variadic of SeqType of tensor of 8-bit unsigned integer values values or SeqType of tensor of 16-bit unsigned integer values values or SeqType of tensor of 32-bit unsigned integer values values or SeqType of tensor of 64-bit unsigned integer values values or SeqType of tensor of 8-bit signless integer values values or SeqType of tensor of 16-bit signless integer values values or SeqType of tensor of 32-bit signless integer values values or SeqType of tensor of 64-bit signless integer values values or SeqType of tensor of 16-bit float values values or SeqType of tensor of 32-bit float values values or SeqType of tensor of 64-bit float values values or SeqType of tensor of string type values values or SeqType of tensor of 1-bit signless integer values values or SeqType of tensor of complex type with 32-bit float elements values values or SeqType of tensor of complex type with 64-bit float elements values values
 
 ### `onnx.Shape` (ONNXShapeOp)
 
@@ -8804,18 +9213,19 @@ end: 2
 Output: [3]
 ```
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `end` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `start` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>end</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>start</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -8864,17 +9274,18 @@ At this moment, this operation only supports static dimensions.
 
 This operation is not part of the standard and was added to assist onnx-mlir.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `index_map` | ::mlir::AffineMapAttr | AffineMap attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>index_map</code></td><td>::mlir::AffineMapAttr</td><td>AffineMap attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -8897,18 +9308,19 @@ having same datatype and shape with input. It has two attributes, lambd and
 bias. The formula of this operator is: If x < -lambd, y = x + bias;
 If x > lambd, y = x - bias; Otherwise, y = 0.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `bias` | ::mlir::FloatAttr | 32-bit float attribute
-| `lambd` | ::mlir::FloatAttr | 32-bit float attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>bias</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+<tr><td><code>lambd</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -8930,11 +9342,11 @@ Sigmoid takes one input data (Tensor<T>) and produces one output data
 (Tensor<T>) where the sigmoid function, y = 1 / (1 + exp(-x)), is applied to the
 tensor elementwise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -8955,11 +9367,11 @@ _ONNX Sign operation_
 Calculate the sign of the given input tensor element-wise.
 If input > 0, output 1. if input < 0, output -1. if input == 0, output 0.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -8979,11 +9391,11 @@ _ONNX Sin operation_
 
 Calculates the sine of the given input tensor, element-wise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -9003,11 +9415,11 @@ _ONNX Sinh operation_
 
 Calculates the hyperbolic sine of the given input tensor element-wise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -9027,11 +9439,11 @@ _ONNX Size operation_
 
 Takes a tensor as input and outputs a int64 scalar that equals to the total number of elements of the input tensor.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -9055,16 +9467,16 @@ https://numpy.org/doc/stable/user/basics.indexing.html?highlight=slice#slicing-a
 Slice uses the `starts`, `ends`, `axes` and `steps` inputs to select a sub-tensor
 of its input `data` tensor.
 
-An effective `start[i]`, `end[i]`, and `step[i]` must be computed for each `i`
+An effective `starts[i]`, `ends[i]`, and `steps[i]` must be computed for each `i`
 in `[0, ... r-1]` where `r = rank(input)` as follows:
 
 If `axes` are omitted, they are set to `[0, ..., r-1]`.
 If `steps` are omitted, they are set to `[1, ..., 1]` of length `len(starts)`
 
-The effective values are initialized as `start[i] = 0`, `end[i] = dims[i]` where
-`dims` are the dimensions of `input` and `step[i] = `1.
+The effective values are initialized as `start[i] = 0`, `ends[i] = dims[i]` where
+`dims` are the dimensions of `input` and `steps[i] = 1`.
 
-All negative elements of `axes` are made non-negatve by adding `r` to them, where
+All negative elements of `axes` are made non-negative by adding `r` to them, where
 `r =rank(input)`.
 
 All negative values in `starts[i]` and `ends[i]` have `dims[axes[i]]` added to them,
@@ -9074,10 +9486,10 @@ and `[0, dims[axes[i]]-1]` for negative stepping.
 
 The clamping for the adjusted `ends[i]` depends on the sign of `steps[i]` and must
 accommodate copying 0 through `dims[axes[i]]` elements, so for positive stepping
-`end[axes[i]]` is clamped to `[0, dims[axes[i]]]`, while for negative stepping it
+`ends[axes[i]]` is clamped to `[0, dims[axes[i]]]`, while for negative stepping it
 is clamped to `[-1, dims[axes[i]]-1]`.
 
-Finally, `step[axes[i]] = steps[i]`.
+Finally, `steps[axes[i]] = steps[i]`.
 
 For slicing to the end of a dimension with unknown size, it is recommended to pass
 in `INT_MAX` when slicing forward and 'INT_MIN' when slicing backward.
@@ -9112,11 +9524,11 @@ result = [
 ]
 ```
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -9151,7 +9563,7 @@ After L is available, this operator can optionally do a reduction operator.
 * shape(labels): (N) where each value is 0 <= labels[i] <= C-1, or (N, D1, D2,..., Dk),
   with K >= 1 in case of K-dimensional loss.
 
-The loss for one sample, l_i, can caculated as follows:
+The loss for one sample, l_i, can calculated as follows:
 ```
 l[i][d1][d2]...[dk] = -y[i][c][d1][d2]..[dk], where i is the index of classes.
 ```
@@ -9179,18 +9591,19 @@ Finally, L is optionally reduced:
 * If reduction = 'mean', the output is scalar: ReduceMean(L), or if weight is provided: `ReduceSum(L) / ReduceSum(W)`,
   where tensor W is of shape `(N, D1, D2, ..., Dk)` and `W[n][d1][d2]...[dk] = weights[labels[i][d1][d2]...[dk]]`.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `ignore_index` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `reduction` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>ignore_index</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>reduction</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -9219,17 +9632,18 @@ The \"axis\" attribute indicates the dimension along which Softmax
 will be performed. The output tensor has the same shape
 and contains the Softmax values of the corresponding input.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -9262,17 +9676,18 @@ Each of these dimensions must be matched correctly, or else the operator
 will throw errors. The output tensor has the same shape
 and contains the softmax values of the corresponding input.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -9294,11 +9709,11 @@ Softplus takes one input data (Tensor<T>) and produces one output data
 (Tensor<T>) where the softplus function, y = ln(exp(x) + 1), is applied to
 the tensor elementwise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -9318,11 +9733,11 @@ _ONNX Softsign operation_
 
 Calculates the softsign (x/(1+|x|)) of the given input tensor element-wise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -9344,17 +9759,18 @@ SpaceToDepth rearranges blocks of spatial data into depth. More specifically,
 this op outputs a copy of the input tensor where values from the height and width dimensions
 are moved to the depth dimension.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `blocksize` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>blocksize</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -9378,18 +9794,19 @@ If the attribute 'num_outputs' is specified, then the tensor is split into equal
 If the tensor is not evenly splittable into `num_outputs`, the last chunk will be smaller.
 If the input 'split' is specified, it indicates the sizes of each output in the split.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `num_outputs` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>num_outputs</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -9402,7 +9819,7 @@ Effects: MemoryEffects::Effect{}
 
 | Result | Description |
 | :----: | ----------- |
-| `outputs` | tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of bfloat16 type values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of string type values or tensor of 1-bit signless integer values or tensor of complex type with 32-bit float elements values or tensor of complex type with 64-bit float elements values
+| `outputs` | variadic of tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of bfloat16 type values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of string type values or tensor of 1-bit signless integer values or tensor of complex type with 32-bit float elements values or tensor of complex type with 64-bit float elements values
 
 ### `onnx.SplitToSequence` (ONNXSplitToSequenceOp)
 
@@ -9421,18 +9838,19 @@ If 'split' is a 1-dimensional tensor, the input tensor is split into 'size(split
 with lengths of the parts on 'axis' specified in 'split'. In this scenario, the sum of entries
 in 'split' must be equal to the dimension size of input tensor on 'axis'.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `keepdims` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>keepdims</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -9455,18 +9873,19 @@ Split a tensor into a list of tensors, along the specified
 'axis'. Lengths of the parts can be specified using argument 'split'.
 Otherwise, the tensor is split to equal sized parts.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `split` | ::mlir::ArrayAttr | 64-bit integer array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>split</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -9478,7 +9897,7 @@ Effects: MemoryEffects::Effect{}
 
 | Result | Description |
 | :----: | ----------- |
-| `outputs` | tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of string type values or tensor of 1-bit signless integer values or tensor of complex type with 32-bit float elements values or tensor of complex type with 64-bit float elements values
+| `outputs` | variadic of tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of string type values or tensor of 1-bit signless integer values or tensor of complex type with 32-bit float elements values or tensor of complex type with 64-bit float elements values
 
 ### `onnx.SplitV13` (ONNXSplitV13Op)
 
@@ -9488,17 +9907,18 @@ Split a tensor into a list of tensors, along the specified
 'axis'. Lengths of the parts can be specified using input 'split'.
 Otherwise, the tensor is split to equal sized parts.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -9511,7 +9931,7 @@ Effects: MemoryEffects::Effect{}
 
 | Result | Description |
 | :----: | ----------- |
-| `outputs` | tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of bfloat16 type values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of string type values or tensor of 1-bit signless integer values or tensor of complex type with 32-bit float elements values or tensor of complex type with 64-bit float elements values
+| `outputs` | variadic of tensor of 8-bit unsigned integer values or tensor of 16-bit unsigned integer values or tensor of 32-bit unsigned integer values or tensor of 64-bit unsigned integer values or tensor of 8-bit signless integer values or tensor of 16-bit signless integer values or tensor of 32-bit signless integer values or tensor of 64-bit signless integer values or tensor of bfloat16 type values or tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of string type values or tensor of 1-bit signless integer values or tensor of complex type with 32-bit float elements values or tensor of complex type with 64-bit float elements values
 
 ### `onnx.Sqrt` (ONNXSqrtOp)
 
@@ -9521,11 +9941,11 @@ Square root takes one input data (Tensor<T>) and produces one output data
 (Tensor<T>) where the square root is, y = x^0.5, is applied to
 the tensor elementwise. If x is negative, then it will return NaN.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -9548,11 +9968,11 @@ Takes an input `axes` with a list of axes to squeeze.
 If `axes` is not provided, all the single dimensions will be removed from
 the shape. If an axis is selected with shape entry not equal to one, an error is raised.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -9576,17 +9996,18 @@ Takes a  parameter `axes` with a list of axes to squeeze.
 If `axes` is not provided, all the single dimensions will be removed from
 the shape. If an axis is selected with shape entry not equal to one, an error is raised.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axes` | ::mlir::ArrayAttr | 64-bit integer array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axes</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -9614,20 +10035,21 @@ This operator only accepts [C]- and [1, C]-tensor.
 If all elements in X are dropped, the output will be the empty value of string tensor with shape [1]
 if input shape is [C] and shape [1, 1] if input shape is [1, C].
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `case_change_action` | ::mlir::StringAttr | string attribute
-| `is_case_sensitive` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `locale` | ::mlir::StringAttr | string attribute
-| `stopwords` | ::mlir::ArrayAttr | string array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>case_change_action</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>is_case_sensitive</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>locale</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>stopwords</code></td><td>::mlir::ArrayAttr</td><td>string array attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -9651,11 +10073,11 @@ This operator supports **multidirectional (i.e., Numpy-style) broadcasting**; fo
 
 (Opset 14 change): Extend supported types to include uint8, int8, uint16, and int16.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -9678,17 +10100,17 @@ Element-wise sum of each of the input tensors (with Numpy-style broadcasting sup
 All inputs and outputs must have the same data type.
 This operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `data_0` | tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values
+| `data_0` | variadic of tensor of 16-bit float values or tensor of 32-bit float values or tensor of 64-bit float values or tensor of bfloat16 type values
 
 #### Results:
 
@@ -9702,11 +10124,11 @@ _ONNX Tan operation_
 
 Calculates the tangent of the given input tensor, element-wise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -9726,11 +10148,11 @@ _ONNX Tanh operation_
 
 Calculates the hyperbolic tangent of the given input tensor element-wise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -9776,25 +10198,26 @@ this operator first computes the counts of all n-grams and then scale them by th
 Only one of pool_strings and pool_int64s can be set. If pool_int64s is set, the input should be an integer tensor.
 If pool_strings is set, the input must be a string tensor.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `max_gram_length` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `max_skip_count` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `min_gram_length` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `mode` | ::mlir::StringAttr | string attribute
-| `ngram_counts` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `ngram_indexes` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `pool_int64s` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `pool_strings` | ::mlir::ArrayAttr | string array attribute
-| `weights` | ::mlir::ArrayAttr | 32-bit float array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>max_gram_length</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>max_skip_count</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>min_gram_length</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>mode</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>ngram_counts</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>ngram_indexes</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>pool_int64s</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>pool_strings</code></td><td>::mlir::ArrayAttr</td><td>string array attribute</td></tr>
+<tr><td><code>weights</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -9816,17 +10239,18 @@ ThresholdedRelu takes one input data (Tensor<T>) and produces one output data
 (Tensor<T>) where the rectified linear function, y = x for x > alpha, y = 0 otherwise,
 is applied to the tensor elementwise.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `alpha` | ::mlir::FloatAttr | 32-bit float attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>alpha</code></td><td>::mlir::FloatAttr</td><td>32-bit float attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -9848,11 +10272,11 @@ Constructs a tensor by tiling a given tensor.
 This is the same as function `tile` in Numpy, but no broadcast.
 For example A = [[1, 2], [3, 4]], B = [1, 2], tile(A, B) = [[1, 2, 1, 2], [3, 4, 3, 4]]
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -9872,11 +10296,11 @@ Effects: MemoryEffects::Effect{}
 _ONNX TopK operation_
 
 Retrieve the top-K largest or smallest elements along a specified axis. Given an input tensor of
-shape [a_1, a_2, ..., a_n, r] and integer argument k, return two outputs:
+shape [a_0, a_1, ..., a_{n-1\}\] and integer argument k, return two outputs:
 
-* Value tensor of shape [a_1, a_2, ..., a_{axis-1}, k, a_{axis+1}, ... a_n]
+* Value tensor of shape [a_0, a_1, ..., a_{axis-1}, k, a_{axis+1}, ... a_{n-1\}\]
   which contains the values of the top k elements along the specified axis
-* Index tensor of shape [a_1, a_2, ..., a_{axis-1}, k, a_{axis+1}, ... a_n] which
+* Index tensor of shape [a_0, a_1, ..., a_{axis-1}, k, a_{axis+1}, ... a_{n-1\}\] which
   contains the indices of the top k elements (original indices from the input
   tensor).
 
@@ -9887,19 +10311,20 @@ shape [a_1, a_2, ..., a_n, r] and integer argument k, return two outputs:
 Given two equivalent values, this operator uses the indices along the axis as
 a tiebreaker. That is, the element with the lower index will appear first.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `largest` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `sorted` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>largest</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>sorted</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -9923,17 +10348,18 @@ Transpose the input tensor similar to numpy.transpose. For example, when
 perm=(1, 0, 2), given an input tensor of shape (1, 2, 3), the output shape
 will be (2, 1, 3).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `perm` | ::mlir::ArrayAttr | 64-bit integer array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>perm</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -9961,33 +10387,34 @@ Tree Ensemble classifier.  Returns the top class for each of N inputs.<br>
     One and only one of classlabels_strings or classlabels_int64s
     will be defined. The class_ids are indices into this list.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `base_values` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `class_ids` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `class_nodeids` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `class_treeids` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `class_weights` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `classlabels_int64s` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `classlabels_strings` | ::mlir::ArrayAttr | string array attribute
-| `nodes_falsenodeids` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `nodes_featureids` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `nodes_hitrates` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `nodes_missing_value_tracks_true` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `nodes_modes` | ::mlir::ArrayAttr | string array attribute
-| `nodes_nodeids` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `nodes_treeids` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `nodes_truenodeids` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `nodes_values` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `post_transform` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>base_values</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>class_ids</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>class_nodeids</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>class_treeids</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>class_weights</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>classlabels_int64s</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>classlabels_strings</code></td><td>::mlir::ArrayAttr</td><td>string array attribute</td></tr>
+<tr><td><code>nodes_falsenodeids</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>nodes_featureids</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>nodes_hitrates</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>nodes_missing_value_tracks_true</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>nodes_modes</code></td><td>::mlir::ArrayAttr</td><td>string array attribute</td></tr>
+<tr><td><code>nodes_nodeids</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>nodes_treeids</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>nodes_truenodeids</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>nodes_values</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>post_transform</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -10017,33 +10444,34 @@ Tree Ensemble regressor.  Returns the regressed values for each input in N.<br>
     All trees must have their node ids start at 0 and increment by 1.<br>
     Mode enum is BRANCH_LEQ, BRANCH_LT, BRANCH_GTE, BRANCH_GT, BRANCH_EQ, BRANCH_NEQ, LEAF
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `aggregate_function` | ::mlir::StringAttr | string attribute
-| `base_values` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `n_targets` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `nodes_falsenodeids` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `nodes_featureids` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `nodes_hitrates` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `nodes_missing_value_tracks_true` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `nodes_modes` | ::mlir::ArrayAttr | string array attribute
-| `nodes_nodeids` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `nodes_treeids` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `nodes_truenodeids` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `nodes_values` | ::mlir::ArrayAttr | 32-bit float array attribute
-| `post_transform` | ::mlir::StringAttr | string attribute
-| `target_ids` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `target_nodeids` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `target_treeids` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `target_weights` | ::mlir::ArrayAttr | 32-bit float array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>aggregate_function</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>base_values</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>n_targets</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>nodes_falsenodeids</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>nodes_featureids</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>nodes_hitrates</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>nodes_missing_value_tracks_true</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>nodes_modes</code></td><td>::mlir::ArrayAttr</td><td>string array attribute</td></tr>
+<tr><td><code>nodes_nodeids</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>nodes_treeids</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>nodes_truenodeids</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>nodes_values</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+<tr><td><code>post_transform</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>target_ids</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>target_nodeids</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>target_treeids</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>target_weights</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -10074,17 +10502,18 @@ A negative k value retains the main diagonal and |k| diagonals below it.
 If upper is set to false, a positive k retains the lower triangular matrix including the main diagonal and k diagonals above it.
 A negative k value excludes the main diagonal and (|k|-1) diagonals below it.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `upper` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>upper</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -10108,8 +10537,8 @@ Otherwise the input tensor is flattened and unique values of the flattened tenso
 
 This operator returns the unique values or sliced unique subtensors of the input tensor and three optional outputs.
 The first output tensor 'Y' contains all unique values or subtensors of the input.
-The second optional output tensor 'indices' contains indices of 'Y' elements' first occurance in 'X'..
-The third optional output tensor 'inverse_indices' contains, for elements of 'X', its corresponding indices in 'Y'. \".
+The second optional output tensor 'indices' contains indices of 'Y' elements' first occurrence in 'X'.
+The third optional output tensor 'inverse_indices' contains, for elements of 'X', its corresponding indices in 'Y'.
 The fourth optional output tensor 'counts' contains the count of each element of 'Y' in the input.
 
 Outputs are either sorted in ascending order or optionally in the order of the first occurrence of the values in the input.
@@ -10201,18 +10630,19 @@ output_counts:
 [2, 1, 1]
 ```
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axis` | ::mlir::IntegerAttr | 64-bit signed integer attribute
-| `sorted` | ::mlir::IntegerAttr | 64-bit signed integer attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axis</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+<tr><td><code>sorted</code></td><td>::mlir::IntegerAttr</td><td>64-bit signed integer attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -10244,11 +10674,11 @@ The rank of the output tensor (`output_rank`) is the rank of the input tensor (`
 Each value in `axes` should be within the (inclusive) range [-output_rank , output_rank - 1].
 The order of values in `axes` does not matter and can come in any order.
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -10280,17 +10710,18 @@ Each value in `axes` should be within the (inclusive) range [-output_rank , outp
 The order of values in `axes` does not matter and can come in any order.
 
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `axes` | ::mlir::ArrayAttr | 64-bit integer array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>axes</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -10312,17 +10743,18 @@ Upsample the input tensor.
 Each dimension value of the output tensor is:
   output_dimension = floor(input_dimension * scale).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `mode` | ::mlir::StringAttr | string attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>mode</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -10345,18 +10777,19 @@ Upsample the input tensor.
 Each dimension value of the output tensor is:
   output_dimension = floor(input_dimension * scale).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `mode` | ::mlir::StringAttr | string attribute
-| `scales` | ::mlir::ArrayAttr | 32-bit float array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>mode</code></td><td>::mlir::StringAttr</td><td>string attribute</td></tr>
+<tr><td><code>scales</code></td><td>::mlir::ArrayAttr</td><td>32-bit float array attribute</td></tr>
+</table>
 
 #### Operands:
 
@@ -10381,11 +10814,11 @@ with three parameters.
 
 This operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -10410,11 +10843,11 @@ elementwise on the input tensors `A` and `B` (with Numpy-style broadcasting supp
 
 This operator supports **multidirectional (i.e., Numpy-style) broadcasting**; for more details please check [the doc](Broadcasting.md).
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
@@ -10446,17 +10879,17 @@ The operation takes variable number of operands and produces no results.
 This operation is not part of the standard and was added to assist onnx-mlir.
 It terminates a ONNXLoop/Scan/IfOp region.
 
-Traits: AlwaysSpeculatableImplTrait, ReturnLike, Terminator
+Traits: `AlwaysSpeculatableImplTrait`, `ReturnLike`, `Terminator`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), RegionBranchTerminatorOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `RegionBranchTerminatorOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Operands:
 
 | Operand | Description |
 | :-----: | ----------- |
-| `operands` | any type
+| `operands` | variadic of any type
 
 ### `onnx.ZipMap` (ONNXZipMapOp)
 
@@ -10467,18 +10900,19 @@ Creates a map from the input and the attributes.<br>
     Must provide keys in either classlabels_strings or classlabels_int64s (but not both).<br>
     The columns of the tensor correspond one-by-one to the keys specified by the attributes. There must be as many columns as keys.<br>
 
-Traits: AlwaysSpeculatableImplTrait
+Traits: `AlwaysSpeculatableImplTrait`
 
-Interfaces: ConditionallySpeculatable, NoMemoryEffect (MemoryEffectOpInterface), ShapeHelperOpInterface, ShapeInferenceOpInterface
+Interfaces: `ConditionallySpeculatable`, `NoMemoryEffect (MemoryEffectOpInterface)`, `ShapeHelperOpInterface`, `ShapeInferenceOpInterface`
 
-Effects: MemoryEffects::Effect{}
+Effects: `MemoryEffects::Effect{}`
 
 #### Attributes:
 
-| Attribute | MLIR Type | Description |
-| :-------: | :-------: | ----------- |
-| `classlabels_int64s` | ::mlir::ArrayAttr | 64-bit integer array attribute
-| `classlabels_strings` | ::mlir::ArrayAttr | string array attribute
+<table>
+<tr><th>Attribute</th><th>MLIR Type</th><th>Description</th></tr>
+<tr><td><code>classlabels_int64s</code></td><td>::mlir::ArrayAttr</td><td>64-bit integer array attribute</td></tr>
+<tr><td><code>classlabels_strings</code></td><td>::mlir::ArrayAttr</td><td>string array attribute</td></tr>
+</table>
 
 #### Operands:
 

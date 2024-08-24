@@ -5,7 +5,7 @@
 //===------------- IndexExprDetail.hpp - Index expression details ---------===//
 //
 //
-// Copyright 2020-2022 The IBM Research Authors.
+// Copyright 2020-2024 The IBM Research Authors.
 //
 // =============================================================================
 //
@@ -14,7 +14,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#pragma once
+#ifndef ONNX_MLIR_INDEX_EXPR_DETAIL_H
+#define ONNX_MLIR_INDEX_EXPR_DETAIL_H
 
 #include "src/Dialect/Mlir/IndexExpr.hpp"
 
@@ -88,6 +89,8 @@ public:
   void setLiteral(double val);
   void setLiteral(const IndexExprImpl &obj);
 
+  void debugPrint(const std::string &msg);
+
 private:
   // Init for internal use only.
   void init(bool isDefined, bool isIntLit, bool isFloatLit, IndexExprKind type,
@@ -122,3 +125,4 @@ private:
 };
 
 } // namespace onnx_mlir
+#endif

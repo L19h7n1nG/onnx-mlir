@@ -17,6 +17,7 @@
 #ifndef OP_BASE
 include "src/Dialect/ONNX/ONNX.td"
 include "src/Accelerators/NNPA/Dialect/ZHigh/ZHigh.td"
+include "src/Accelerators/NNPA/Dialect/ZHigh/ZHighOps/OpHelper.td"
 include "src/Accelerators/NNPA/Conversion/ONNXToZHigh/ONNXToZHighCommon.td"
 #endif // OP_BASE
 
@@ -67,9 +68,9 @@ def replaceONNXBatchNormalizationInferenceModePattern : Pattern<
     // Calculate BatchNorm Op using $A and $B
     (ZHighUnstickOp
         (ZHighBatchNormOp
-            (ZHighStickOp $x, (NHWCLayoutAttr)),
-            (ZHighStickOp $A, (_1DLayoutAttr)),
-            (ZHighStickOp $B, (_1DLayoutAttr))))
+            (ZHighStickOp $x, (NHWCLayoutAttr), (GetDefaultSaturation)),
+            (ZHighStickOp $A, (_1DLayoutAttr), (GetDefaultSaturation)),
+            (ZHighStickOp $B, (_1DLayoutAttr), (GetDefaultSaturation))))
   ]
 >;
 
@@ -79,14 +80,14 @@ def replaceONNXBatchNormalizationInferenceModePattern : Pattern<
 // Rewrite `BinaryOp(lhs, rhs)` if one of the two inputs is a constant and
 // unidirectional broadcastable to the other input.
 // For example: lhs is a constant of shape [8] and rhs is of shape [1x4x8].
-// 
+//
 // Taking ONNXAddOp as an example, we rewrite it as follows:
 //
 // 1. `ONNXAddOp %constant, %X` will be canonicalized to `ONNXAddOp %X, %constant`
 // 2. `ONNXAddOp %X, %constant` will be replaced by
 //       `ONNXAddOp %X, (ONNXExpandOp %constant, (ONNXShapeOp %X))`
 //
-// 
+//
 //===----------------------------------------------------------------------===//
 
 
@@ -97,7 +98,7 @@ def CreateShapeOp: NativeCodeCall<
 
 // Get a type for a tensor that stores the shape of another tensor.
 def GetShapeTypeOf: NativeCodeCall<
-  "RankedTensorType::get({$0.getType().cast<ShapedType>().getRank()}, $_builder.getIntegerType(64))"
+  "RankedTensorType::get({mlir::cast<ShapedType>($0.getType()).getRank()}, $_builder.getIntegerType(64))"
 >;
 
 // Check unidirectional broadcasting from the first to second tensor.
@@ -286,7 +287,7 @@ class FloatAttrOfValue<int val>:
 
 // Check that a StrAttr does not contain a specific value.
 class IsNotStringAttrOfValue<string val>:
-  Constraint<CPred<"$0.cast<StringAttr>().getValue() != \"" # val # "\"">>;
+  Constraint<CPred<"mlir::cast<StringAttr>($0).getValue() != \"" # val # "\"">>;
 
 // Check the a convolution operation is NOT leagal for zDNN
 def IsConvNotLegalForZDNN: Constraint<

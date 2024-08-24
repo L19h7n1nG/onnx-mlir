@@ -4,13 +4,14 @@
 
 //===-------- ZHighHelper.hpp - ZHigh Helper Functions --------------------===//
 //
-// Copyright 2019-2022 The IBM Research Authors.
+// Copyright 2019-2024 The IBM Research Authors.
 //
 // =============================================================================
 //
 //===----------------------------------------------------------------------===//
 
-#pragma once
+#ifndef ONNX_MLIR_OP_HELPER_H
+#define ONNX_MLIR_OP_HELPER_H
 
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/BuiltinAttributes.h"
@@ -81,5 +82,12 @@ mlir::AffineMapAttr getTransposeMap(
 /// Get an axis for NHWC layout given an axis for NCHW layout.
 mlir::IntegerAttr getAxisNHWC(mlir::IntegerAttr axisNCHWAttr);
 
+/// Check if the value has NNPA users (or is consumed by an NNPA op).
+bool hasNNPAUse(mlir::Value v);
+
+/// Get saturation settings.
+mlir::IntegerAttr getDefaultSaturation(mlir::PatternRewriter &rewriter);
+
 } // namespace zhigh
 } // namespace onnx_mlir
+#endif

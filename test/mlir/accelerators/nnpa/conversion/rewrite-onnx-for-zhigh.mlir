@@ -390,8 +390,8 @@ func.func @test_matmul_broadcast_2(%arg0: tensor<256x256xf32>, %arg1: tensor<4x1
 
 // CONSTPROP-LABEL:  func.func @test_matmul_broadcast_2
 // CONSTPROP-SAME:   ([[PARAM_0_:%.+]]: tensor<256x256xf32>, [[PARAM_1_:%.+]]: tensor<4x12x256x64xf32>) -> tensor<4x12x256x64xf32> {
-// CONSTPROP:           [[VAR_0_:%.+]] = onnx.Constant dense<[-1, 256, 64]> : tensor<3xi64>
 // CONSTPROP-DAG:       [[VAR_3_:%.+]] = onnx.Constant dense<[4, 12, 256, 64]> : tensor<4xi64>
+// CONSTPROP:           [[VAR_0_:%.+]] = onnx.Constant dense<[-1, 256, 64]> : tensor<3xi64>
 // CONSTPROP:           [[VAR_1_:%.+]] = "onnx.Reshape"([[PARAM_1_]], [[VAR_0_]]) {allowzero = 0 : si64} : (tensor<4x12x256x64xf32>, tensor<3xi64>) -> tensor<48x256x64xf32>
 // CONSTPROP-DAG:       [[VAR_2_:%.+]] = "onnx.MatMul"([[PARAM_0_]], [[VAR_1_]]) : (tensor<256x256xf32>, tensor<48x256x64xf32>) -> tensor<48x256x64xf32>
 // CONSTPROP:           [[VAR_4_:%.+]] = "onnx.Reshape"([[VAR_2_]], [[VAR_3_]]) {allowzero = 0 : si64} : (tensor<48x256x64xf32>, tensor<4xi64>) -> tensor<4x12x256x64xf32>
@@ -485,7 +485,7 @@ func.func @test_matmul_unknown_batch_dim(%arg0: tensor<?x?x256x256xf32>) -> (ten
 
 // -----
 
-// Split MatMul because a dimension exceeds NNPA_MAXIMUM_DIMENSION_INDEX_SIZE = 32768.
+// Split MatMul because a dimension exceeds NNPAGetMaxForDim = 32768.
 func.func @test_matmul_splitting_A(%arg0: tensor<?x50257x768xf32>, %arg1: tensor<768x1024xf32>) -> (tensor<?x50257x1024xf32>) {
   %0 = "onnx.MatMul"(%arg0, %arg1) : (tensor<?x50257x768xf32>, tensor<768x1024xf32>) -> tensor<?x50257x1024xf32>
   return %0 : tensor<?x50257x1024xf32>
@@ -502,7 +502,7 @@ func.func @test_matmul_splitting_A(%arg0: tensor<?x50257x768xf32>, %arg1: tensor
 // CHECK:         }
 }
 
-// Split MatMul because a dimension exceeds NNPA_MAXIMUM_DIMENSION_INDEX_SIZE = 32768.
+// Split MatMul because a dimension exceeds NNPAGetMaxForDim = 32768.
 func.func @test_matmul_splitting_B(%arg0: tensor<?x?x768xf32>, %arg1: tensor<768x50257xf32>) -> (tensor<?x?x50257xf32>) {
   %0 = "onnx.MatMul"(%arg0, %arg1) : (tensor<?x?x768xf32>, tensor<768x50257xf32>) -> tensor<?x?x50257xf32>
   return %0 : tensor<?x?x50257xf32>
@@ -521,7 +521,7 @@ func.func @test_matmul_splitting_B(%arg0: tensor<?x?x768xf32>, %arg1: tensor<768
 
 // -----
 
-// Split MatMul because a dimension exceeds NNPA_MAXIMUM_DIMENSION_INDEX_SIZE = 32768.
+// Split MatMul because a dimension exceeds NNPAGetMaxForDim = 32768.
 func.func @test_matmul_splitting_A_B(%arg0: tensor<?x50257x768xf32>, %arg1: tensor<768x50258xf32>) -> (tensor<?x50257x50258xf32>) {
   %0 = "onnx.MatMul"(%arg0, %arg1) : (tensor<?x50257x768xf32>, tensor<768x50258xf32>) -> tensor<?x50257x50258xf32>
   return %0 : tensor<?x50257x50258xf32>
@@ -556,8 +556,8 @@ func.func @softmax_nd_to_2d(%arg0: tensor<4x12x256x256xf32>) -> (tensor<4x12x256
 
 // CONSTPROP-LABEL:  func.func @softmax_nd_to_2d
 // CONSTPROP-SAME:   ([[PARAM_0_:%.+]]: tensor<4x12x256x256xf32>) -> tensor<4x12x256x256xf32> {
-// CONSTPROP:           [[VAR_0_:%.+]] = onnx.Constant dense<[-1, 256, 256]> : tensor<3xi64>
 // CONSTPROP-DAG:       [[VAR_3_:%.+]] = onnx.Constant dense<[4, 12, 256, 256]> : tensor<4xi64>
+// CONSTPROP:           [[VAR_0_:%.+]] = onnx.Constant dense<[-1, 256, 256]> : tensor<3xi64>
 // CONSTPROP:           [[VAR_1_:%.+]] = "onnx.Reshape"([[PARAM_0_]], [[VAR_0_]]) {allowzero = 0 : si64} : (tensor<4x12x256x256xf32>, tensor<3xi64>) -> tensor<48x256x256xf32>
 // CONSTPROP-DAG:       [[VAR_2_:%.+]] = "onnx.Softmax"([[VAR_1_]]) {axis = -1 : si64} : (tensor<48x256x256xf32>) -> tensor<48x256x256xf32>
 // CONSTPROP:           [[VAR_4_:%.+]] = "onnx.Reshape"([[VAR_2_]], [[VAR_3_]]) {allowzero = 0 : si64} : (tensor<48x256x256xf32>, tensor<4xi64>) -> tensor<4x12x256x256xf32>

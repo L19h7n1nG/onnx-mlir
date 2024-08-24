@@ -19,11 +19,6 @@ using namespace mlir;
 
 namespace onnx_mlir {
 
-// Get a dimension of the tensor's shape.
-int64_t dimAt(Value val, int index) {
-  return val.getType().cast<ShapedType>().getShape()[index];
-}
-
 /// Insert Allocate and Deallocate for the all hidden output.
 /// Shape :: [seq_length, num_directions, batch_size, hidden_size]
 Value allocAllHidden(ConversionPatternRewriter &rewriter, Location loc,
@@ -47,9 +42,9 @@ Value allocAllHidden(ConversionPatternRewriter &rewriter, Location loc,
 
     // Convert the output type to MemRefType.
     Type convertedType = typeConverter->convertType(output.getType());
-    assert(convertedType && convertedType.isa<MemRefType>() &&
+    assert(convertedType && mlir::isa<MemRefType>(convertedType) &&
            "Failed to convert type to MemRefType");
-    MemRefType memRefType = convertedType.cast<MemRefType>();
+    MemRefType memRefType = mlir::cast<MemRefType>(convertedType);
 
     alloc = create.mem.alignedAlloc(memRefType, dims);
   } else {
@@ -67,7 +62,7 @@ Value allocIntermediateState(
   IndexExprScope scope(create.krnlIE);
   auto memRefType = MemRefType::get({/*batch_size=*/dimAt(X, 1),
                                         /*hidden_size=*/dimAt(R, 2)},
-      X.getType().cast<ShapedType>().getElementType());
+      mlir::cast<ShapedType>(X.getType()).getElementType());
   SmallVector<IndexExpr, 2> dims;
   // Get batch_size from X.
   dims.emplace_back(create.krnlIE.getShapeAsDim(X, 1));
@@ -172,9 +167,9 @@ Value allocHiddenOrCell(ConversionPatternRewriter &rewriter, Location loc,
 
     // Convert the output type to MemRefType.
     Type convertedType = typeConverter->convertType(output.getType());
-    assert(convertedType && convertedType.isa<MemRefType>() &&
+    assert(convertedType && mlir::isa<MemRefType>(convertedType) &&
            "Failed to convert type to MemRefType");
-    MemRefType memRefType = convertedType.cast<MemRefType>();
+    MemRefType memRefType = mlir::cast<MemRefType>(convertedType);
     alloc = create.mem.alignedAlloc(memRefType, dims);
   } else {
     alloc = output;
@@ -189,7 +184,7 @@ void initializeHiddenAndCell(ConversionPatternRewriter &rewriter, Location loc,
   MultiDialectBuilder<KrnlBuilder, MathBuilder, MemRefBuilder> create(
       rewriter, loc);
   Value zero = create.math.constant(elementType, 0);
-  unsigned htRank = ht.getType().cast<MemRefType>().getRank();
+  unsigned htRank = mlir::cast<MemRefType>(ht.getType()).getRank();
   Value iZero = create.math.constantIndex(0);
   SmallVector<Value, 4> htLbs(htRank, iZero);
   SmallVector<Value, 4> htUbs;
@@ -227,7 +222,7 @@ void stateToOutputForHiddenOrCell(ConversionPatternRewriter &rewriter,
     Value numOfElements = getDynamicMemRefSize(rewriter, loc, val);
     create.krnl.memcpy(output, val, numOfElements);
   } else { // BIDIRECTIONAL
-    unsigned rank = forwardVal.getType().cast<MemRefType>().getRank();
+    unsigned rank = mlir::cast<MemRefType>(forwardVal.getType()).getRank();
     Value zero = create.math.constantIndex(0);
     Value one = create.math.constantIndex(1);
     SmallVector<Value, 4> lbs(rank, zero);
@@ -249,52 +244,6 @@ void stateToOutputForHiddenOrCell(ConversionPatternRewriter &rewriter,
   }
 }
 
-// Apply an activation function on a given scalar operand.
-Value applyActivation(OpBuilder &rewriter, Location loc,
-    RNNActivation activation, Value operand) {
-  Value res;
-
-  std::vector<mlir::NamedAttribute> attributes;
-  if (activation.alpha) {
-    attributes.emplace_back(
-        rewriter.getNamedAttr("alpha", activation.alpha.value()));
-  }
-  if (activation.beta) {
-    attributes.emplace_back(
-        rewriter.getNamedAttr("beta", activation.beta.value()));
-  }
-  Type resType = operand.getType();
-
-  // Change equality to be case insensitive.
-  if (activation.name.equals_insensitive("relu"))
-    res = rewriter.create<ONNXReluOp>(loc, resType, operand);
-  else if (activation.name.equals_insensitive("tanh"))
-    res = rewriter.create<ONNXTanhOp>(loc, resType, operand);
-  else if (activation.name.equals_insensitive("sigmoid"))
-    res = rewriter.create<ONNXSigmoidOp>(loc, resType, operand);
-  else if (activation.name.equals_insensitive("affine"))
-    llvm_unreachable("Unsupported activation");
-  else if (activation.name.equals_insensitive("leakyrelu"))
-    res = rewriter.create<ONNXLeakyReluOp>(loc, resType, operand, attributes);
-  else if (activation.name.equals_insensitive("thresholdedrelu"))
-    res = rewriter.create<ONNXThresholdedReluOp>(
-        loc, resType, operand, attributes);
-  else if (activation.name.equals_insensitive("scaledtanh"))
-    llvm_unreachable("Unsupported activation");
-  else if (activation.name.equals_insensitive("hardsigmoid"))
-    res = rewriter.create<ONNXHardSigmoidOp>(loc, resType, operand, attributes);
-  else if (activation.name.equals_insensitive("elu"))
-    res = rewriter.create<ONNXEluOp>(loc, resType, operand, attributes);
-  else if (activation.name.equals_insensitive("softsign"))
-    res = rewriter.create<ONNXSoftsignOp>(loc, resType, operand);
-  else if (activation.name.equals_insensitive("softplus"))
-    res = rewriter.create<ONNXSoftplusOp>(loc, resType, operand);
-  else
-    llvm_unreachable("Unsupported activation");
-
-  return res;
-}
-
 /// Create a copy of a slice of X at a specific timestep.
 /// This function is not able correctly to emit 'dealloc' for the copy since it
 /// does not have enough information about the parent context. Users must
@@ -309,7 +258,7 @@ Value emitXSliceAt(ConversionPatternRewriter &rewriter, Location loc, Value X,
 
   int64_t batchSize = dimAt(X, 1);
   int64_t inputSize = dimAt(X, 2);
-  Type elementType = X.getType().cast<ShapedType>().getElementType();
+  Type elementType = mlir::cast<ShapedType>(X.getType()).getElementType();
   MemRefType sliceXType = MemRefType::get({batchSize, inputSize}, elementType);
 
   // Allocate a buffer

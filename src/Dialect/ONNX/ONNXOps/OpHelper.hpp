@@ -2,9 +2,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-//===------- ONNXOpsHelper.hpp - Helper functions for ONNX dialects -------===//
+//===---------- OpHelper.hpp - Helper functions for ONNX dialects ---------===//
 //
-// Copyright 2019-2023 The IBM Research Authors.
+// Copyright 2019-2024 The IBM Research Authors.
 //
 // =============================================================================
 //
@@ -12,7 +12,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#pragma once
+#ifndef ONNX_MLIR_OPS_HELPER_H
+#define ONNX_MLIR_OPS_HELPER_H
 
 #include "mlir/Dialect/Traits.h"
 #include "mlir/IR/AffineExpr.h"
@@ -287,6 +288,19 @@ bool areDimsFromConcat(mlir::Value val);
 void getDims(mlir::Value val, llvm::SmallVectorImpl<mlir::Value> &dims);
 
 //===----------------------------------------------------------------------===//
+// Support for ReshapeOp.
+//===----------------------------------------------------------------------===//
+
+// Return true if reshape does nothing, aka it returns the same as the input.
+// Use dimAnalysis if provided.
+
+bool isIdentityReshape(
+    mlir::ONNXReshapeOp reshapeOp, const DimAnalysis *dimAnalysis = nullptr);
+
+bool isIdentityReshape(mlir::Value input, mlir::Value output,
+    const DimAnalysis *dimAnalysis = nullptr);
+
+//===----------------------------------------------------------------------===//
 // Support for location.
 //===----------------------------------------------------------------------===//
 
@@ -296,3 +310,4 @@ std::string getNodeNameInPresenceOfOpt(
 #include "src/Dialect/ONNX/ONNXOps/OpHelper.hpp.inc"
 
 } // namespace onnx_mlir
+#endif

@@ -67,6 +67,20 @@ int printBuffer(std::vector<char> buffer) {
   auto data = std::vector<T>(ptr, ptr + buffer.size() / sizeof(T));
   for (const auto &elem : data)
     std::cout << elem << " ";
+  std::cout << std::endl;
+  return 0;
+}
+
+template <>
+int printBuffer<bool>(std::vector<char> buffer) {
+  const char *rawData = buffer.data();
+  for (unsigned i = 0; i < buffer.size() * 8; i++) {
+    bool b = (rawData[i / CHAR_BIT] & (1 << (i % CHAR_BIT))) != 0;
+    printf("%d", b);
+    if ((i + 1) % 8 == 0)
+      std::cout << " ";
+  }
+  std::cout << std::endl;
   return 0;
 }
 
@@ -84,9 +98,10 @@ int main(int argc, char **argv) {
     llvm::sys::fs::remove(Filename);
 
 #define PRINT_BUFFER_FOR_TYPE(ONNX_TYPE, CPP_TYPE)                             \
-  if (DataType == ONNX_TYPE)                                                   \
+  if (DataType == (ONNX_TYPE))                                                 \
     return printBuffer<CPP_TYPE>(buffer);
 
+  PRINT_BUFFER_FOR_TYPE(onnx::TensorProto::BOOL, bool);
   PRINT_BUFFER_FOR_TYPE(onnx::TensorProto::UINT8, u_int8_t);
   PRINT_BUFFER_FOR_TYPE(onnx::TensorProto::UINT16, u_int16_t);
   PRINT_BUFFER_FOR_TYPE(onnx::TensorProto::INT16, int16_t);

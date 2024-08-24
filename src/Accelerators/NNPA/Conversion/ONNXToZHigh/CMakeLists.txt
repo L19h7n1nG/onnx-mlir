@@ -11,9 +11,10 @@ add_onnx_mlir_library(OMONNXToZHigh
   libzdnn
 
   LINK_LIBS PUBLIC
-  OMCompilerOptions
+  OMNNPACompilerOptions
   OMONNXOps
   OMONNXToKrnl
+  OMShapeInferencePass
   OMZHighOps
 
   ACCEL_INCLUDE_DIRS PRIVATE
@@ -32,10 +33,12 @@ add_onnx_mlir_library(OMRewriteONNXForZHigh
   libzdnn
   
   LINK_LIBS PUBLIC
-  OMCompilerOptions
+  OMNNPACompilerOptions
   OMONNXOps
   OMONNXToKrnl
   OMZHighOps
+  OMLayoutHelper
+
 
   ACCEL_INCLUDE_DIRS PRIVATE
   ${NNPA_INCLUDE_PATH}

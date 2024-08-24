@@ -73,3 +73,66 @@ func.func private @memref_with_affine(%arg0: memref<3xf32, #map>) -> memref<3xf3
 // CHECK:           return [[RES_]] : memref<3xf32, #map>
 // CHECK:         }
 }
+
+// -----
+
+#map = affine_map<(d0, d1, d2) -> (d0, d1 floordiv 64, d2 floordiv 32, d2 mod 32, d1 mod 64)>
+func.func @krnl_get_linear_offset_index_1(%arg0: memref<?x128x256xf32, #map>, %arg1: index, %arg2: index) -> index {
+  %c5 = arith.constant 5: index
+  %c10 = arith.constant 10: index
+  %0 = memref.alloc(%arg1) : memref<?x128x256xf32, #map>
+  %1 = krnl.get_linear_offset_index %arg0 at [%arg2, %c5, %c10] : memref<?x128x256xf32, #map>
+  return %1: index
+
+// CHECK-LABEL:  func.func @krnl_get_linear_offset_index
+// CHECK:           [[VAR_0_:%.+]] = krnl.get_linear_offset_index {{.*}} at {{.*}} : memref<?x128x256xf32, #map>
+}
+
+// -----
+
+#map = affine_map<(d0, d1, d2) -> (d0)>
+func.func @krnl_get_linear_offset_index_2(%arg0: memref<?x2x8x32x64xf32>, %arg1: index, %arg2: index) -> index {
+  %0 = krnl.get_linear_offset_index %arg0 at [%arg2, 0, 0, 10, 5] : memref<?x2x8x32x64xf32>
+  return %0 : index
+
+// CHECK-DAG:   [[MAP_0_:#.+]] = affine_map<()[s0] -> (s0 * 32768 + 645)>
+// CHECK-LABEL:  func.func @krnl_get_linear_offset_index
+// CHECK-SAME:   ([[PARAM_0_:%.+]]: memref<?x2x8x32x64xf32>, [[PARAM_1_:%.+]]: index, [[PARAM_2_:%.+]]: index) -> index attributes {llvm.emit_c_interface} {
+// CHECK:           [[VAR_0_:%.+]] = affine.apply [[MAP_0_]](){{.}}[[PARAM_2_]]{{.}}
+// CHECK:           return [[VAR_0_]] : index
+// CHECK:         }
+}
+
+// -----
+
+#map = affine_map<(d0) -> (d0 + 64)>
+func.func @prefetch(%arg0: memref<256x512xf32>) -> memref<256x512xf32> attributes {input_names = ["x"], output_names = ["output"]} {
+  %alloc = memref.alloc() {alignment = 16 : i64} : memref<256x512xf32>
+  %0:2 = krnl.define_loops 2
+  krnl.iterate(%0#0, %0#1) with (%0#0 -> %arg1 = 0 to 256, %0#1 -> %arg2 = 0 to 512){
+    %1:2 = krnl.get_induction_var_value(%0#0, %0#1) : (!krnl.loop, !krnl.loop) -> (index, index)
+    %2 = krnl.load %arg0[%1#0, %1#1] : memref<256x512xf32>
+    %3 = affine.apply #map(%1#1)
+    krnl.prefetch %arg0[%1#0, %3], read, locality<3>, data : memref<256x512xf32>
+    %4 = krnl.load %arg0[%1#0, %1#1] : memref<256x512xf32>
+    %5 = arith.addf %2, %4 : f32
+    krnl.store %5, %alloc[%1#0, %1#1] : memref<256x512xf32>
+  }
+  return %alloc : memref<256x512xf32>
+
+// mlir2FileCheck.py
+// CHECK-LABEL:  func.func @prefetch
+// CHECK-SAME:   ([[PARAM_0_:%.+]]: memref<256x512xf32>) -> memref<256x512xf32> attributes {input_names = ["x"], llvm.emit_c_interface, output_names = ["output"]} {
+// CHECK:           [[RES_:%.+]] = memref.alloc() {{.*}}: memref<256x512xf32>
+// CHECK:           affine.for [[I_0_:%.+]] = 0 to 256 {
+// CHECK:             affine.for [[I_1_:%.+]] = 0 to 512 {
+// CHECK:               [[LOAD_PARAM_0_MEM_:%.+]] = affine.load [[PARAM_0_]]{{.}}[[I_0_]], [[I_1_]]{{.}} : memref<256x512xf32>
+// CHECK:               affine.prefetch [[PARAM_0_]]{{.}}[[I_0_]], [[I_1_]] + 64], read, locality<3>, data : memref<256x512xf32>
+// CHECK:               [[LOAD_PARAM_0_MEM_1_:%.+]] = affine.load [[PARAM_0_]]{{.}}[[I_0_]], [[I_1_]]{{.}} : memref<256x512xf32>
+// CHECK:               [[VAR_2_:%.+]] = arith.addf [[LOAD_PARAM_0_MEM_]], [[LOAD_PARAM_0_MEM_1_]] : f32
+// CHECK:               affine.store [[VAR_2_]], [[RES_]]{{.}}[[I_0_]], [[I_1_]]{{.}} : memref<256x512xf32>
+// CHECK:             }
+// CHECK:           }
+// CHECK:           return [[RES_]] : memref<256x512xf32>
+// CHECK:         }
+}

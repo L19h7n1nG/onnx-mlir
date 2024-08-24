@@ -63,7 +63,7 @@ def execute_commands(cmds, dynamic_inputs_dims):
                     first_dim = False
                 else:
                     env_string += "," + str(dim_index)
-        my_env["TEST_IMPORTER_FORCE_DYNAMIC"] = env_string
+        my_env["IMPORTER_FORCE_DYNAMIC"] = env_string
     subprocess.run(cmds, env=my_env, check=True)
 
 
@@ -108,6 +108,7 @@ def compile_model(model, emit):
 
     exec_base = os.path.join(model_dir, name)
     exec_name = exec_base + suffix[emit]
+    test_name_cpu = name + "_cpu"
 
     # Command
     command_list = [TEST_DRIVER]
@@ -132,10 +133,21 @@ def compile_model(model, emit):
             "--constants-to-file-total-threshold="
             + str(args.constants_to_file_total_threshold)
         )
+    if args.dynamic and test_name_cpu in variables.test_to_enable_dimparams_dict:
+        command_list.append(
+            "--dimParams=" + variables.test_to_enable_dimparams_dict[test_name_cpu]
+        )
 
     command_list.append(target[emit])
     command_list.append(model_name)
     command_list.append("-o=" + exec_base)
+
+    # Additional args passed in by TEST_COMPILE_ARGS
+    # Args are separated by ';'
+    additional_args = os.getenv("TEST_COMPILE_ARGS")
+    if additional_args is not None:
+        compile_args = additional_args.split(";")
+        command_list += compile_args
 
     # Call frontend to process model_name.onnx, bit code will be generated.
     dynamic_inputs_dims = determine_dynamic_parameters(name)
@@ -153,6 +165,6 @@ def compile_model(model, emit):
     # in execute_commands when calling subprocess.run.
 
     # Check if specific instruction are included in the compiled model.
-    check_instruction(name + "_cpu", exec_name)
+    check_instruction(test_name_cpu, exec_name)
 
     return exec_name

@@ -4,7 +4,7 @@
 
 //===------------------ DynamicQuantizeLinear.cpp - ONNX Operations -------===//
 //
-// Copyright 2019-2022 The IBM Research Authors.
+// Copyright 2019-2024 The IBM Research Authors.
 //
 // =============================================================================
 //
@@ -55,7 +55,7 @@ LogicalResult ONNXDynamicQuantizeLinearOpShapeHelper::computeShape() {
 
 LogicalResult ONNXDynamicQuantizeLinearOp::inferShapes(
     std::function<void(Region &)> doShapeInference) {
-  auto inTy = getX().getType().dyn_cast<RankedTensorType>();
+  auto inTy = mlir::dyn_cast<RankedTensorType>(getX().getType());
   if (!inTy)
     return success();
 

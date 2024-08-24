@@ -9,18 +9,18 @@ def ONNXAbsOp:ONNX_Op<"Abs",
   let summary = "ONNX Abs operation";
   let description = [{
   Absolute takes one input data (Tensor<T>) and produces one output data
-  (Tensor<T>) where the absolute is, y = abs(x), is applied to
+  (Tensor<T>) where absolute value, y = abs(x), is applied to
   the tensor elementwise.
   }];
   let arguments = (ins AnyTypeOf<[TensorOf<[UI8]>, TensorOf<[UI16]>, TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I8]>, TensorOf<[I16]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$X);
   let results = (outs AnyTypeOf<[TensorOf<[UI8]>, TensorOf<[UI16]>, TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I8]>, TensorOf<[I16]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$Y);
   let builders = [
     OpBuilder<(ins "Value":$X), [{
-      auto resultType = UnrankedTensorType::get(X.getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(X.getType()).getElementType());
       build($_builder, $_state, resultType, X);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
-      auto resultType = UnrankedTensorType::get(operands[0].getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(operands[0].getType()).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -122,18 +122,18 @@ def ONNXAddOp:ONNX_Op<"Add",
       auto lhsTy = A.getType();
       auto rhsTy = B.getType();
       auto resultType = getBroadcastedRankedType(lhsTy, rhsTy);
-      auto shapedType = resultType.dyn_cast_or_null<ShapedType>();
+      auto shapedType = mlir::dyn_cast_or_null<ShapedType>(resultType);
       if (!shapedType || !shapedType.hasStaticShape())
-        resultType = UnrankedTensorType::get(lhsTy.cast<ShapedType>().getElementType());
+        resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(lhsTy).getElementType());
       build($_builder, $_state, resultType, A, B);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
       auto lhsTy = operands[0].getType();
       auto rhsTy = operands[1].getType();
       auto resultType = getBroadcastedRankedType(lhsTy, rhsTy);
-      auto shapedType = resultType.dyn_cast_or_null<ShapedType>();
+      auto shapedType = mlir::dyn_cast_or_null<ShapedType>(resultType);
       if (!shapedType || !shapedType.hasStaticShape())
-        resultType = UnrankedTensorType::get(lhsTy.cast<ShapedType>().getElementType());
+        resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(lhsTy).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -177,18 +177,18 @@ def ONNXAndOp:ONNX_Op<"And",
       auto lhsTy = A.getType();
       auto rhsTy = B.getType();
       auto resultType = getBroadcastedRankedType(lhsTy, rhsTy);
-      auto shapedType = resultType.dyn_cast_or_null<ShapedType>();
+      auto shapedType = mlir::dyn_cast_or_null<ShapedType>(resultType);
       if (!shapedType || !shapedType.hasStaticShape())
-        resultType = UnrankedTensorType::get(lhsTy.cast<ShapedType>().getElementType());
+        resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(lhsTy).getElementType());
       build($_builder, $_state, resultType, A, B);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
       auto lhsTy = operands[0].getType();
       auto rhsTy = operands[1].getType();
       auto resultType = getBroadcastedRankedType(lhsTy, rhsTy);
-      auto shapedType = resultType.dyn_cast_or_null<ShapedType>();
+      auto shapedType = mlir::dyn_cast_or_null<ShapedType>(resultType);
       if (!shapedType || !shapedType.hasStaticShape())
-        resultType = UnrankedTensorType::get(lhsTy.cast<ShapedType>().getElementType());
+        resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(lhsTy).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -416,20 +416,27 @@ def ONNXAveragePoolOp:ONNX_Op<"AveragePool",
    the tensor according to kernel sizes, stride sizes, and pad lengths.
    average pooling consisting of computing the average on all values of a
    subset of the input tensor according to the kernel size and downsampling the
-   data into the output tensor Y for further processing. The output spatial shape will be following:
+   data into the output tensor Y for further processing. The output spatial shape is calculated differently
+   depending on whether explicit padding is used, where pads is employed, or auto padding is used, where auto_pad is utilized.
+   With explicit padding (https://pytorch.org/docs/stable/generated/torch.nn.MaxPool2d.html?highlight=maxpool#torch.nn.MaxPool2d):
    ```
-   output_spatial_shape[i] = floor((input_spatial_shape[i] + pad_shape[i] - ((kernel_spatial_shape[i] - 1) * dilations[i] + 1)) / strides_spatial_shape[i] + 1)
+   output_spatial_shape[i] = floor((input_spatial_shape[i] + pad_shape[i] - dilation[i] * (kernel_shape[i] - 1) - 1) / strides_spatial_shape[i] + 1)
    ```
    or
    ```
-   output_spatial_shape[i] = ceil((input_spatial_shape[i] + pad_shape[i] - ((kernel_spatial_shape[i] - 1) * dilations[i] + 1)) / strides_spatial_shape[i] + 1)
+   output_spatial_shape[i] = ceil((input_spatial_shape[i] + pad_shape[i] - dilation[i] * (kernel_shape[i] - 1) - 1) / strides_spatial_shape[i] + 1)
    ```
-   if ceil_mode is enabled `pad_shape[i]` is the sum of pads along axis `i`.
+   if ceil_mode is enabled. `pad_shape[i]` is the sum of pads along axis `i`. Sliding windows that would start in the right padded region are ignored.
   
-   `auto_pad` is a DEPRECATED attribute. If you are using them currently, the output spatial shape will be following:
+   `auto_pad` is a DEPRECATED attribute. If you are using them currently, the output spatial shape will be following when ceil_mode is enabled:
    ```
    VALID: output_spatial_shape[i] = ceil((input_spatial_shape[i] - ((kernel_spatial_shape[i] - 1) * dilations[i] + 1) + 1) / strides_spatial_shape[i])
    SAME_UPPER or SAME_LOWER: output_spatial_shape[i] = ceil(input_spatial_shape[i] / strides_spatial_shape[i])
+   ```
+   or when ceil_mode is disabled (https://www.tensorflow.org/api_docs/python/tf/keras/layers/AveragePooling2D):
+   ```
+   VALID: output_spatial_shape[i] = floor((input_spatial_shape[i] - ((kernel_spatial_shape[i] - 1) * dilations[i] + 1)) / strides_spatial_shape[i]) + 1
+   SAME_UPPER or SAME_LOWER: output_spatial_shape[i] = floor((input_spatial_shape[i] - 1) / strides_spatial_shape[i]) + 1
    ```
    And pad shape will be following if `SAME_UPPER` or `SAME_LOWER`:
    ```
@@ -1341,11 +1348,11 @@ def ONNXConstantOp:ONNX_Op<"Constant",
   let builders = [
   OpBuilder<(ins "Attribute":$sparse_value, "Attribute":$value), [{
    if (value) {
-    auto tensorType = value.cast<TypedAttr>().getType();
+    auto tensorType = mlir::cast<TypedAttr>(value).getType();
     build($_builder, $_state, tensorType, sparse_value, value,
       FloatAttr(), ArrayAttr(), IntegerAttr(), ArrayAttr(), StringAttr(), ArrayAttr());
    } else {
-    auto tensorType = sparse_value.cast<TypedAttr>().getType();
+    auto tensorType = mlir::cast<TypedAttr>(sparse_value).getType();
     build($_builder, $_state, tensorType, sparse_value, value,
       FloatAttr(), ArrayAttr(), IntegerAttr(), ArrayAttr(), StringAttr(), ArrayAttr());
    }
@@ -1363,7 +1370,7 @@ def ONNXConstantOfShapeOp:ONNX_Op<"ConstantOfShape",
   }];
   let arguments = (ins TensorOf<[I64]>:$input,
     OptionalAttr<AnyAttr>:$value);
-  let results = (outs AnyTypeOf<[TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[I8]>, TensorOf<[I16]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[UI8]>, TensorOf<[UI16]>, TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I1]>]>:$output);
+  let results = (outs AnyTypeOf<[TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[I8]>, TensorOf<[I16]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[UI8]>, TensorOf<[UI16]>, TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I1]>, TensorOf<[BF16]>, TensorOf<[F8E4M3FN]>, TensorOf<[F8E4M3FNUZ]>, TensorOf<[F8E5M2]>, TensorOf<[F8E5M2FNUZ]>]>:$output);
   let extraClassDeclaration = [{
     static int getNumberOfOperands() {
       return 1;
@@ -1405,11 +1412,11 @@ def ONNXConvOp:ONNX_Op<"Conv",
   let results = (outs AnyTypeOf<[TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>]>:$Y);
   let builders = [
     OpBuilder<(ins "Value":$X, "Value":$W, "Value":$B, "StringAttr":$auto_pad, "ArrayAttr":$dilations, "IntegerAttr":$group, "ArrayAttr":$kernel_shape, "ArrayAttr":$pads, "ArrayAttr":$strides), [{
-      auto resultType = UnrankedTensorType::get(X.getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(X.getType()).getElementType());
       build($_builder, $_state, resultType, X, W, B, auto_pad, dilations, group, kernel_shape, pads, strides);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
-      auto resultType = UnrankedTensorType::get(operands[0].getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(operands[0].getType()).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -1640,6 +1647,55 @@ def ONNXDFTOp:ONNX_Op<"DFT",
   [Pure, DeclareOpInterfaceMethods<ShapeInferenceOpInterface>, DeclareOpInterfaceMethods<ShapeHelperOpInterface>]> {
   let summary = "ONNX DFT operation";
   let description = [{
+  Computes the discrete Fourier Transform (DFT) of the input.
+  
+  Assuming the input has shape `[M, N]`, where `N` is the dimension over which the
+  DFT is computed and `M` denotes the conceptual \"all other dimensions,\"
+  the DFT `y[m, k]` of shape `[M, N]` is defined as
+  
+  $$y[m, k] = \sum_{n=0}^{N-1} e^{-2 \pi j \frac{k n}{N} } x[m, n] ,$$
+  
+  and the inverse transform is defined as
+  
+  $$x[m, n] = \frac{1}{N} \sum_{k=0}^{N-1} e^{2 \pi j \frac{k n}{N} } y[m, k] ,$$
+  
+  where $j$ is the imaginary unit.
+  
+  The actual shape of the output is specified in the \"output\" section.
+  
+  Reference: https://docs.scipy.org/doc/scipy/tutorial/fft.html
+  }];
+  let arguments = (ins AnyTypeOf<[TensorOf<[BF16]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>]>:$input,
+    AnyTypeOf<[TensorOf<[I32]>, TensorOf<[I64]>, NoneType]>:$dft_length,
+    AnyTypeOf<[TensorOf<[I64]>, NoneType]>:$axis,
+    DefaultValuedAttr<SI64Attr, "0">:$inverse,
+    DefaultValuedAttr<SI64Attr, "0">:$onesided);
+  let results = (outs AnyTypeOf<[TensorOf<[BF16]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>]>:$output);
+  let extraClassDeclaration = [{
+    static int getNumberOfOperands() {
+      return 3;
+    }
+    static int getNumberOfResults() {
+      return 1;
+    }
+    static std::vector<int> getTypeMap() {
+      return {30};
+    }
+  }];
+  let extraClassDefinition = [{
+    onnx_mlir::ONNXOpShapeHelper * $cppClass::getShapeHelper(mlir::Operation *op, llvm::ArrayRef<mlir::Value> oper, 
+        onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
+      onnx_mlir::ONNXOpShapeHelper *sh = new onnx_mlir::ONNXDFTOpShapeHelper(op, oper, ieb, scope);
+      assert(sh && "failed to allocate shape helper");
+      return sh;
+    }
+  }];
+}
+
+def ONNXDFTV17Op:ONNX_Op<"DFTV17",
+  [Pure, DeclareOpInterfaceMethods<ShapeInferenceOpInterface>, DeclareOpInterfaceMethods<ShapeHelperOpInterface>]> {
+  let summary = "ONNX DFT operation";
+  let description = [{
   Computes the discrete Fourier transform of input.
   }];
   let arguments = (ins AnyTypeOf<[TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$input,
@@ -1662,7 +1718,7 @@ def ONNXDFTOp:ONNX_Op<"DFT",
   let extraClassDefinition = [{
     onnx_mlir::ONNXOpShapeHelper * $cppClass::getShapeHelper(mlir::Operation *op, llvm::ArrayRef<mlir::Value> oper, 
         onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
-      onnx_mlir::ONNXOpShapeHelper *sh = new onnx_mlir::ONNXDFTOpShapeHelper(op, oper, ieb, scope);
+      onnx_mlir::ONNXOpShapeHelper *sh = new onnx_mlir::ONNXDFTV17OpShapeHelper(op, oper, ieb, scope);
       assert(sh && "failed to allocate shape helper");
       return sh;
     }
@@ -1766,6 +1822,7 @@ def ONNXDepthToSpaceOp:ONNX_Op<"DepthToSpace",
 
 def ONNXDequantizeLinearOp:ONNX_Op<"DequantizeLinear",
   [Pure, DeclareOpInterfaceMethods<ShapeInferenceOpInterface>, DeclareOpInterfaceMethods<ShapeHelperOpInterface>]> {
+  let hasCanonicalizer = 1;
   let summary = "ONNX DequantizeLinear operation";
   let description = [{
   The linear dequantization operator. It consumes a quantized tensor, a scale, and a zero point to compute the full precision tensor.
@@ -1855,18 +1912,18 @@ def ONNXDivOp:ONNX_Op<"Div",
       auto lhsTy = A.getType();
       auto rhsTy = B.getType();
       auto resultType = getBroadcastedRankedType(lhsTy, rhsTy);
-      auto shapedType = resultType.dyn_cast_or_null<ShapedType>();
+      auto shapedType = mlir::dyn_cast_or_null<ShapedType>(resultType);
       if (!shapedType || !shapedType.hasStaticShape())
-        resultType = UnrankedTensorType::get(lhsTy.cast<ShapedType>().getElementType());
+        resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(lhsTy).getElementType());
       build($_builder, $_state, resultType, A, B);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
       auto lhsTy = operands[0].getType();
       auto rhsTy = operands[1].getType();
       auto resultType = getBroadcastedRankedType(lhsTy, rhsTy);
-      auto shapedType = resultType.dyn_cast_or_null<ShapedType>();
+      auto shapedType = mlir::dyn_cast_or_null<ShapedType>(resultType);
       if (!shapedType || !shapedType.hasStaticShape())
-        resultType = UnrankedTensorType::get(lhsTy.cast<ShapedType>().getElementType());
+        resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(lhsTy).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -1941,14 +1998,14 @@ def ONNXDynamicQuantizeLinearOp:ONNX_Op<"DynamicQuantizeLinear",
   [Pure, DeclareOpInterfaceMethods<ShapeInferenceOpInterface>, DeclareOpInterfaceMethods<ShapeHelperOpInterface>]> {
   let summary = "ONNX DynamicQuantizeLinear operation";
   let description = [{
-  A Function to fuse calculation for Scale, Zero Point and FP32->8Bit convertion of FP32 Input data.
+  A Function to fuse calculation for Scale, Zero Point and FP32->8Bit conversion of FP32 Input data.
   Outputs Scale, ZeroPoint and Quantized Input for a given FP32 Input.
   Scale is calculated as:
   ```
-  y_scale = (max(x) - min(x))/(qmax - qmin)
+  y_scale = (maximum(0, max(x)) - minimum(0, min(x))) / (qmax - qmin)
   ```
   
-  * where qmax and qmin are max and min values for quantization range .i.e [0, 255] in case of uint8
+  * where qmax and qmin are max and min values for quantization range i.e. [0, 255] in case of uint8
   * data range is adjusted to include 0.
   
   Zero point is calculated as:
@@ -2001,7 +2058,7 @@ def ONNXEinsumOp:ONNX_Op<"Einsum",
   An einsum of the form `term1, term2 -> output-term` produces an output tensor using the following equation
   
   ```
-  output[output-term] = reduce-sum( input1[term1] * input2[term] )
+  output[output-term] = reduce-sum( input1[term1] * input2[term2] )
   ```
   
   where the reduce-sum performs a summation over all the indices occurring in the input terms (term1, term2)
@@ -2101,7 +2158,7 @@ def ONNXEqualOp:ONNX_Op<"Equal",
       auto rhsTy = B.getType();
       auto elTy = $_builder.getI1Type();
       auto resultType = getBroadcastedRankedType(lhsTy, rhsTy, elTy);
-      auto shapedType = resultType.dyn_cast_or_null<ShapedType>();
+      auto shapedType = mlir::dyn_cast_or_null<ShapedType>(resultType);
       if (!shapedType || !shapedType.hasStaticShape())
         resultType = UnrankedTensorType::get(elTy);
       build($_builder, $_state, resultType, A, B);
@@ -2111,7 +2168,7 @@ def ONNXEqualOp:ONNX_Op<"Equal",
       auto rhsTy = operands[1].getType();
       auto elTy = $_builder.getI1Type();
       auto resultType = getBroadcastedRankedType(lhsTy, rhsTy, elTy);
-      auto shapedType = resultType.dyn_cast_or_null<ShapedType>();
+      auto shapedType = mlir::dyn_cast_or_null<ShapedType>(resultType);
       if (!shapedType || !shapedType.hasStaticShape())
         resultType = UnrankedTensorType::get(elTy);
       build($_builder, $_state, {resultType}, operands, attributes);
@@ -2178,11 +2235,11 @@ def ONNXExpOp:ONNX_Op<"Exp",
   let results = (outs AnyTypeOf<[TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$output);
   let builders = [
     OpBuilder<(ins "Value":$input), [{
-      auto resultType = UnrankedTensorType::get(input.getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(input.getType()).getElementType());
       build($_builder, $_state, resultType, input);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
-      auto resultType = UnrankedTensorType::get(operands[0].getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(operands[0].getType()).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -2641,57 +2698,50 @@ def ONNXGatherNDOp:ONNX_Op<"GatherND",
   
   This operator is the inverse of `ScatterND`.
   
-  `Example 1`
+  **Example 1**
   
-    batch_dims = 0
+  ```
+  batch_dims = 0
+  data    = [[0,1],[2,3]]   # data_shape    = [2, 2]
+  indices = [[0,0],[1,1]]   # indices_shape = [2, 2]
+  output  = [0,3]           # output_shape  = [2]
+  ```
   
-    data    = [[0,1],[2,3]]   # data_shape = [2, 2]
+  **Example 2**
   
-    indices = [[0,0],[1,1]]   # indices_shape = [2, 2]
+  ```
+  batch_dims = 0
+  data    = [[0,1],[2,3]]  # data_shape    = [2, 2]
+  indices = [[1],[0]]      # indices_shape = [2, 1]
+  output  = [[2,3],[0,1]]  # output_shape  = [2, 2]
+  ```
   
-    output  = [0,3]           # output_shape = [2]
+  **Example 3**
   
-  `Example 2`
+  ```
+  batch_dims = 0
+  data    = [[[0,1],[2,3]],[[4,5],[6,7]]] # data_shape    = [2, 2, 2]
+  indices = [[0,1],[1,0]]                 # indices_shape = [2, 2]
+  output  = [[2,3],[4,5]]                 # output_shape  = [2, 2]
+  ```
   
-    batch_dims = 0
+  **Example 4**
   
-    data    = [[0,1],[2,3]]  # data_shape = [2, 2]
+  ```
+  batch_dims = 0
+  data    = [[[0,1],[2,3]],[[4,5],[6,7]]] # data_shape    = [2, 2, 2]
+  indices = [[[0,1]],[[1,0]]]             # indices_shape = [2, 1, 2]
+  output  = [[[2,3]],[[4,5]]]             # output_shape  = [2, 1, 2]
+  ```
   
-    indices = [[1],[0]]      # indices_shape = [2, 1]
+  **Example 5**
   
-    output  = [[2,3],[0,1]]  # output_shape = [2, 2]
-  
-  `Example 3`
-  
-    batch_dims = 0
-  
-    data    = [[[0,1],[2,3]],[[4,5],[6,7]]] # data_shape = [2, 2, 2]
-  
-    indices = [[0,1],[1,0]]                 # indices_shape = [2, 2]
-  
-    output  = [[2,3],[4,5]]                 # output_shape = [2, 2]
-  
-  `Example 4`
-  
-    batch_dims = 0
-  
-    data    = [[[0,1],[2,3]],[[4,5],[6,7]]] # data_shape = [2, 2, 2]
-  
-    indices = [[[0,1]],[[1,0]]]             # indices_shape = [2, 1, 2]
-  
-    output  = [[[2,3]],[[4,5]]]             # output_shape = [2, 1, 2]
-  
-  `Example 5`
-  
-    batch_dims = 1
-  
-    data    = [[[0,1],[2,3]],[[4,5],[6,7]]] # data_shape = [2, 2, 2]
-  
-    indices = [[1],[0]]             # indices_shape = [2, 1]
-  
-    output  = [[2,3],[4,5]]             # output_shape = [2, 2]
-  
-  
+  ```
+  batch_dims = 1
+  data    = [[[0,1],[2,3]],[[4,5],[6,7]]] # data_shape    = [2, 2, 2]
+  indices = [[1],[0]]                     # indices_shape = [2, 1]
+  output  = [[2,3],[4,5]]                 # output_shape  = [2, 2]
+  ```
   }];
   let arguments = (ins AnyTypeOf<[TensorOf<[UI8]>, TensorOf<[UI16]>, TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I8]>, TensorOf<[I16]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[BF16]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[StringType]>, TensorOf<[I1]>, TensorOf<[Complex<F32>]>, TensorOf<[Complex<F64>]>]>:$data,
     TensorOf<[I64]>:$indices,
@@ -2712,6 +2762,43 @@ def ONNXGatherNDOp:ONNX_Op<"GatherND",
     onnx_mlir::ONNXOpShapeHelper * $cppClass::getShapeHelper(mlir::Operation *op, llvm::ArrayRef<mlir::Value> oper, 
         onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
       onnx_mlir::ONNXOpShapeHelper *sh = new onnx_mlir::ONNXGatherNDOpShapeHelper(op, oper, ieb, scope);
+      assert(sh && "failed to allocate shape helper");
+      return sh;
+    }
+  }];
+  let hasVerifier = 1;
+}
+
+def ONNXGeluOp:ONNX_Op<"Gelu",
+  [Pure, DeclareOpInterfaceMethods<ShapeInferenceOpInterface>, DeclareOpInterfaceMethods<ShapeHelperOpInterface>]> {
+  let summary = "ONNX Gelu operation";
+  let description = [{
+  Gelu takes one input data (Tensor<T>) and produces one
+  output data (Tensor<T>) where the gaussian error linear units function,
+  $y = 0.5 * x * (1 + erf(x/sqrt(2)))$ is applied to the tensor elementwise.
+  If the attribute \"approximate\" is set to \"tanh\", the function estimation,
+  $y = 0.5 * x * (1 + Tanh(sqrt(2/\pi) * (x + 0.044715 * x^3)))$ is used and applied
+  to the tensor elementwise.
+  
+  }];
+  let arguments = (ins AnyTypeOf<[TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$X,
+    DefaultValuedStrAttr<StrAttr, "none">:$approximate);
+  let results = (outs AnyTypeOf<[TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$Y);
+  let extraClassDeclaration = [{
+    static int getNumberOfOperands() {
+      return 1;
+    }
+    static int getNumberOfResults() {
+      return 1;
+    }
+    static std::vector<int> getTypeMap() {
+      return {30};
+    }
+  }];
+  let extraClassDefinition = [{
+    onnx_mlir::ONNXOpShapeHelper * $cppClass::getShapeHelper(mlir::Operation *op, llvm::ArrayRef<mlir::Value> oper, 
+        onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
+      onnx_mlir::ONNXOpShapeHelper *sh = new onnx_mlir::ONNXGeluOpShapeHelper(op, oper, ieb, scope);
       assert(sh && "failed to allocate shape helper");
       return sh;
     }
@@ -2880,7 +2967,7 @@ def ONNXGreaterOp:ONNX_Op<"Greater",
       auto rhsTy = B.getType();
       auto elTy = $_builder.getI1Type();
       auto resultType = getBroadcastedRankedType(lhsTy, rhsTy, elTy);
-      auto shapedType = resultType.dyn_cast_or_null<ShapedType>();
+      auto shapedType = mlir::dyn_cast_or_null<ShapedType>(resultType);
       if (!shapedType || !shapedType.hasStaticShape())
         resultType = UnrankedTensorType::get(elTy);
       build($_builder, $_state, resultType, A, B);
@@ -2890,7 +2977,7 @@ def ONNXGreaterOp:ONNX_Op<"Greater",
       auto rhsTy = operands[1].getType();
       auto elTy = $_builder.getI1Type();
       auto resultType = getBroadcastedRankedType(lhsTy, rhsTy, elTy);
-      auto shapedType = resultType.dyn_cast_or_null<ShapedType>();
+      auto shapedType = mlir::dyn_cast_or_null<ShapedType>(resultType);
       if (!shapedType || !shapedType.hasStaticShape())
         resultType = UnrankedTensorType::get(elTy);
       build($_builder, $_state, {resultType}, operands, attributes);
@@ -2936,7 +3023,7 @@ def ONNXGreaterOrEqualOp:ONNX_Op<"GreaterOrEqual",
       auto rhsTy = B.getType();
       auto elTy = $_builder.getI1Type();
       auto resultType = getBroadcastedRankedType(lhsTy, rhsTy, elTy);
-      auto shapedType = resultType.dyn_cast_or_null<ShapedType>();
+      auto shapedType = mlir::dyn_cast_or_null<ShapedType>(resultType);
       if (!shapedType || !shapedType.hasStaticShape())
         resultType = UnrankedTensorType::get(elTy);
       build($_builder, $_state, resultType, A, B);
@@ -2946,7 +3033,7 @@ def ONNXGreaterOrEqualOp:ONNX_Op<"GreaterOrEqual",
       auto rhsTy = operands[1].getType();
       auto elTy = $_builder.getI1Type();
       auto resultType = getBroadcastedRankedType(lhsTy, rhsTy, elTy);
-      auto shapedType = resultType.dyn_cast_or_null<ShapedType>();
+      auto shapedType = mlir::dyn_cast_or_null<ShapedType>(resultType);
       if (!shapedType || !shapedType.hasStaticShape())
         resultType = UnrankedTensorType::get(elTy);
       build($_builder, $_state, {resultType}, operands, attributes);
@@ -3240,11 +3327,11 @@ def ONNXIdentityOp:ONNX_Op<"Identity",
   let results = (outs AnyTypeOf<[TensorOf<[UI8]>, TensorOf<[UI16]>, TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I8]>, TensorOf<[I16]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[BF16]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[StringType]>, TensorOf<[I1]>, TensorOf<[Complex<F32>]>, TensorOf<[Complex<F64>]>, TensorOf<[F8E4M3FN]>, TensorOf<[F8E4M3FNUZ]>, TensorOf<[F8E5M2]>, TensorOf<[F8E5M2FNUZ]>, SeqOf<[TensorOf<[UI8]>]>, SeqOf<[TensorOf<[UI16]>]>, SeqOf<[TensorOf<[UI32]>]>, SeqOf<[TensorOf<[UI64]>]>, SeqOf<[TensorOf<[I8]>]>, SeqOf<[TensorOf<[I16]>]>, SeqOf<[TensorOf<[I32]>]>, SeqOf<[TensorOf<[I64]>]>, SeqOf<[TensorOf<[F16]>]>, SeqOf<[TensorOf<[F32]>]>, SeqOf<[TensorOf<[F64]>]>, SeqOf<[TensorOf<[StringType]>]>, SeqOf<[TensorOf<[I1]>]>, SeqOf<[TensorOf<[Complex<F32>]>]>, SeqOf<[TensorOf<[Complex<F64>]>]>, OptOf<SeqOf<[TensorOf<[UI8]>]>>, OptOf<SeqOf<[TensorOf<[UI16]>]>>, OptOf<SeqOf<[TensorOf<[UI32]>]>>, OptOf<SeqOf<[TensorOf<[UI64]>]>>, OptOf<SeqOf<[TensorOf<[I8]>]>>, OptOf<SeqOf<[TensorOf<[I16]>]>>, OptOf<SeqOf<[TensorOf<[I32]>]>>, OptOf<SeqOf<[TensorOf<[I64]>]>>, OptOf<SeqOf<[TensorOf<[F16]>]>>, OptOf<SeqOf<[TensorOf<[F32]>]>>, OptOf<SeqOf<[TensorOf<[F64]>]>>, OptOf<SeqOf<[TensorOf<[StringType]>]>>, OptOf<SeqOf<[TensorOf<[I1]>]>>, OptOf<SeqOf<[TensorOf<[Complex<F32>]>]>>, OptOf<SeqOf<[TensorOf<[Complex<F64>]>]>>, OptOf<TensorOf<[UI8]>>, OptOf<TensorOf<[UI16]>>, OptOf<TensorOf<[UI32]>>, OptOf<TensorOf<[UI64]>>, OptOf<TensorOf<[I8]>>, OptOf<TensorOf<[I16]>>, OptOf<TensorOf<[I32]>>, OptOf<TensorOf<[I64]>>, OptOf<TensorOf<[F16]>>, OptOf<TensorOf<[F32]>>, OptOf<TensorOf<[F64]>>, OptOf<TensorOf<[StringType]>>, OptOf<TensorOf<[I1]>>, OptOf<TensorOf<[Complex<F32>]>>, OptOf<TensorOf<[Complex<F64>]>>]>:$output);
   let builders = [
     OpBuilder<(ins "Value":$input), [{
-      auto resultType = UnrankedTensorType::get(input.getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(input.getType()).getElementType());
       build($_builder, $_state, resultType, input);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
-      auto resultType = UnrankedTensorType::get(operands[0].getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(operands[0].getType()).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -3350,7 +3437,7 @@ def ONNXIsInfOp:ONNX_Op<"IsInf",
   let description = [{
   Map infinity to true and other values to false.
   }];
-  let arguments = (ins AnyTypeOf<[TensorOf<[F32]>, TensorOf<[F64]>]>:$X,
+  let arguments = (ins AnyTypeOf<[TensorOf<[BF16]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[F8E4M3FN]>, TensorOf<[F8E4M3FNUZ]>, TensorOf<[F8E5M2]>, TensorOf<[F8E5M2FNUZ]>]>:$X,
     DefaultValuedAttr<SI64Attr, "1">:$detect_negative,
     DefaultValuedAttr<SI64Attr, "1">:$detect_positive);
   let results = (outs TensorOf<[I1]>:$Y);
@@ -3382,7 +3469,7 @@ def ONNXIsNaNOp:ONNX_Op<"IsNaN",
   let description = [{
   Returns which elements of the input are NaN.
   }];
-  let arguments = (ins AnyTypeOf<[TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$X);
+  let arguments = (ins AnyTypeOf<[TensorOf<[BF16]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[F8E4M3FN]>, TensorOf<[F8E4M3FNUZ]>, TensorOf<[F8E5M2]>, TensorOf<[F8E5M2FNUZ]>]>:$X);
   let results = (outs TensorOf<[I1]>:$Y);
   let extraClassDeclaration = [{
     static int getNumberOfOperands() {
@@ -3585,7 +3672,9 @@ def ONNXLayerNormalizationOp:ONNX_Op<"LayerNormalization",
         Let `d[i]` indicate the i-th dimension of `X`.
         If `X`'s shape is `[d[0], ..., d[axis-1], d[axis], ..., d[rank-1]]`,
         the shape of `Mean` and `InvStdDev` is `[d[0], ..., d[axis-1], 1, ..., 1]`.
-        `Y` and `X` have the same shape.
+        `Y` and `X` have the same shape. This operator supports unidirectional broadcasting
+        (tensors `Scale` and `B` should be unidirectional broadcastable to tensor `X`);
+        for more details please check [the doc](Broadcasting.md).
   }];
   let arguments = (ins AnyTypeOf<[TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$X,
     AnyTypeOf<[TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$Scale,
@@ -3669,7 +3758,7 @@ def ONNXLessOp:ONNX_Op<"Less",
       auto rhsTy = B.getType();
       auto elTy = $_builder.getI1Type();
       auto resultType = getBroadcastedRankedType(lhsTy, rhsTy, elTy);
-      auto shapedType = resultType.dyn_cast_or_null<ShapedType>();
+      auto shapedType = mlir::dyn_cast_or_null<ShapedType>(resultType);
       if (!shapedType || !shapedType.hasStaticShape())
         resultType = UnrankedTensorType::get(elTy);
       build($_builder, $_state, resultType, A, B);
@@ -3679,7 +3768,7 @@ def ONNXLessOp:ONNX_Op<"Less",
       auto rhsTy = operands[1].getType();
       auto elTy = $_builder.getI1Type();
       auto resultType = getBroadcastedRankedType(lhsTy, rhsTy, elTy);
-      auto shapedType = resultType.dyn_cast_or_null<ShapedType>();
+      auto shapedType = mlir::dyn_cast_or_null<ShapedType>(resultType);
       if (!shapedType || !shapedType.hasStaticShape())
         resultType = UnrankedTensorType::get(elTy);
       build($_builder, $_state, {resultType}, operands, attributes);
@@ -3725,7 +3814,7 @@ def ONNXLessOrEqualOp:ONNX_Op<"LessOrEqual",
       auto rhsTy = B.getType();
       auto elTy = $_builder.getI1Type();
       auto resultType = getBroadcastedRankedType(lhsTy, rhsTy, elTy);
-      auto shapedType = resultType.dyn_cast_or_null<ShapedType>();
+      auto shapedType = mlir::dyn_cast_or_null<ShapedType>(resultType);
       if (!shapedType || !shapedType.hasStaticShape())
         resultType = UnrankedTensorType::get(elTy);
       build($_builder, $_state, resultType, A, B);
@@ -3735,7 +3824,7 @@ def ONNXLessOrEqualOp:ONNX_Op<"LessOrEqual",
       auto rhsTy = operands[1].getType();
       auto elTy = $_builder.getI1Type();
       auto resultType = getBroadcastedRankedType(lhsTy, rhsTy, elTy);
-      auto shapedType = resultType.dyn_cast_or_null<ShapedType>();
+      auto shapedType = mlir::dyn_cast_or_null<ShapedType>(resultType);
       if (!shapedType || !shapedType.hasStaticShape())
         resultType = UnrankedTensorType::get(elTy);
       build($_builder, $_state, {resultType}, operands, attributes);
@@ -4196,20 +4285,27 @@ def ONNXMaxPoolOp:ONNX_Op<"MaxPool",
    the tensor according to kernel sizes, stride sizes, and pad lengths.
    max pooling consisting of computing the max on all values of a
    subset of the input tensor according to the kernel size and downsampling the
-   data into the output tensor Y for further processing. The output spatial shape will be following:
+   data into the output tensor Y for further processing. The output spatial shape is calculated differently
+   depending on whether explicit padding is used, where pads is employed, or auto padding is used, where auto_pad is utilized.
+   With explicit padding (https://pytorch.org/docs/stable/generated/torch.nn.MaxPool2d.html?highlight=maxpool#torch.nn.MaxPool2d):
    ```
-   output_spatial_shape[i] = floor((input_spatial_shape[i] + pad_shape[i] - ((kernel_spatial_shape[i] - 1) * dilations[i] + 1)) / strides_spatial_shape[i] + 1)
+   output_spatial_shape[i] = floor((input_spatial_shape[i] + pad_shape[i] - dilation[i] * (kernel_shape[i] - 1) - 1) / strides_spatial_shape[i] + 1)
    ```
    or
    ```
-   output_spatial_shape[i] = ceil((input_spatial_shape[i] + pad_shape[i] - ((kernel_spatial_shape[i] - 1) * dilations[i] + 1)) / strides_spatial_shape[i] + 1)
+   output_spatial_shape[i] = ceil((input_spatial_shape[i] + pad_shape[i] - dilation[i] * (kernel_shape[i] - 1) - 1) / strides_spatial_shape[i] + 1)
    ```
-   if ceil_mode is enabled `pad_shape[i]` is the sum of pads along axis `i`.
+   if ceil_mode is enabled. `pad_shape[i]` is the sum of pads along axis `i`. Sliding windows that would start in the right padded region are ignored.
   
-   `auto_pad` is a DEPRECATED attribute. If you are using them currently, the output spatial shape will be following:
+   `auto_pad` is a DEPRECATED attribute. If you are using them currently, the output spatial shape will be following when ceil_mode is enabled:
    ```
    VALID: output_spatial_shape[i] = ceil((input_spatial_shape[i] - ((kernel_spatial_shape[i] - 1) * dilations[i] + 1) + 1) / strides_spatial_shape[i])
    SAME_UPPER or SAME_LOWER: output_spatial_shape[i] = ceil(input_spatial_shape[i] / strides_spatial_shape[i])
+   ```
+   or when ceil_mode is disabled (https://www.tensorflow.org/api_docs/python/tf/keras/layers/AveragePooling2D):
+   ```
+   VALID: output_spatial_shape[i] = floor((input_spatial_shape[i] - ((kernel_spatial_shape[i] - 1) * dilations[i] + 1)) / strides_spatial_shape[i]) + 1
+   SAME_UPPER or SAME_LOWER: output_spatial_shape[i] = floor((input_spatial_shape[i] - 1) / strides_spatial_shape[i]) + 1
    ```
    And pad shape will be following if `SAME_UPPER` or `SAME_LOWER`:
    ```
@@ -4290,7 +4386,7 @@ def ONNXMaxUnpoolOp:ONNX_Op<"MaxUnpool",
   MaxUnpool essentially computes the partial inverse of the MaxPool op.
    The input information to this op is typically the output information from a MaxPool op. The first
    input tensor X is the tensor that needs to be unpooled, which is typically the pooled tensor (first output)
-   from MaxPool. The second input tensor, I, contains the indices to the (locally maximal) elements corrsponding
+   from MaxPool. The second input tensor, I, contains the indices to the (locally maximal) elements corresponding
    to the elements in the first input tensor X. Input tensor I is typically the second output of the MaxPool op.
    The third (optional) input is a tensor that specifies the output size of the unpooling operation.
   
@@ -4303,7 +4399,7 @@ def ONNXMaxUnpoolOp:ONNX_Op<"MaxUnpool",
    known/predictable size.
   
   In addition to the inputs, MaxUnpool takes three attributes, namely kernel_shape, strides, and pads,
-   which define the exact unpooling op. The attributes typically have the same values as the corrsponding
+   which define the exact unpooling op. The attributes typically have the same values as the corresponding
    pooling op that the unpooling op is trying to invert.
   }];
   let arguments = (ins AnyTypeOf<[TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>]>:$X,
@@ -4568,18 +4664,18 @@ def ONNXMulOp:ONNX_Op<"Mul",
       auto lhsTy = A.getType();
       auto rhsTy = B.getType();
       auto resultType = getBroadcastedRankedType(lhsTy, rhsTy);
-      auto shapedType = resultType.dyn_cast_or_null<ShapedType>();
+      auto shapedType = mlir::dyn_cast_or_null<ShapedType>(resultType);
       if (!shapedType || !shapedType.hasStaticShape())
-        resultType = UnrankedTensorType::get(lhsTy.cast<ShapedType>().getElementType());
+        resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(lhsTy).getElementType());
       build($_builder, $_state, resultType, A, B);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
       auto lhsTy = operands[0].getType();
       auto rhsTy = operands[1].getType();
       auto resultType = getBroadcastedRankedType(lhsTy, rhsTy);
-      auto shapedType = resultType.dyn_cast_or_null<ShapedType>();
+      auto shapedType = mlir::dyn_cast_or_null<ShapedType>(resultType);
       if (!shapedType || !shapedType.hasStaticShape())
-        resultType = UnrankedTensorType::get(lhsTy.cast<ShapedType>().getElementType());
+        resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(lhsTy).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -4650,11 +4746,11 @@ def ONNXNegOp:ONNX_Op<"Neg",
   let results = (outs AnyTypeOf<[TensorOf<[F32]>, TensorOf<[I32]>, TensorOf<[I8]>, TensorOf<[I16]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$Y);
   let builders = [
     OpBuilder<(ins "Value":$X), [{
-      auto resultType = UnrankedTensorType::get(X.getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(X.getType()).getElementType());
       build($_builder, $_state, resultType, X);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
-      auto resultType = UnrankedTensorType::get(operands[0].getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(operands[0].getType()).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -5080,18 +5176,18 @@ def ONNXOrOp:ONNX_Op<"Or",
       auto lhsTy = A.getType();
       auto rhsTy = B.getType();
       auto resultType = getBroadcastedRankedType(lhsTy, rhsTy);
-      auto shapedType = resultType.dyn_cast_or_null<ShapedType>();
+      auto shapedType = mlir::dyn_cast_or_null<ShapedType>(resultType);
       if (!shapedType || !shapedType.hasStaticShape())
-        resultType = UnrankedTensorType::get(lhsTy.cast<ShapedType>().getElementType());
+        resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(lhsTy).getElementType());
       build($_builder, $_state, resultType, A, B);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
       auto lhsTy = operands[0].getType();
       auto rhsTy = operands[1].getType();
       auto resultType = getBroadcastedRankedType(lhsTy, rhsTy);
-      auto shapedType = resultType.dyn_cast_or_null<ShapedType>();
+      auto shapedType = mlir::dyn_cast_or_null<ShapedType>(resultType);
       if (!shapedType || !shapedType.hasStaticShape())
-        resultType = UnrankedTensorType::get(lhsTy.cast<ShapedType>().getElementType());
+        resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(lhsTy).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -5264,11 +5360,11 @@ def ONNXPadOp:ONNX_Op<"Pad",
   let results = (outs AnyTypeOf<[TensorOf<[UI8]>, TensorOf<[UI16]>, TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I8]>, TensorOf<[I16]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[BF16]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[StringType]>, TensorOf<[I1]>, TensorOf<[Complex<F32>]>, TensorOf<[Complex<F64>]>]>:$output);
   let builders = [
     OpBuilder<(ins "Value":$data, "Value":$pads, "Value":$constant_value, "Value":$axes, "StringAttr":$mode), [{
-      auto resultType = UnrankedTensorType::get(data.getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(data.getType()).getElementType());
       build($_builder, $_state, resultType, data, pads, constant_value, axes, mode);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
-      auto resultType = UnrankedTensorType::get(operands[0].getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(operands[0].getType()).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -5678,18 +5774,18 @@ def ONNXPowOp:ONNX_Op<"Pow",
       auto lhsTy = X.getType();
       auto rhsTy = Y.getType();
       auto resultType = getBroadcastedRankedType(lhsTy, rhsTy);
-      auto shapedType = resultType.dyn_cast_or_null<ShapedType>();
+      auto shapedType = mlir::dyn_cast_or_null<ShapedType>(resultType);
       if (!shapedType || !shapedType.hasStaticShape())
-        resultType = UnrankedTensorType::get(lhsTy.cast<ShapedType>().getElementType());
+        resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(lhsTy).getElementType());
       build($_builder, $_state, resultType, X, Y);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
       auto lhsTy = operands[0].getType();
       auto rhsTy = operands[1].getType();
       auto resultType = getBroadcastedRankedType(lhsTy, rhsTy);
-      auto shapedType = resultType.dyn_cast_or_null<ShapedType>();
+      auto shapedType = mlir::dyn_cast_or_null<ShapedType>(resultType);
       if (!shapedType || !shapedType.hasStaticShape())
-        resultType = UnrankedTensorType::get(lhsTy.cast<ShapedType>().getElementType());
+        resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(lhsTy).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -6186,12 +6282,13 @@ def ONNXReduceL1Op:ONNX_Op<"ReduceL1",
   let summary = "ONNX ReduceL1 operation";
   let description = [{
   Computes the L1 norm of the input tensor's elements along the provided axes. The resulting
-  tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+  tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
   the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-  valid.
+  valid. Reduction over an empty set of values yields 0.
   
-  The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-  False instead of True.
+  
+  The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+  to `False` instead of `True`.
   }];
   let arguments = (ins AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$data,
     AnyTypeOf<[TensorOf<[I64]>, NoneType]>:$axes,
@@ -6224,12 +6321,13 @@ def ONNXReduceL1V13Op:ONNX_Op<"ReduceL1V13",
   let summary = "ONNX ReduceL1 operation";
   let description = [{
   Computes the L1 norm of the input tensor's elements along the provided axes. The resulting
-  tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+  tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
   the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-  valid.
+  valid. Reduction over an empty set of values yields 0.
   
-  The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-  False instead of True.
+  
+  The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+  to `False` instead of `True`.
   }];
   let arguments = (ins AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$data,
     OptionalAttr<I64ArrayAttr>:$axes,
@@ -6261,12 +6359,13 @@ def ONNXReduceL2Op:ONNX_Op<"ReduceL2",
   let summary = "ONNX ReduceL2 operation";
   let description = [{
   Computes the L2 norm of the input tensor's elements along the provided axes. The resulting
-  tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+  tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
   the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-  valid.
+  valid. Reduction over an empty set of values yields 0.
   
-  The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-  False instead of True.
+  
+  The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+  to `False` instead of `True`.
   }];
   let arguments = (ins AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$data,
     AnyTypeOf<[TensorOf<[I64]>, NoneType]>:$axes,
@@ -6299,12 +6398,13 @@ def ONNXReduceL2V13Op:ONNX_Op<"ReduceL2V13",
   let summary = "ONNX ReduceL2 operation";
   let description = [{
   Computes the L2 norm of the input tensor's elements along the provided axes. The resulting
-  tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+  tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
   the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-  valid.
+  valid. Reduction over an empty set of values yields 0.
   
-  The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-  False instead of True.
+  
+  The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+  to `False` instead of `True`.
   }];
   let arguments = (ins AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$data,
     OptionalAttr<I64ArrayAttr>:$axes,
@@ -6336,12 +6436,13 @@ def ONNXReduceLogSumOp:ONNX_Op<"ReduceLogSum",
   let summary = "ONNX ReduceLogSum operation";
   let description = [{
   Computes the log sum of the input tensor's elements along the provided axes. The resulting
-  tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+  tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
   the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-  valid.
+  valid. Reduction over an empty set of values yields minus infinity (if supported by the datatype) or undefined otherwise.
   
-  The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-  False instead of True.
+  
+  The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+  to `False` instead of `True`.
   }];
   let arguments = (ins AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$data,
     AnyTypeOf<[TensorOf<[I64]>, NoneType]>:$axes,
@@ -6350,11 +6451,11 @@ def ONNXReduceLogSumOp:ONNX_Op<"ReduceLogSum",
   let results = (outs AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$reduced);
   let builders = [
     OpBuilder<(ins "Value":$data, "Value":$axes, "IntegerAttr":$keepdims, "IntegerAttr":$noop_with_empty_axes), [{
-      auto resultType = UnrankedTensorType::get(data.getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(data.getType()).getElementType());
       build($_builder, $_state, resultType, data, axes, keepdims, noop_with_empty_axes);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
-      auto resultType = UnrankedTensorType::get(operands[0].getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(operands[0].getType()).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -6384,12 +6485,13 @@ def ONNXReduceLogSumV13Op:ONNX_Op<"ReduceLogSumV13",
   let summary = "ONNX ReduceLogSum operation";
   let description = [{
   Computes the log sum of the input tensor's elements along the provided axes. The resulting
-  tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+  tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
   the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-  valid.
+  valid. Reduction over an empty set of values yields minus infinity (if supported by the datatype) or undefined otherwise.
   
-  The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-  False instead of True.
+  
+  The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+  to `False` instead of `True`.
   }];
   let arguments = (ins AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$data,
     OptionalAttr<I64ArrayAttr>:$axes,
@@ -6421,12 +6523,13 @@ def ONNXReduceLogSumExpOp:ONNX_Op<"ReduceLogSumExp",
   let summary = "ONNX ReduceLogSumExp operation";
   let description = [{
   Computes the log sum exponent of the input tensor's elements along the provided axes. The resulting
-  tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+  tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
   the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-  valid.
+  valid. Reduction over an empty set of values yields minus infinity (if supported by the datatype) or undefined otherwise.
   
-  The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-  False instead of True.
+  
+  The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+  to `False` instead of `True`.
   }];
   let arguments = (ins AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$data,
     AnyTypeOf<[TensorOf<[I64]>, NoneType]>:$axes,
@@ -6459,12 +6562,13 @@ def ONNXReduceLogSumExpV13Op:ONNX_Op<"ReduceLogSumExpV13",
   let summary = "ONNX ReduceLogSumExp operation";
   let description = [{
   Computes the log sum exponent of the input tensor's elements along the provided axes. The resulting
-  tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+  tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
   the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-  valid.
+  valid. Reduction over an empty set of values yields minus infinity (if supported by the datatype) or undefined otherwise.
   
-  The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-  False instead of True.
+  
+  The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+  to `False` instead of `True`.
   }];
   let arguments = (ins AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$data,
     OptionalAttr<I64ArrayAttr>:$axes,
@@ -6496,25 +6600,28 @@ def ONNXReduceMaxOp:ONNX_Op<"ReduceMax",
   let summary = "ONNX ReduceMax operation";
   let description = [{
   Computes the max of the input tensor's elements along the provided axes. The resulting
-  tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+  tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
   the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-  valid.
+  valid. Reduction over an empty set of values yields minus infinity (if supported by the datatype) or the minimum value of the data type otherwise.
   
-  The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-  False instead of True.
+  
+  If the input data type is Boolean, the comparison should consider `False < True`.
+  
+  The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+  to `False` instead of `True`.
   }];
-  let arguments = (ins AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>, TensorOf<[UI8]>, TensorOf<[I8]>]>:$data,
+  let arguments = (ins AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>, TensorOf<[UI8]>, TensorOf<[I8]>, TensorOf<[I1]>]>:$data,
     AnyTypeOf<[TensorOf<[I64]>, NoneType]>:$axes,
     DefaultValuedAttr<SI64Attr, "1">:$keepdims,
     DefaultValuedAttr<SI64Attr, "0">:$noop_with_empty_axes);
-  let results = (outs AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>, TensorOf<[UI8]>, TensorOf<[I8]>]>:$reduced);
+  let results = (outs AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>, TensorOf<[UI8]>, TensorOf<[I8]>, TensorOf<[I1]>]>:$reduced);
   let builders = [
     OpBuilder<(ins "Value":$data, "Value":$axes, "IntegerAttr":$keepdims, "IntegerAttr":$noop_with_empty_axes), [{
-      auto resultType = UnrankedTensorType::get(data.getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(data.getType()).getElementType());
       build($_builder, $_state, resultType, data, axes, keepdims, noop_with_empty_axes);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
-      auto resultType = UnrankedTensorType::get(operands[0].getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(operands[0].getType()).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -6539,17 +6646,67 @@ def ONNXReduceMaxOp:ONNX_Op<"ReduceMax",
     }];
 }
 
+def ONNXReduceMaxV18Op:ONNX_Op<"ReduceMaxV18",
+  [Pure, DeclareOpInterfaceMethods<ShapeInferenceOpInterface>, DeclareOpInterfaceMethods<ShapeHelperOpInterface>]> {
+  let summary = "ONNX ReduceMax operation";
+  let description = [{
+  Computes the max of the input tensor's elements along the provided axes. The resulting
+  tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
+  the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
+  valid. Reduction over an empty set of values yields minus infinity (if supported by the datatype) or the minimum value of the data type otherwise.
+  
+  
+  The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+  to `False` instead of `True`.
+  }];
+  let arguments = (ins AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>, TensorOf<[UI8]>, TensorOf<[I8]>]>:$data,
+    AnyTypeOf<[TensorOf<[I64]>, NoneType]>:$axes,
+    DefaultValuedAttr<SI64Attr, "1">:$keepdims,
+    DefaultValuedAttr<SI64Attr, "0">:$noop_with_empty_axes);
+  let results = (outs AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>, TensorOf<[UI8]>, TensorOf<[I8]>]>:$reduced);
+  let builders = [
+    OpBuilder<(ins "Value":$data, "Value":$axes, "IntegerAttr":$keepdims, "IntegerAttr":$noop_with_empty_axes), [{
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(data.getType()).getElementType());
+      build($_builder, $_state, resultType, data, axes, keepdims, noop_with_empty_axes);
+    }]>,
+    OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(operands[0].getType()).getElementType());
+      build($_builder, $_state, {resultType}, operands, attributes);
+    }]>
+    ];
+    let extraClassDeclaration = [{
+      static int getNumberOfOperands() {
+        return 2;
+      }
+      static int getNumberOfResults() {
+        return 1;
+      }
+      static std::vector<int> getTypeMap() {
+        return {30};
+      }
+    }];
+    let extraClassDefinition = [{
+      onnx_mlir::ONNXOpShapeHelper * $cppClass::getShapeHelper(mlir::Operation *op, llvm::ArrayRef<mlir::Value> oper, 
+          onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
+        onnx_mlir::ONNXOpShapeHelper *sh = new onnx_mlir::ONNXReduceMaxV18OpShapeHelper(op, oper, ieb, scope);
+        assert(sh && "failed to allocate shape helper");
+        return sh;
+      }
+    }];
+}
+
 def ONNXReduceMaxV13Op:ONNX_Op<"ReduceMaxV13",
   [Pure, DeclareOpInterfaceMethods<ShapeInferenceOpInterface>, DeclareOpInterfaceMethods<ShapeHelperOpInterface>]> {
   let summary = "ONNX ReduceMax operation";
   let description = [{
   Computes the max of the input tensor's elements along the provided axes. The resulting
-  tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+  tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
   the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-  valid.
+  valid. Reduction over an empty set of values yields minus infinity (if supported by the datatype) or the minimum value of the data type otherwise.
   
-  The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-  False instead of True.
+  
+  The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+  to `False` instead of `True`.
   }];
   let arguments = (ins AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>, TensorOf<[UI8]>, TensorOf<[I8]>]>:$data,
     OptionalAttr<I64ArrayAttr>:$axes,
@@ -6557,11 +6714,11 @@ def ONNXReduceMaxV13Op:ONNX_Op<"ReduceMaxV13",
   let results = (outs AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>, TensorOf<[UI8]>, TensorOf<[I8]>]>:$reduced);
   let builders = [
     OpBuilder<(ins "Value":$data, "ArrayAttr":$axes, "IntegerAttr":$keepdims), [{
-      auto resultType = UnrankedTensorType::get(data.getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(data.getType()).getElementType());
       build($_builder, $_state, resultType, data, axes, keepdims);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
-      auto resultType = UnrankedTensorType::get(operands[0].getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(operands[0].getType()).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -6591,12 +6748,13 @@ def ONNXReduceMeanOp:ONNX_Op<"ReduceMean",
   let summary = "ONNX ReduceMean operation";
   let description = [{
   Computes the mean of the input tensor's elements along the provided axes. The resulting
-  tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+  tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
   the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-  valid.
+  valid. Reduction over an empty set of values yields undefined.
   
-  The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-  False instead of True.
+  
+  The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+  to `False` instead of `True`.
   }];
   let arguments = (ins AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$data,
     AnyTypeOf<[TensorOf<[I64]>, NoneType]>:$axes,
@@ -6629,12 +6787,13 @@ def ONNXReduceMeanV13Op:ONNX_Op<"ReduceMeanV13",
   let summary = "ONNX ReduceMean operation";
   let description = [{
   Computes the mean of the input tensor's elements along the provided axes. The resulting
-  tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+  tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
   the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-  valid.
+  valid. Reduction over an empty set of values yields undefined.
   
-  The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-  False instead of True.
+  
+  The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+  to `False` instead of `True`.
   }];
   let arguments = (ins AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$data,
     OptionalAttr<I64ArrayAttr>:$axes,
@@ -6666,18 +6825,21 @@ def ONNXReduceMinOp:ONNX_Op<"ReduceMin",
   let summary = "ONNX ReduceMin operation";
   let description = [{
   Computes the min of the input tensor's elements along the provided axes. The resulting
-  tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+  tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
   the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-  valid.
+  valid. Reduction over an empty set of values yields plus infinity (if supported by the datatype) or the maximum value of the data type otherwise.
   
-  The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-  False instead of True.
+  
+  If the input data type is Boolean, the comparison should consider `False < True`.
+  
+  The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+  to `False` instead of `True`.
   }];
-  let arguments = (ins AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>, TensorOf<[UI8]>, TensorOf<[I8]>]>:$data,
+  let arguments = (ins AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>, TensorOf<[UI8]>, TensorOf<[I8]>, TensorOf<[I1]>]>:$data,
     AnyTypeOf<[TensorOf<[I64]>, NoneType]>:$axes,
     DefaultValuedAttr<SI64Attr, "1">:$keepdims,
     DefaultValuedAttr<SI64Attr, "0">:$noop_with_empty_axes);
-  let results = (outs AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>, TensorOf<[UI8]>, TensorOf<[I8]>]>:$reduced);
+  let results = (outs AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>, TensorOf<[UI8]>, TensorOf<[I8]>, TensorOf<[I1]>]>:$reduced);
   let extraClassDeclaration = [{
     static int getNumberOfOperands() {
       return 2;
@@ -6699,17 +6861,57 @@ def ONNXReduceMinOp:ONNX_Op<"ReduceMin",
   }];
 }
 
+def ONNXReduceMinV18Op:ONNX_Op<"ReduceMinV18",
+  [Pure, DeclareOpInterfaceMethods<ShapeInferenceOpInterface>, DeclareOpInterfaceMethods<ShapeHelperOpInterface>]> {
+  let summary = "ONNX ReduceMin operation";
+  let description = [{
+  Computes the min of the input tensor's elements along the provided axes. The resulting
+  tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
+  the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
+  valid. Reduction over an empty set of values yields plus infinity (if supported by the datatype) or the maximum value of the data type otherwise.
+  
+  
+  The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+  to `False` instead of `True`.
+  }];
+  let arguments = (ins AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>, TensorOf<[UI8]>, TensorOf<[I8]>]>:$data,
+    AnyTypeOf<[TensorOf<[I64]>, NoneType]>:$axes,
+    DefaultValuedAttr<SI64Attr, "1">:$keepdims,
+    DefaultValuedAttr<SI64Attr, "0">:$noop_with_empty_axes);
+  let results = (outs AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>, TensorOf<[UI8]>, TensorOf<[I8]>]>:$reduced);
+  let extraClassDeclaration = [{
+    static int getNumberOfOperands() {
+      return 2;
+    }
+    static int getNumberOfResults() {
+      return 1;
+    }
+    static std::vector<int> getTypeMap() {
+      return {30};
+    }
+  }];
+  let extraClassDefinition = [{
+    onnx_mlir::ONNXOpShapeHelper * $cppClass::getShapeHelper(mlir::Operation *op, llvm::ArrayRef<mlir::Value> oper, 
+        onnx_mlir::IndexExprBuilder *ieb, onnx_mlir::IndexExprScope *scope) {
+      onnx_mlir::ONNXOpShapeHelper *sh = new onnx_mlir::ONNXReduceMinV18OpShapeHelper(op, oper, ieb, scope);
+      assert(sh && "failed to allocate shape helper");
+      return sh;
+    }
+  }];
+}
+
 def ONNXReduceMinV13Op:ONNX_Op<"ReduceMinV13",
   [Pure, DeclareOpInterfaceMethods<ShapeInferenceOpInterface>, DeclareOpInterfaceMethods<ShapeHelperOpInterface>]> {
   let summary = "ONNX ReduceMin operation";
   let description = [{
   Computes the min of the input tensor's elements along the provided axes. The resulting
-  tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+  tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
   the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-  valid.
+  valid. Reduction over an empty set of values yields plus infinity (if supported by the datatype) or the maximum value of the data type otherwise.
   
-  The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-  False instead of True.
+  
+  The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+  to `False` instead of `True`.
   }];
   let arguments = (ins AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>, TensorOf<[UI8]>, TensorOf<[I8]>]>:$data,
     OptionalAttr<I64ArrayAttr>:$axes,
@@ -6741,12 +6943,13 @@ def ONNXReduceProdOp:ONNX_Op<"ReduceProd",
   let summary = "ONNX ReduceProd operation";
   let description = [{
   Computes the product of the input tensor's elements along the provided axes. The resulting
-  tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+  tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
   the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-  valid.
+  valid. Reduction over an empty set of values yields 1.
   
-  The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-  False instead of True.
+  
+  The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+  to `False` instead of `True`.
   }];
   let arguments = (ins AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$data,
     AnyTypeOf<[TensorOf<[I64]>, NoneType]>:$axes,
@@ -6779,12 +6982,13 @@ def ONNXReduceProdV13Op:ONNX_Op<"ReduceProdV13",
   let summary = "ONNX ReduceProd operation";
   let description = [{
   Computes the product of the input tensor's elements along the provided axes. The resulting
-  tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+  tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
   the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-  valid.
+  valid. Reduction over an empty set of values yields 1.
   
-  The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-  False instead of True.
+  
+  The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+  to `False` instead of `True`.
   }];
   let arguments = (ins AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$data,
     OptionalAttr<I64ArrayAttr>:$axes,
@@ -6816,12 +7020,13 @@ def ONNXReduceSumOp:ONNX_Op<"ReduceSum",
   let summary = "ONNX ReduceSum operation";
   let description = [{
   Computes the sum of the input tensor's elements along the provided axes. The resulting
-  tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+  tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
   the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-  valid.
+  valid. Reduction over an empty set of values yields 0.
   
-  The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-  False instead of True.
+  
+  The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+  to `False` instead of `True`.
   }];
   let arguments = (ins AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$data,
     AnyTypeOf<[TensorOf<[I64]>, NoneType]>:$axes,
@@ -6830,11 +7035,11 @@ def ONNXReduceSumOp:ONNX_Op<"ReduceSum",
   let results = (outs AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$reduced);
   let builders = [
     OpBuilder<(ins "Value":$data, "Value":$axes, "IntegerAttr":$keepdims, "IntegerAttr":$noop_with_empty_axes), [{
-      auto resultType = UnrankedTensorType::get(data.getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(data.getType()).getElementType());
       build($_builder, $_state, resultType, data, axes, keepdims, noop_with_empty_axes);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
-      auto resultType = UnrankedTensorType::get(operands[0].getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(operands[0].getType()).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -6876,11 +7081,11 @@ def ONNXReduceSumV11Op:ONNX_Op<"ReduceSumV11",
   let results = (outs AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>]>:$reduced);
   let builders = [
     OpBuilder<(ins "Value":$data, "ArrayAttr":$axes, "IntegerAttr":$keepdims), [{
-      auto resultType = UnrankedTensorType::get(data.getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(data.getType()).getElementType());
       build($_builder, $_state, resultType, data, axes, keepdims);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
-      auto resultType = UnrankedTensorType::get(operands[0].getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(operands[0].getType()).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -6910,12 +7115,13 @@ def ONNXReduceSumSquareOp:ONNX_Op<"ReduceSumSquare",
   let summary = "ONNX ReduceSumSquare operation";
   let description = [{
   Computes the sum square of the input tensor's elements along the provided axes. The resulting
-  tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+  tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
   the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-  valid.
+  valid. Reduction over an empty set of values yields 0.
   
-  The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-  False instead of True.
+  
+  The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+  to `False` instead of `True`.
   }];
   let arguments = (ins AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$data,
     AnyTypeOf<[TensorOf<[I64]>, NoneType]>:$axes,
@@ -6924,11 +7130,11 @@ def ONNXReduceSumSquareOp:ONNX_Op<"ReduceSumSquare",
   let results = (outs AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$reduced);
   let builders = [
     OpBuilder<(ins "Value":$data, "Value":$axes, "IntegerAttr":$keepdims, "IntegerAttr":$noop_with_empty_axes), [{
-      auto resultType = UnrankedTensorType::get(data.getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(data.getType()).getElementType());
       build($_builder, $_state, resultType, data, axes, keepdims, noop_with_empty_axes);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
-      auto resultType = UnrankedTensorType::get(operands[0].getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(operands[0].getType()).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -6958,12 +7164,13 @@ def ONNXReduceSumSquareV13Op:ONNX_Op<"ReduceSumSquareV13",
   let summary = "ONNX ReduceSumSquare operation";
   let description = [{
   Computes the sum square of the input tensor's elements along the provided axes. The resulting
-  tensor has the same rank as the input if keepdims equals 1. If keepdims equals 0, then
+  tensor has the same rank as the input if `keepdims` equals 1. If `keepdims` equals 0, then
   the resulting tensor has the reduced dimension pruned. Input tensors of rank zero are
-  valid.
+  valid. Reduction over an empty set of values yields 0.
   
-  The above behavior is similar to numpy, with the exception that numpy defaults keepdims to
-  False instead of True.
+  
+  The above behavior is similar to numpy, with the exception that numpy defaults `keepdims`
+  to `False` instead of `True`.
   }];
   let arguments = (ins AnyTypeOf<[TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$data,
     OptionalAttr<I64ArrayAttr>:$axes,
@@ -7390,7 +7597,7 @@ def ONNXRoundOp:ONNX_Op<"Round",
   let description = [{
   Round takes one input Tensor and rounds the values, element-wise, meaning
   it finds the nearest integer for each value.
-  In case of halfs, the rule is to round them to the nearest even integer.
+  In case of halves, the rule is to round them to the nearest even integer.
   If input x is integral, +0, -0, NaN,  or infinite, x itself is returned.
   The output tensor has the same shape and type as the input.
   
@@ -7735,8 +7942,8 @@ def ONNXScatterElementsOp:ONNX_Op<"ScatterElements",
   ```
   When `reduction` is set to some reduction function `f`, the update corresponding to the [i][j] entry is performed as below:
   ```
-  output[indices[i][j]][j] += f(output[indices[i][j]][j], updates[i][j]) if axis = 0,
-  output[i][indices[i][j]] += f(output[i][indices[i][j]], updates[i][j]) if axis = 1,
+  output[indices[i][j]][j] = f(output[indices[i][j]][j], updates[i][j]) if axis = 0,
+  output[i][indices[i][j]] = f(output[i][indices[i][j]], updates[i][j]) if axis = 1,
   ```
   where the `f` is `+`, `*`, `max` or `min` as specified.
   
@@ -8444,16 +8651,16 @@ def ONNXSliceOp:ONNX_Op<"Slice",
   Slice uses the `starts`, `ends`, `axes` and `steps` inputs to select a sub-tensor
   of its input `data` tensor.
   
-  An effective `start[i]`, `end[i]`, and `step[i]` must be computed for each `i`
+  An effective `starts[i]`, `ends[i]`, and `steps[i]` must be computed for each `i`
   in `[0, ... r-1]` where `r = rank(input)` as follows:
   
   If `axes` are omitted, they are set to `[0, ..., r-1]`.
   If `steps` are omitted, they are set to `[1, ..., 1]` of length `len(starts)`
   
-  The effective values are initialized as `start[i] = 0`, `end[i] = dims[i]` where
-  `dims` are the dimensions of `input` and `step[i] = `1.
+  The effective values are initialized as `start[i] = 0`, `ends[i] = dims[i]` where
+  `dims` are the dimensions of `input` and `steps[i] = 1`.
   
-  All negative elements of `axes` are made non-negatve by adding `r` to them, where
+  All negative elements of `axes` are made non-negative by adding `r` to them, where
   `r =rank(input)`.
   
   All negative values in `starts[i]` and `ends[i]` have `dims[axes[i]]` added to them,
@@ -8463,10 +8670,10 @@ def ONNXSliceOp:ONNX_Op<"Slice",
   
   The clamping for the adjusted `ends[i]` depends on the sign of `steps[i]` and must
   accommodate copying 0 through `dims[axes[i]]` elements, so for positive stepping
-  `end[axes[i]]` is clamped to `[0, dims[axes[i]]]`, while for negative stepping it
+  `ends[axes[i]]` is clamped to `[0, dims[axes[i]]]`, while for negative stepping it
   is clamped to `[-1, dims[axes[i]]-1]`.
   
-  Finally, `step[axes[i]] = steps[i]`.
+  Finally, `steps[axes[i]] = steps[i]`.
   
   For slicing to the end of a dimension with unknown size, it is recommended to pass
   in `INT_MAX` when slicing forward and 'INT_MIN' when slicing backward.
@@ -8545,11 +8752,11 @@ def ONNXSoftmaxOp:ONNX_Op<"Softmax",
   let results = (outs AnyTypeOf<[TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$output);
   let builders = [
     OpBuilder<(ins "Value":$input, "IntegerAttr":$axis), [{
-      auto resultType = UnrankedTensorType::get(input.getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(input.getType()).getElementType());
       build($_builder, $_state, resultType, input, axis);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
-      auto resultType = UnrankedTensorType::get(operands[0].getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(operands[0].getType()).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -8635,7 +8842,7 @@ def ONNXSoftmaxCrossEntropyLossOp:ONNX_Op<"SoftmaxCrossEntropyLoss",
   * shape(labels): (N) where each value is 0 <= labels[i] <= C-1, or (N, D1, D2,..., Dk),
     with K >= 1 in case of K-dimensional loss.
   
-  The loss for one sample, l_i, can caculated as follows:
+  The loss for one sample, l_i, can calculated as follows:
   ```
   l[i][d1][d2]...[dk] = -y[i][c][d1][d2]..[dk], where i is the index of classes.
   ```
@@ -8802,11 +9009,11 @@ def ONNXSplitOp:ONNX_Op<"Split",
   let results = (outs Variadic<AnyTypeOf<[TensorOf<[UI8]>, TensorOf<[UI16]>, TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I8]>, TensorOf<[I16]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[BF16]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[StringType]>, TensorOf<[I1]>, TensorOf<[Complex<F32>]>, TensorOf<[Complex<F64>]>]>>:$outputs);
   let builders = [
     OpBuilder<(ins "Value":$input, "Value":$split, "IntegerAttr":$axis, "IntegerAttr":$num_outputs), [{
-      auto resultType = UnrankedTensorType::get(input.getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(input.getType()).getElementType());
       build($_builder, $_state, resultType, input, split, axis, num_outputs);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
-      auto resultType = UnrankedTensorType::get(operands[0].getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(operands[0].getType()).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -8846,11 +9053,11 @@ def ONNXSplitV13Op:ONNX_Op<"SplitV13",
   let results = (outs Variadic<AnyTypeOf<[TensorOf<[UI8]>, TensorOf<[UI16]>, TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I8]>, TensorOf<[I16]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[BF16]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[StringType]>, TensorOf<[I1]>, TensorOf<[Complex<F32>]>, TensorOf<[Complex<F64>]>]>>:$outputs);
   let builders = [
     OpBuilder<(ins "Value":$input, "Value":$split, "IntegerAttr":$axis), [{
-      auto resultType = UnrankedTensorType::get(input.getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(input.getType()).getElementType());
       build($_builder, $_state, resultType, input, split, axis);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
-      auto resultType = UnrankedTensorType::get(operands[0].getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(operands[0].getType()).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -8964,11 +9171,11 @@ def ONNXSqrtOp:ONNX_Op<"Sqrt",
   let results = (outs AnyTypeOf<[TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[BF16]>]>:$Y);
   let builders = [
     OpBuilder<(ins "Value":$X), [{
-      auto resultType = UnrankedTensorType::get(X.getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(X.getType()).getElementType());
       build($_builder, $_state, resultType, X);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
-      auto resultType = UnrankedTensorType::get(operands[0].getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(operands[0].getType()).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -9008,11 +9215,11 @@ def ONNXSqueezeOp:ONNX_Op<"Squeeze",
   let results = (outs AnyTypeOf<[TensorOf<[UI8]>, TensorOf<[UI16]>, TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I8]>, TensorOf<[I16]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[BF16]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[StringType]>, TensorOf<[I1]>, TensorOf<[Complex<F32>]>, TensorOf<[Complex<F64>]>]>:$squeezed);
   let builders = [
     OpBuilder<(ins "Value":$data, "Value":$axes), [{
-      auto resultType = UnrankedTensorType::get(data.getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(data.getType()).getElementType());
       build($_builder, $_state, resultType, data, axes);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
-      auto resultType = UnrankedTensorType::get(operands[0].getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(operands[0].getType()).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -9053,11 +9260,11 @@ def ONNXSqueezeV11Op:ONNX_Op<"SqueezeV11",
   let results = (outs AnyTypeOf<[TensorOf<[UI8]>, TensorOf<[UI16]>, TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I8]>, TensorOf<[I16]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[StringType]>, TensorOf<[I1]>, TensorOf<[Complex<F32>]>, TensorOf<[Complex<F64>]>]>:$squeezed);
   let builders = [
     OpBuilder<(ins "Value":$data, "ArrayAttr":$axes), [{
-      auto resultType = UnrankedTensorType::get(data.getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(data.getType()).getElementType());
       build($_builder, $_state, resultType, data, axes);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
-      auto resultType = UnrankedTensorType::get(operands[0].getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(operands[0].getType()).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -9143,18 +9350,18 @@ def ONNXSubOp:ONNX_Op<"Sub",
       auto lhsTy = A.getType();
       auto rhsTy = B.getType();
       auto resultType = getBroadcastedRankedType(lhsTy, rhsTy);
-      auto shapedType = resultType.dyn_cast_or_null<ShapedType>();
+      auto shapedType = mlir::dyn_cast_or_null<ShapedType>(resultType);
       if (!shapedType || !shapedType.hasStaticShape())
-        resultType = UnrankedTensorType::get(lhsTy.cast<ShapedType>().getElementType());
+        resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(lhsTy).getElementType());
       build($_builder, $_state, resultType, A, B);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
       auto lhsTy = operands[0].getType();
       auto rhsTy = operands[1].getType();
       auto resultType = getBroadcastedRankedType(lhsTy, rhsTy);
-      auto shapedType = resultType.dyn_cast_or_null<ShapedType>();
+      auto shapedType = mlir::dyn_cast_or_null<ShapedType>(resultType);
       if (!shapedType || !shapedType.hasStaticShape())
-        resultType = UnrankedTensorType::get(lhsTy.cast<ShapedType>().getElementType());
+        resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(lhsTy).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -9368,6 +9575,7 @@ def ONNXThresholdedReluOp:ONNX_Op<"ThresholdedRelu",
 
 def ONNXTileOp:ONNX_Op<"Tile",
   [Pure, DeclareOpInterfaceMethods<ShapeInferenceOpInterface>, DeclareOpInterfaceMethods<ShapeHelperOpInterface>]> {
+  let hasCanonicalizer = 1;
   let summary = "ONNX Tile operation";
   let description = [{
   Constructs a tensor by tiling a given tensor.
@@ -9403,11 +9611,11 @@ def ONNXTopKOp:ONNX_Op<"TopK",
   let summary = "ONNX TopK operation";
   let description = [{
   Retrieve the top-K largest or smallest elements along a specified axis. Given an input tensor of
-  shape [a_1, a_2, ..., a_n, r] and integer argument k, return two outputs:
+  shape [a_0, a_1, ..., a_{n-1\}\] and integer argument k, return two outputs:
   
-  * Value tensor of shape [a_1, a_2, ..., a_{axis-1}, k, a_{axis+1}, ... a_n]
+  * Value tensor of shape [a_0, a_1, ..., a_{axis-1}, k, a_{axis+1}, ... a_{n-1\}\]
     which contains the values of the top k elements along the specified axis
-  * Index tensor of shape [a_1, a_2, ..., a_{axis-1}, k, a_{axis+1}, ... a_n] which
+  * Index tensor of shape [a_0, a_1, ..., a_{axis-1}, k, a_{axis+1}, ... a_{n-1\}\] which
     contains the indices of the top k elements (original indices from the input
     tensor).
   
@@ -9531,8 +9739,8 @@ def ONNXUniqueOp:ONNX_Op<"Unique",
   
   This operator returns the unique values or sliced unique subtensors of the input tensor and three optional outputs.
   The first output tensor 'Y' contains all unique values or subtensors of the input.
-  The second optional output tensor 'indices' contains indices of 'Y' elements' first occurance in 'X'..
-  The third optional output tensor 'inverse_indices' contains, for elements of 'X', its corresponding indices in 'Y'. \".
+  The second optional output tensor 'indices' contains indices of 'Y' elements' first occurrence in 'X'.
+  The third optional output tensor 'inverse_indices' contains, for elements of 'X', its corresponding indices in 'Y'.
   The fourth optional output tensor 'counts' contains the count of each element of 'Y' in the input.
   
   Outputs are either sorted in ascending order or optionally in the order of the first occurrence of the values in the input.
@@ -9674,11 +9882,11 @@ def ONNXUnsqueezeOp:ONNX_Op<"Unsqueeze",
   let results = (outs AnyTypeOf<[TensorOf<[UI8]>, TensorOf<[UI16]>, TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I8]>, TensorOf<[I16]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[BF16]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[StringType]>, TensorOf<[I1]>, TensorOf<[Complex<F32>]>, TensorOf<[Complex<F64>]>]>:$expanded);
   let builders = [
     OpBuilder<(ins "Value":$data, "Value":$axes), [{
-      auto resultType = UnrankedTensorType::get(data.getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(data.getType()).getElementType());
       build($_builder, $_state, resultType, data, axes);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
-      auto resultType = UnrankedTensorType::get(operands[0].getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(operands[0].getType()).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -9726,11 +9934,11 @@ def ONNXUnsqueezeV11Op:ONNX_Op<"UnsqueezeV11",
   let results = (outs AnyTypeOf<[TensorOf<[UI8]>, TensorOf<[UI16]>, TensorOf<[UI32]>, TensorOf<[UI64]>, TensorOf<[I8]>, TensorOf<[I16]>, TensorOf<[I32]>, TensorOf<[I64]>, TensorOf<[F16]>, TensorOf<[F32]>, TensorOf<[F64]>, TensorOf<[StringType]>, TensorOf<[I1]>, TensorOf<[Complex<F32>]>, TensorOf<[Complex<F64>]>]>:$expanded);
   let builders = [
     OpBuilder<(ins "Value":$data, "ArrayAttr":$axes), [{
-      auto resultType = UnrankedTensorType::get(data.getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(data.getType()).getElementType());
       build($_builder, $_state, resultType, data, axes);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
-      auto resultType = UnrankedTensorType::get(operands[0].getType().cast<ShapedType>().getElementType());
+      auto resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(operands[0].getType()).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -9824,6 +10032,7 @@ def ONNXUpsampleV7Op:ONNX_Op<"UpsampleV7",
 
 def ONNXWhereOp:ONNX_Op<"Where",
   [Pure, DeclareOpInterfaceMethods<ShapeInferenceOpInterface>, DeclareOpInterfaceMethods<ShapeHelperOpInterface>]> {
+  let hasCanonicalizer = 1;
   let summary = "ONNX Where operation";
   let description = [{
   Return elements, either from X or Y, depending on condition.
@@ -9877,18 +10086,18 @@ def ONNXXorOp:ONNX_Op<"Xor",
       auto lhsTy = A.getType();
       auto rhsTy = B.getType();
       auto resultType = getBroadcastedRankedType(lhsTy, rhsTy);
-      auto shapedType = resultType.dyn_cast_or_null<ShapedType>();
+      auto shapedType = mlir::dyn_cast_or_null<ShapedType>(resultType);
       if (!shapedType || !shapedType.hasStaticShape())
-        resultType = UnrankedTensorType::get(lhsTy.cast<ShapedType>().getElementType());
+        resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(lhsTy).getElementType());
       build($_builder, $_state, resultType, A, B);
     }]>,
     OpBuilder<(ins "ValueRange":$operands, "ArrayRef<NamedAttribute>":$attributes), [{
       auto lhsTy = operands[0].getType();
       auto rhsTy = operands[1].getType();
       auto resultType = getBroadcastedRankedType(lhsTy, rhsTy);
-      auto shapedType = resultType.dyn_cast_or_null<ShapedType>();
+      auto shapedType = mlir::dyn_cast_or_null<ShapedType>(resultType);
       if (!shapedType || !shapedType.hasStaticShape())
-        resultType = UnrankedTensorType::get(lhsTy.cast<ShapedType>().getElementType());
+        resultType = UnrankedTensorType::get(mlir::cast<ShapedType>(lhsTy).getElementType());
       build($_builder, $_state, {resultType}, operands, attributes);
     }]>
     ];
@@ -10097,7 +10306,7 @@ def ONNXFeatureVectorizerOp:ONNX_Op<"FeatureVectorizer",
   let summary = "ONNX FeatureVectorizer operation";
   let description = [{
   Concatenates input tensors into one continuous output.<br>
-      All input shapes are 2-D and are concatenated along the second dimention. 1-D tensors are treated as [1,C].
+      All input shapes are 2-D and are concatenated along the second dimension. 1-D tensors are treated as [1,C].
       Inputs are copied to the output maintaining the order of the input arguments.<br>
       All inputs must be integers or floats, while the output will be all floating point values.
   }];

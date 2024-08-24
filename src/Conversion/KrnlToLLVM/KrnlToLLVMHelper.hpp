@@ -4,7 +4,7 @@
 
 //===------ KrnlToLLVMHelper.hpp ------------------------------------------===//
 //
-// Copyright 2022 The IBM Research Authors.
+// Copyright 2022-2024 The IBM Research Authors.
 //
 // =============================================================================
 //
@@ -12,7 +12,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#pragma once
+#ifndef ONNX_MLIR_KRNL_TO_LLVM_H
+#define ONNX_MLIR_KRNL_TO_LLVM_H
 
 #include "mlir/Conversion/LLVMCommon/TypeConverter.h"
 #include "mlir/Dialect/LLVMIR/LLVMDialect.h"
@@ -88,5 +89,9 @@ mlir::Operation *getFirstEntryOpInBlock(mlir::ModuleOp &module,
 /// Get rawData from a DenseElementsAttr or a DenseResourceElementsAttr.
 llvm::ArrayRef<char> getRawData(mlir::KrnlGlobalOp &op);
 
+/// Check if the module is for z/OS or not.
+bool isZOS(mlir::ModuleOp module);
+
 } // namespace krnl
 } // namespace onnx_mlir
+#endif

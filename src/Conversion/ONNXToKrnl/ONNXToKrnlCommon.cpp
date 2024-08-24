@@ -4,7 +4,7 @@
 
 //====----- ONNXToKrnlCommon.cpp - ONNX dialects to Krnl lowering ---------===//
 //
-// Copyright 2019-2023 The IBM Research Authors.
+// Copyright 2019-2024 The IBM Research Authors.
 //
 // =============================================================================
 //
@@ -33,7 +33,7 @@ Value OnnxToKrnlBuilder::reshape(
     const Value input, const ArrayRef<DimIndexExpr> shapeDims) const {
   assert(!shapeDims.empty() && "Shape dimensions should not be empty");
 
-  ShapedType inputType = input.getType().cast<ShapedType>();
+  ShapedType inputType = mlir::cast<ShapedType>(input.getType());
   Type elementType = inputType.getElementType();
   MultiDialectBuilder<OnnxBuilder, MemRefBuilder, KrnlBuilder, MathBuilder>
       create(b(), loc());
@@ -101,7 +101,7 @@ Value OnnxToKrnlBuilder::transpose(const Value input,
     shape.push_back(dim.isLiteral() ? dim.getLiteral() : ShapedType::kDynamic);
 
   // Create the "onnx.Transpose" operation.
-  ShapedType inputType = input.getType().cast<ShapedType>();
+  ShapedType inputType = mlir::cast<ShapedType>(input.getType());
   Value transposeRes =
       create.onnx.transpose(MemRefType::get(shape, inputType.getElementType()),
           input, b().getI64ArrayAttr(perm));
@@ -110,9 +110,10 @@ Value OnnxToKrnlBuilder::transpose(const Value input,
 }
 
 bool isScalarValue(Value value) {
-  ShapedType stype = value.getType().dyn_cast<ShapedType>();
+  ShapedType stype = mlir::dyn_cast<ShapedType>(value.getType());
   assert(stype && "expected shaped type");
-  return stype.getRank() == 0;
+  return (stype.getRank() == 0) ||
+         (stype.getRank() == 1 && stype.getShape()[0] == 1);
 }
 
 /// Check if all operands are scalar values at compile time.
@@ -131,24 +132,10 @@ bool hasAllScalarValues(ValueRange values) {
 bool hasOneElement(Value value) {
   if (isScalarValue(value))
     return true;
-  ShapedType type = value.getType().dyn_cast<ShapedType>();
+  ShapedType type = mlir::dyn_cast<ShapedType>(value.getType());
   assert(type && "expected shaped type");
   for (int64_t s : type.getShape())
     if (s != 1)
-      return false;
-  return true;
-}
-
-// Same as above, but from the innermost dimensions up to innerDim.
-bool hasOneElementInInnermostDims(Value value, int64_t innerDim) {
-  if (isScalarValue(value))
-    return true;
-  ShapedType type = value.getType().dyn_cast<ShapedType>();
-  assert(type && "expected shaped type");
-  mlir::ArrayRef<int64_t> shape = type.getShape();
-  int64_t rank = type.getRank();
-  for (int64_t i = rank - innerDim; i < rank; ++i)
-    if (shape[i] != 1)
       return false;
   return true;
 }
@@ -158,7 +145,8 @@ bool hasOneElementInInnermostDims(Value value, int64_t innerDim) {
 bool indicesAreNonNegativeConstants(Value indices) {
   DenseElementsAttr valueAttribute =
       krnl::getDenseElementAttributeFromKrnlValue(indices);
-  if (!valueAttribute || !valueAttribute.getElementType().isa<IntegerType>())
+  if (!valueAttribute ||
+      !mlir::isa<IntegerType>(valueAttribute.getElementType()))
     return false;
 
   return llvm::all_of(valueAttribute.getValues<IntegerAttr>(),
@@ -208,7 +196,7 @@ std::map<int64_t, int64_t> getReductionMapping(
 // Dynamic dimension are supported.
 void addDimensionToPack(ConversionPatternRewriter &rewriter, Location loc,
     krnl::KrnlIterateOperandPack &pack, Value operand, int index) {
-  auto shape = operand.getType().cast<MemRefType>().getShape();
+  auto shape = mlir::cast<MemRefType>(operand.getType()).getShape();
   assert(shape[index] != -1 && "expected kDynamic, not -1");
   if (shape[index] == ShapedType::kDynamic) {
     MultiDialectBuilder<MemRefBuilder> create(rewriter, loc);
@@ -233,7 +221,8 @@ void defineLoops(ConversionPatternRewriter &rewriter, Location loc,
 Value getDimOrConstant(ConversionPatternRewriter &rewriter, Location loc,
     Value operand, int64_t axis, Type type) {
   MultiDialectBuilder<MathBuilder, MemRefBuilder> create(rewriter, loc);
-  ArrayRef<int64_t> shape = operand.getType().cast<ShapedType>().getShape();
+  ArrayRef<int64_t> shape =
+      mlir::cast<ShapedType>(operand.getType()).getShape();
   assert(shape[axis] != -1 && "expected kDynamic, not -1");
   return (shape[axis] == ShapedType::kDynamic)
              ? create.math.cast(type, create.mem.dim(operand, axis))
@@ -275,10 +264,10 @@ DenseElementsAttr getDenseElementAttrFromConstValue(mlir::Value value) {
   }
   if (auto globalOp = dyn_cast_or_null<KrnlGlobalOp>(definingOp)) {
     if (globalOp.getValue().has_value())
-      return globalOp.getValueAttr().dyn_cast<DenseElementsAttr>();
+      return mlir::dyn_cast<DenseElementsAttr>(globalOp.getValueAttr());
   } else if (auto constOp = dyn_cast_or_null<ONNXConstantOp>(definingOp)) {
     if (constOp.getValue().has_value())
-      return constOp.getValueAttr().dyn_cast<DenseElementsAttr>();
+      return mlir::dyn_cast<DenseElementsAttr>(constOp.getValueAttr());
   }
   return nullptr;
 }
@@ -286,112 +275,44 @@ DenseElementsAttr getDenseElementAttrFromConstValue(mlir::Value value) {
 
 /// Emit an ONNXSqueezeV11Op. If the input is constant, do const propagation,
 /// and return a constant.
-Value foldOrEmitONNXSqueezeV11Op(ConversionPatternRewriter &rewriter,
+Value foldOrEmitONNXSqueezeV11OpKrnl(ConversionPatternRewriter &rewriter,
     Location loc, Type resultType, Value input, int64_t axis) {
   MultiDialectBuilder<OnnxBuilder> create(rewriter, loc);
-  TensorType tensorType = create.onnx.toTensor(resultType);
-  if (DenseElementsAttr inputElements =
-          getDenseElementAttrFromConstValue(input)) {
-    DenseElementsAttr squeezedElements = inputElements.reshape(tensorType);
-    Value constVal = create.onnx.constant(squeezedElements);
-    return create.onnx.toMemref(constVal);
-  } else {
-    return create.onnx.toMemref(
-        rewriter
-            .create<ONNXSqueezeV11Op>(loc, tensorType,
-                create.onnx.toTensor(input), rewriter.getI64ArrayAttr(axis))
-            .getResult());
-  }
+  return create.onnx.toMemref(create.onnx.foldOrEmitONNXSqueezeV11Op(rewriter,
+      loc, resultType, input, axis, getDenseElementAttrFromConstValue));
 }
 
 /// Emit an ONNXUnsqueezeV11Op. If the input is constant, do const
 /// propagation, and return a constant.
-Value foldOrEmitONNXUnsqueezeV11Op(ConversionPatternRewriter &rewriter,
+Value foldOrEmitONNXUnsqueezeV11OpKrnl(ConversionPatternRewriter &rewriter,
     Location loc, Type resultType, Value input, int64_t axis) {
   MultiDialectBuilder<OnnxBuilder> create(rewriter, loc);
-  TensorType tensorType = create.onnx.toTensor(resultType);
-  if (DenseElementsAttr inputElements =
-          getDenseElementAttrFromConstValue(input)) {
-    DenseElementsAttr unsqueezedElements = inputElements.reshape(tensorType);
-    Value constVal = create.onnx.constant(unsqueezedElements);
-    return create.onnx.toMemref(constVal);
-  } else {
-    return create.onnx.toMemref(
-        rewriter
-            .create<ONNXUnsqueezeV11Op>(loc, tensorType,
-                create.onnx.toTensor(input), rewriter.getI64ArrayAttr(axis))
-            .getResult());
-  }
+  return create.onnx.toMemref(create.onnx.foldOrEmitONNXUnsqueezeV11Op(rewriter,
+      loc, resultType, input, axis, getDenseElementAttrFromConstValue));
 }
 
 /// Emit an ONNXSplitOp. If the input is constant, do const propagation, and
 /// return constants.
 /// Only support evenly splitting.
-std::vector<Value> foldOrEmitONNXSplitOp(ConversionPatternRewriter &rewriter,
-    Location loc, ArrayRef<Type> resultTypes, Value input, int64_t axis) {
-
+std::vector<Value> foldOrEmitONNXSplitV11OpKrnl(
+    ConversionPatternRewriter &rewriter, Location loc,
+    ArrayRef<Type> resultTypes, Value input, int64_t axis) {
   MultiDialectBuilder<OnnxBuilder> create(rewriter, loc);
-
+  std::vector<Value> slices = create.onnx.foldOrEmitONNXSplitV11Op(rewriter,
+      loc, resultTypes, input, axis, getDenseElementAttrFromConstValue);
   std::vector<Value> resVals;
-  int outputNum = resultTypes.size();
-
-  if (DenseElementsAttr inputElements =
-          getDenseElementAttrFromConstValue(input)) {
-    auto inputShape = inputElements.getType().getShape();
-    assert(outputNum == 0 || inputShape[axis] % outputNum == 0);
-    int64_t sizeOfEachSplit = outputNum != 0 ? inputShape[axis] / outputNum : 0;
-    SmallVector<int64_t, 4> sizes(outputNum, sizeOfEachSplit);
-
-    OnnxElementsAttrBuilder elementsBuilder(rewriter.getContext());
-    std::vector<ElementsAttr> splits =
-        elementsBuilder.split(inputElements, axis, sizes);
-    for (ElementsAttr splitElements : splits) {
-      // Avoid DisposableElementsAttr during conversion.
-      DenseElementsAttr denseSplitElements =
-          elementsBuilder.toDenseElementsAttr(splitElements);
-      Value constVal = create.onnx.constant(denseSplitElements);
-      resVals.emplace_back(create.onnx.toMemref(constVal));
-    }
-  } else {
-    SmallVector<Type, 4> convertedTypes;
-    for (auto t : resultTypes) {
-      convertedTypes.emplace_back(create.onnx.toTensor(t));
-    }
-    ONNXSplitV11Op split = rewriter.create<ONNXSplitV11Op>(loc, convertedTypes,
-        create.onnx.toTensor(input),
-        /*axis=*/axis, nullptr);
-    for (int i = 0; i < outputNum; ++i)
-      resVals.emplace_back(create.onnx.toMemref(split.getOutputs()[i]));
-  }
+  for (Value slice : slices)
+    resVals.emplace_back(create.onnx.toMemref(slice));
   return resVals;
 }
 
 /// Emit an ONNXTransposeOp. If the input is constant, do const propagation,
 /// and return a constant.
-Value foldOrEmitONNXTransposeOp(ConversionPatternRewriter &rewriter,
+Value foldOrEmitONNXTransposeOpKrnl(ConversionPatternRewriter &rewriter,
     Location loc, Type resultType, Value input, ArrayAttr permAttr) {
   MultiDialectBuilder<OnnxBuilder> create(rewriter, loc);
-  if (DenseElementsAttr inputElements =
-          getDenseElementAttrFromConstValue(input)) {
-    SmallVector<uint64_t, 4> perm;
-    for (auto permVal : permAttr.getValue())
-      perm.emplace_back(permVal.cast<IntegerAttr>().getInt());
-
-    OnnxElementsAttrBuilder elementsBuilder(rewriter.getContext());
-    ElementsAttr transposedElements =
-        elementsBuilder.transpose(inputElements, perm);
-    // Avoid DisposableElementsAttr during conversion.
-    DenseElementsAttr denseTransposedElements =
-        elementsBuilder.toDenseElementsAttr(transposedElements);
-    Value constVal = create.onnx.constant(denseTransposedElements);
-    return create.onnx.toMemref(constVal);
-  } else {
-    return create.onnx.toMemref(
-        rewriter
-            .create<ONNXTransposeOp>(loc, create.onnx.toTensor(resultType),
-                create.onnx.toTensor(input), permAttr)
-            .getResult());
-  }
+  return create.onnx.toMemref(create.onnx.foldOrEmitONNXTransposeOp(rewriter,
+      loc, resultType, input, permAttr, getDenseElementAttrFromConstValue));
 }
 
 /// Emit MemRef ReinterpretCastOp to create a new view for 'data'.
@@ -419,7 +340,7 @@ Value emitArgSort(ConversionPatternRewriter &rewriter, Location loc,
       create(rewriter, loc);
   IndexExprScope scope(create.krnl);
 
-  MemRefType inputMemRefType = input.getType().cast<MemRefType>();
+  MemRefType inputMemRefType = mlir::cast<MemRefType>(input.getType());
   Type indexType = rewriter.getIndexType();
   int64_t rank = inputMemRefType.getRank();
   assert(axis >= 0 && axis < rank && "axis is out of bound");
@@ -498,9 +419,9 @@ Value emitArgSort(ConversionPatternRewriter &rewriter, Location loc,
 Value getOptionalScalarValue(ConversionPatternRewriter &rewriter, Location loc,
     Value optionalScalar, Type elementType, double defaultValue) {
   MultiDialectBuilder<KrnlBuilder, MathBuilder> create(rewriter, loc);
-  if (optionalScalar.getType().isa<NoneType>()) {
+  if (mlir::isa<NoneType>(optionalScalar.getType())) {
     return create.math.constant(elementType, defaultValue);
-  } else if (optionalScalar.getType().cast<ShapedType>().getRank() == 0) {
+  } else if (mlir::cast<ShapedType>(optionalScalar.getType()).getRank() == 0) {
     return create.krnl.load(optionalScalar, {});
   } else {
     Value zero = create.math.constantIndex(0);
@@ -514,7 +435,7 @@ Value getOptionalScalarValue(ConversionPatternRewriter &rewriter, Location loc,
 
 MemRefType convertTypeWithCustomONNXDataLayoutToMemRef(Type type) {
   // Get tensor rank, shape, and element type.
-  RankedTensorType tensorType = type.dyn_cast<RankedTensorType>();
+  RankedTensorType tensorType = mlir::dyn_cast<RankedTensorType>(type);
   assert(tensorType && "expected only ranked shapes");
   ArrayRef<int64_t> shape = tensorType.getShape();
   int64_t rank = shape.size();
@@ -594,7 +515,7 @@ KrnlTypeConverter::KrnlTypeConverter() {
 
   addConversion([](TensorType tensorType) {
     assert(tensorType.hasRank() && "expected only ranked shapes");
-    if (tensorType.getElementType().isa<ONNXStringType>()) {
+    if (mlir::isa<ONNXStringType>(tensorType.getElementType())) {
       Type elementType = krnl::StringType::get(tensorType.getContext());
       return MemRefType::get(tensorType.getShape(), elementType);
     }
@@ -611,7 +532,7 @@ KrnlTypeConverter::KrnlTypeConverter() {
   });
 
   addConversion([](SeqType seqType) {
-    auto seqElementType = seqType.getElementType().cast<ShapedType>();
+    auto seqElementType = mlir::cast<ShapedType>(seqType.getElementType());
     Type elementType = seqElementType.getElementType();
     Type seqElementConvertedType;
     if (seqElementType.hasRank()) {
@@ -649,7 +570,7 @@ KrnlTypeConverter::KrnlTypeConverter() {
 
 int64_t KrnlTypeConverter::getDefaultAllocAlignment(Type type) {
   int64_t alignment = -1;
-  if (auto tensorType = type.dyn_cast<TensorType>()) {
+  if (auto tensorType = mlir::dyn_cast<TensorType>(type)) {
     // Accelerators may have special versions of TensorType. Call the
     // conversions of accelerators.
     for (auto *accel : onnx_mlir::accel::Accelerator::getAccelerators()) {
@@ -669,7 +590,7 @@ bool hasNonIdentityLayout(Value val) {
   if (isNoneValue(val))
     return false;
   // Expect a memref now.
-  MemRefType type = val.getType().dyn_cast<MemRefType>();
+  MemRefType type = mlir::dyn_cast<MemRefType>(val.getType());
   assert(type && "expected a memref type");
   return hasNonIdentityLayout(type);
 }
@@ -679,6 +600,228 @@ bool hasNonIdentityLayout(ValueRange operands) {
     if (hasNonIdentityLayout(val))
       return true;
   return false;
+}
+
+//===----------------------------------------------------------------------===//
+// Support functions for parallel region.
+//===----------------------------------------------------------------------===//
+
+// Return the outermost loop within [firstInclusiveDim, lastExclusiveDim) for
+// which (ub-lb) > minSize. Runtime dimensions are assumed to satisfy the size
+// requirement by definition. If found one, it is parDim and the function
+// returns true.
+
+bool findSuitableParallelDimension(llvm::SmallVectorImpl<IndexExpr> &lb,
+    llvm::SmallVectorImpl<IndexExpr> &ub, int64_t firstInclusiveDim,
+    int64_t lastExclusiveDim, int64_t &parDim, int64_t minSize) {
+  assert(lb.size() == ub.size() && "expected identical ranks for lb/ub");
+  if (firstInclusiveDim < 0)
+    firstInclusiveDim = 0;
+  if (lastExclusiveDim > (int64_t)lb.size())
+    lastExclusiveDim = lb.size();
+  for (int64_t i = firstInclusiveDim; i < lastExclusiveDim; ++i) {
+    IndexExpr tripCount = ub[i] - lb[i];
+    if (!tripCount.isLiteral() || tripCount.getLiteral() >= minSize) {
+      // Got one.
+      parDim = i;
+      return true;
+    }
+  }
+  return false;
+}
+
+//===----------------------------------------------------------------------===//
+// Support functions for simd.
+//===----------------------------------------------------------------------===//
+
+// New style.
+int64_t computeSuitableUnrollFactor(MemRefType memRefType,
+    int64_t collapsedInnermostLoops, GenOpMix &genOps, bool canOverCompute,
+    int64_t &simdLoopStaticTripCount, bool &simdOnly) {
+  // Default return values for no simd.
+  simdLoopStaticTripCount = 0;
+  simdOnly = false;
+
+  // Analyze size of SIMD iterations.
+  int64_t staticSimdSize;
+  bool isStatic = MemRefBuilder::getStaticMemSize(
+      memRefType, staticSimdSize, -collapsedInnermostLoops);
+
+  Type elementType = memRefType.getElementType();
+  int64_t archVL = VectorMachineSupport::getArchVectorLength(elementType);
+  LLVM_DEBUG(llvm::dbgs() << "  simd archVL is " << archVL << "\n");
+
+  // Element type does nt support SIMD.
+  if (archVL <= 1) {
+    LLVM_DEBUG(llvm::dbgs() << "  simd disabled: no simd for this type\n");
+    return 1;
+  }
+  if (isStatic && staticSimdSize < archVL) {
+    LLVM_DEBUG(llvm::dbgs() << "  simd disabled: static trip count "
+                            << staticSimdSize << " too short for a VL\n");
+    return 1;
+  }
+  // Gather operation statics
+  int64_t vectorizedOpNum, scalarOpNum;
+  double avgVL = VectorMachineSupport::getAvgArchVectorLength(
+      genOps, elementType, vectorizedOpNum, scalarOpNum);
+  if (avgVL < 1.5) {
+    LLVM_DEBUG(llvm::dbgs() << "  simd disabled: too few SIMD operations with "
+                            << avgVL << " avg VL\n");
+    return 1;
+  }
+  LLVM_DEBUG(llvm::dbgs() << "  simd enable: avg vl " << avgVL << "\n");
+
+  // Define a target max unroll as a function of register pressure.
+  int64_t unrollVL;
+  int64_t vrNum = VectorMachineSupport::getArchVectorRegisterNum();
+  if (vectorizedOpNum >= vrNum / 2)
+    unrollVL = 2;
+  else if (vectorizedOpNum >= vrNum / 4)
+    unrollVL = 4;
+  else
+    unrollVL = 8;
+  int64_t totVL = archVL * unrollVL;
+  // Refine unrolling factor so that it is suitable for short loops.
+  if (isStatic && (staticSimdSize < unrollVL * archVL)) {
+    int64_t newUnroll = floor((1.0 * staticSimdSize) / (1.0 * archVL));
+    LLVM_DEBUG(llvm::dbgs() << "  simd enable: size " << staticSimdSize
+                            << " , archVL " << archVL << ", unroll " << unrollVL
+                            << ", reduced to " << newUnroll << "\n");
+    unrollVL = newUnroll;
+    totVL = archVL * unrollVL;
+    if (canOverCompute && staticSimdSize % totVL != 0) {
+      // Does not divide; since we can over compute, increase unrollVL by 1.
+      LLVM_DEBUG(
+          llvm::dbgs() << "  simd enable: can over compute, boost unrollVL\n");
+      ++unrollVL;
+      totVL = archVL * unrollVL;
+    }
+    // Size control: if no ILP (unrollVL==1) or little ILP (unrollVL==2) with a
+    // leftover scalar loop, don't bother.
+    if (unrollVL == 1) {
+      LLVM_DEBUG(llvm::dbgs() << "  simd disable: too small unrollVL (1)\n");
+      return 1;
+    }
+    if (!canOverCompute && unrollVL == 2 && staticSimdSize % totVL != 0) {
+      LLVM_DEBUG(llvm::dbgs()
+                 << "  simd disable: small unrollVL (2) with leftovers\n");
+      return 1;
+    }
+  }
+  LLVM_DEBUG(llvm::dbgs() << "  simd enable: unrollVL " << unrollVL << "\n");
+  // Fill in the output values. Now that we have SIMD, simdLoopStaticTripCount
+  // is either the static simd size if the trip is not runtime, or -1 if its
+  // runtime.
+  simdLoopStaticTripCount = isStatic ? staticSimdSize : -1;
+  // Now that we have SIMD, we have SIMD only if the static component of the
+  // SIMD loop is positive and a multiple of VL.
+  simdOnly = (staticSimdSize > 1) && (staticSimdSize % totVL == 0);
+  LLVM_DEBUG(llvm::dbgs() << "  simd enable: totVL " << totVL << ", simd-only "
+                          << simdOnly << "\n");
+  if (canOverCompute && !simdOnly) {
+    LLVM_DEBUG(
+        llvm::dbgs() << "  simd enable: can over compute, force simdOnly\n");
+    simdOnly = true;
+  }
+  return archVL * unrollVL;
+}
+
+int64_t capVLForMaxUnroll(
+    MemRefType memRefType, int64_t totVL, int64_t maxUnrollVL) {
+  if (totVL == 1)
+    return 1; // Simd already disabled, nothing to cap.
+  Type elementType = memRefType.getElementType();
+  int64_t archVL = VectorMachineSupport::getArchVectorLength(elementType);
+  int64_t unrollVL = totVL / archVL;
+  assert(archVL * unrollVL == totVL && "expected archVL to divide totVL");
+  if (unrollVL > maxUnrollVL) {
+    LLVM_DEBUG(llvm::dbgs() << "  simd enable: unrollVL " << unrollVL
+                            << " capped at " << maxUnrollVL << "\n");
+    unrollVL = maxUnrollVL;
+  }
+  return archVL * unrollVL;
+}
+
+int64_t capVLForSimdOnly(
+    MemRefType memRefType, int64_t totVL, int64_t simdLoopStaticTripCount) {
+  if (totVL == 1)
+    return 1; // Simd already disabled, nothing to cap.
+  if (simdLoopStaticTripCount <= 1) {
+    // There is no static component to simd loop trip count.
+    LLVM_DEBUG(llvm::dbgs() << "  simd disable: dyn trip count, no simdOnly\n");
+    return 1;
+  }
+  int64_t archVL =
+      VectorMachineSupport::getArchVectorLength(memRefType.getElementType());
+  int64_t unrollVL = totVL / archVL;
+  assert(archVL * unrollVL == totVL && "expected archVL to divide totVL");
+  for (int64_t u = unrollVL; u > 0; --u) {
+    totVL = u * archVL;
+    if (simdLoopStaticTripCount % totVL == 0) {
+      // Success.
+      LLVM_DEBUG(llvm::dbgs()
+                 << "  simd enable: simd only with totVL " << totVL << "\n");
+      return totVL;
+    }
+  }
+  // Did not find any unroll factor for which totVL divides static trip count.
+  LLVM_DEBUG(llvm::dbgs() << "  simd disable: no simdONLY for trip count\n");
+  return 1;
+}
+
+// Old style.
+int64_t computeSuitableUnrollFactor(MemRefType memRefType,
+    int64_t collapsedInnermostLoops, int64_t maxUnrollVL, bool canOverCompute,
+    int64_t &simdLoopStaticTripCount) {
+  assert(collapsedInnermostLoops > 0 && "expected at least one collapsed loop");
+  assert(maxUnrollVL > 0 && "expected positive max simd unroll");
+  simdLoopStaticTripCount = 0; // Initially assume no SIMD.
+  Type elementType = memRefType.getElementType();
+  int64_t archVL = VectorMachineSupport::getArchVectorLength(elementType);
+  LLVM_DEBUG(llvm::dbgs() << "  simd archVL is " << archVL << "\n");
+  if (archVL <= 1) {
+    LLVM_DEBUG(llvm::dbgs() << "  simd disabled: no simd\n");
+    return 1;
+  }
+  int64_t staticSize;
+  bool isStaticSize = MemRefBuilder::getStaticMemSize(
+      memRefType, staticSize, -collapsedInnermostLoops);
+  if (isStaticSize && staticSize < archVL) {
+    LLVM_DEBUG(llvm::dbgs() << "  simd disabled: trip count " << staticSize
+                            << " too short for a archVL of " << archVL << "\n");
+    return 1;
+  }
+  // Unless otherwise disabled, here is the estimated trip count.
+  if (canOverCompute &&
+      collapsedInnermostLoops == (int64_t)memRefType.getRank()) {
+    // Fully collapsed and can add padding to be fine
+    simdLoopStaticTripCount = isStaticSize ? staticSize : -1;
+    return maxUnrollVL * archVL;
+  }
+  // We have a partially flattened operator. Since we do only simdize entire
+  // loops (i.e. we don't support scalar epilogues at this time), make sure
+  // the static size is a multiple of the VL. Get the VL of the store
+  // (output's element type).
+  if (staticSize % archVL != 0) {
+    LLVM_DEBUG(llvm::dbgs()
+               << "  simd disabled: partial flattened dims "
+               << collapsedInnermostLoops << " with size " << staticSize
+               << " is not 0 mod archVL " << archVL << "\n");
+    return 1;
+  }
+  // See if we can get a unroll factor.
+  for (int64_t u = maxUnrollVL; u > 0; --u) {
+    if (staticSize % (u * archVL) == 0) {
+      LLVM_DEBUG(llvm::dbgs()
+                 << "  partial flattened dims " << collapsedInnermostLoops
+                 << " with size " << staticSize << " works with VL " << archVL
+                 << " and unroll " << u << "\n");
+      simdLoopStaticTripCount = isStaticSize ? staticSize : -1;
+      return u * archVL;
+    }
+  }
+  llvm_unreachable("should always find u==1 feasible");
 }
 
 //===----------------------------------------------------------------------===//
@@ -694,7 +837,7 @@ void impl::onnxToKrnlParallelReport(Operation *op, bool successful,
   std::string nodeNameStr = getNodeNameInPresenceOfOpt(op);
   // Print report on this op.
   printf("==PAR-REPORT==, %s%s, %s, %s, %lld, %lld\n", opName.data(),
-      (successful ? "-parallel" : ""), nodeNameStr.c_str(), comment.c_str(),
+      (successful ? "-par" : ""), nodeNameStr.c_str(), comment.c_str(),
       (long long int)loopLevel, (long long int)parallelLoopTripCount);
 }
 

@@ -4,7 +4,7 @@
 
 //====------ ZHighToZLow.hpp - ZHigh dialect to ZLow lowering -------------===//
 //
-// Copyright 2019-2021 The IBM Research Authors.
+// Copyright 2019-2024 The IBM Research Authors.
 //
 // =============================================================================
 //
@@ -12,7 +12,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#pragma once
+#ifndef ONNX_MLIR_ZHIGH_TO_ZLOW_H
+#define ONNX_MLIR_ZHIGH_TO_ZLOW_H
 
 #include "mlir/IR/BuiltinAttributes.h"
 #include "mlir/IR/BuiltinTypes.h"
@@ -52,7 +53,9 @@ mlir::Value insertAllocForZMemRef(ZMemRefType zType,
 
 /// Populate all conversion patterns for ZHigh Ops.
 void populateZHighToZLowConversionPattern(mlir::RewritePatternSet &patterns,
-    mlir::TypeConverter &typeConverter, mlir::MLIRContext *ctx);
+    mlir::TypeConverter &typeConverter, mlir::MLIRContext *ctx,
+    bool enableParallel);
 
 } // namespace zhigh
 } // namespace onnx_mlir
+#endif

@@ -4,13 +4,15 @@
 
 //====------ ZHighToZLow.cpp - ZHigh dialect to ZLow lowering -------------===//
 //
-// Copyright 2019-2023 The IBM Research Authors.
+// Copyright 2019-2024 The IBM Research Authors.
 //
 // =============================================================================
 //
 // This file implements the lowering of ZHigh operations to ZLow operations.
 //
 //===----------------------------------------------------------------------===//
+
+#include "llvm/Support/Debug.h"
 
 #include "mlir/Dialect/Affine/Analysis/Utils.h"
 #include "mlir/Dialect/Affine/Utils.h"
@@ -27,12 +29,18 @@
 #include "src/Accelerators/NNPA/Support/Stickify/Convert.hpp"
 #include "src/Conversion/ONNXToKrnl/ONNXToKrnlCommon.hpp"
 #include "src/Dialect/Krnl/KrnlHelper.hpp"
+#include "src/Support/TypeUtilities.hpp"
+
+#define DEBUG_TYPE "zhigh-to-zlow"
 
 using namespace mlir;
 using namespace onnx_mlir::zlow;
 
 namespace onnx_mlir {
 namespace zhigh {
+
+using MDBuilder = MultiDialectBuilder<IndexExprBuilderForKrnl, KrnlBuilder,
+    MathBuilder, MemRefBuilder, VectorBuilder, AffineBuilder, SCFBuilder>;
 
 //===----------------------------------------------------------------------===//
 // Helper function of Zhigh to Zlow lowering
@@ -132,17 +140,17 @@ static Value insertAllocForWorkAreaForRNNOps(IndexExprBuilderForKrnl &createIE,
   createIE.getShapeAsDims(rnnHiddenWeight, hiddenWeightDims);
 
   IndexExpr timestepExp = inputDims[0];
-  IndexExpr Lit2 = LiteralIndexExpr(2);
-  IndexExpr NumOfGatesLit = LiteralIndexExpr(numOfGates);
+  IndexExpr Lit2 = LitIE(2);
+  IndexExpr NumOfGatesLit = LitIE(numOfGates);
   IndexExpr dim1 = hiddenWeightDims[1];
   IndexExpr dim2 = inputDims[1];
-  IndexExpr dim3 = LiteralIndexExpr(1);
+  IndexExpr dim3 = LitIE(1);
   IndexExpr dim4 = NumOfGatesLit * timestepExp + NumOfGatesLit + Lit2;
 
-  IndexExpr Lit1 = LiteralIndexExpr(1);
-  IndexExpr Lit32 = LiteralIndexExpr(32);
-  IndexExpr Lit64 = LiteralIndexExpr(64);
-  IndexExpr Lit4K = LiteralIndexExpr(4096);
+  IndexExpr Lit1 = LitIE(1);
+  IndexExpr Lit32 = LitIE(32);
+  IndexExpr Lit64 = LitIE(64);
+  IndexExpr Lit4K = LitIE(4096);
   IndexExpr ceilDim2 = (dim2 + Lit32 - Lit1).floorDiv(Lit32);
   IndexExpr ceilDim1 = (dim1 + Lit64 - Lit1).floorDiv(Lit64);
   IndexExpr sizeExpr = dim4 * dim3 * ceilDim2 * ceilDim1 * Lit4K;
@@ -179,7 +187,7 @@ Value insertAllocOrEmitZeroConstant(ArrayRef<IndexExpr> dims,
             ZTensorEncodingAttr::get(op->getContext(), layout));
     ZMemRefType zMemRefType = convertZTensorToMemRefType(tensorType);
     MemRefType resType =
-        affine::normalizeMemRefType(zMemRefType.value.cast<MemRefType>());
+        affine::normalizeMemRefType(mlir::cast<MemRefType>(zMemRefType.value));
 
     // Create a ZHighStickifiedConstantOp.
     ZHighStickifiedConstantOp stickifiedConstant =
@@ -192,6 +200,7 @@ Value insertAllocOrEmitZeroConstant(ArrayRef<IndexExpr> dims,
     int64_t sizeInBytes =
         affine::getIntOrFloatMemRefSizeInBytes(resType).value();
     char *rawData = (char *)malloc(sizeInBytes);
+    assert(rawData && "failed to allocate memory for stickified data");
     memset(rawData, 0, sizeInBytes);
     DenseResourceElementsAttr valueAttr = DenseUI8ResourceElementsAttr::get(
         RankedTensorType::get({sizeInBytes}, rewriter.getI8Type()),
@@ -224,7 +233,7 @@ Value insertShapeMemRefI64(
   for (uint64_t i = 0; i < originalDims.size(); ++i) {
     Value dim =
         create.math.cast(rewriter.getI64Type(), originalDims[i].getValue());
-    create.krnl.storeIE(dim, shapeMemRef, {LiteralIndexExpr(i)});
+    create.krnl.storeIE(dim, shapeMemRef, {LitIE(i)});
   }
   return shapeMemRef;
 }
@@ -232,9 +241,9 @@ Value insertShapeMemRefI64(
 /// Get the corresponding MemRefType and layout of a given ZTensorType.
 ZMemRefType convertZTensorToMemRefType(Type type) {
   ZMemRefType resZMemRefType;
-  if (type.isa<TensorType>()) {
+  if (mlir::isa<TensorType>(type)) {
     OpBuilder b(type.getContext());
-    RankedTensorType tensorType = type.dyn_cast<RankedTensorType>();
+    RankedTensorType tensorType = mlir::dyn_cast<RankedTensorType>(type);
     assert(tensorType && "expected only ranked shapes");
     ArrayRef<int64_t> shape = tensorType.getShape();
     Type elementType = tensorType.getElementType();
@@ -472,8 +481,8 @@ ZMemRefType convertZTensorToMemRefType(Type type) {
     } else { // Does not have tensorType.getEncoding().
       resZMemRefType.value = MemRefType::get(shape, elementType);
     }
-  } else { // Not type.isa<TensorType>().
-    resZMemRefType.value = type.dyn_cast<MemRefType>();
+  } else { // Not mlir::isa<TensorType>(type).
+    resZMemRefType.value = mlir::dyn_cast<MemRefType>(type);
   }
   return resZMemRefType;
 }
@@ -481,6 +490,8 @@ ZMemRefType convertZTensorToMemRefType(Type type) {
 //===----------------------------------------------------------------------===//
 // Lower ZHigh Stick to ZLow Stick
 //===----------------------------------------------------------------------===//
+
+// Support for flatten ztensor
 
 struct ZHighToZLowStickOpLowering : public ConversionPattern {
   ZHighToZLowStickOpLowering(TypeConverter &typeConverter, MLIRContext *ctx)
@@ -490,12 +501,16 @@ struct ZHighToZLowStickOpLowering : public ConversionPattern {
   LogicalResult matchAndRewrite(Operation *op, ArrayRef<Value> operands,
       ConversionPatternRewriter &rewriter) const final {
     Location loc = op->getLoc();
+    ZHighStickOp stickOp = cast<ZHighStickOp>(op);
 
     ZHighStickOpAdaptor operandAdaptor(operands);
-    StringAttr layout = cast<ZHighStickOp>(op).getLayoutAttr();
+    Value input = operandAdaptor.getIn();
+    StringAttr layout = stickOp.getLayoutAttr();
+    IntegerAttr saturation = stickOp.getSaturationAttr();
 
-    IndexExprBuilderForKrnl createKrnlIE(rewriter, loc);
-    ZHighStickOpShapeHelper shapeHelper(op, operands, &createKrnlIE);
+    MultiDialectBuilder<OnnxBuilder, IndexExprBuilderForKrnl> create(
+        rewriter, loc);
+    ZHighStickOpShapeHelper shapeHelper(op, operands, &create.krnlIE);
     shapeHelper.computeShapeAndAssertOnFailure();
 
     // Convert ZTensor type to MemRefType.
@@ -505,14 +520,20 @@ struct ZHighToZLowStickOpLowering : public ConversionPattern {
     // Allocate a buffer for the result MemRef.
     Value alloc = insertAllocForZMemRef(
         zMemRefType, shapeHelper.getOutputDims(), op, rewriter);
+    if (isNHWCLayout(layout)) {
+      if (nnpaEnableCompilerStickUnstick) {
+        // Compiler-generated stick hasn't supported NCHW yet.
+        // Explicitly transpose NCHW to NHWC.
+        input = create.onnx.toMemref(
+            create.onnx.transposeInt64(input, ArrayRef<int64_t>({0, 2, 3, 1})));
+      } else
+        // Otherwise, we can directly stickify from NCHW.
+        // Set pre-transformed layout to NCHW.
+        layout = getNCHWLayoutAttr(rewriter);
+    }
 
-    // Set pre-transformed layout: if NHWC, we can directly stickify from NCHW.
-    if (isNHWCLayout(layout))
-      layout = getNCHWLayoutAttr(rewriter);
-
-    // Emit a ZLow operation.
-    rewriter.create<ZLowStickOp>(loc, operandAdaptor.getIn(), alloc, layout);
-
+    // Else, emit a ZLow operation.
+    rewriter.create<ZLowStickOp>(loc, input, alloc, layout, saturation);
     rewriter.replaceOp(op, alloc);
     return success();
   }
@@ -614,8 +635,9 @@ struct ZHighToZLowUnstickOpLowering : public ConversionPattern {
     StringAttr layout =
         getZTensorLayoutAttr(rewriter, op->getOperand(0).getType());
 
-    IndexExprBuilderForKrnl createKrnlIE(rewriter, loc);
-    ZHighUnstickOpShapeHelper shapeHelper(op, operands, &createKrnlIE);
+    MultiDialectBuilder<OnnxBuilder, IndexExprBuilderForKrnl> create(
+        rewriter, loc);
+    ZHighUnstickOpShapeHelper shapeHelper(op, operands, &create.krnlIE);
     shapeHelper.computeShapeAndAssertOnFailure();
 
     // Convert ZTensor type to MemRefType.
@@ -623,15 +645,40 @@ struct ZHighToZLowUnstickOpLowering : public ConversionPattern {
         convertZTensorToMemRefType(*op->result_type_begin());
 
     // Allocate a buffer for the result MemRef.
-    Value alloc = insertAllocForZMemRef(
-        zMemRefType, shapeHelper.getOutputDims(), op, rewriter);
-
-    // Set layout: if NHWC, we can directly unstickify to NCHW.
-    if (isNHWCLayout(layout))
-      layout = getNCHWLayoutAttr(rewriter);
+    Value alloc = nullptr;
+    if (isNHWCLayout(layout)) {
+      if (nnpaEnableCompilerStickUnstick) {
+        // Compiler-generated unstick hasn't supported NCHW yet.
+        // This code allocates a NHWC buffer. It gets dims from the NCHW input.
+        SmallVector<IndexExpr> dimList;
+        dimList.emplace_back(shapeHelper.getOutputDims()[0]);
+        dimList.emplace_back(shapeHelper.getOutputDims()[2]);
+        dimList.emplace_back(shapeHelper.getOutputDims()[3]);
+        dimList.emplace_back(shapeHelper.getOutputDims()[1]);
+        MultiDialectBuilder<MemRefBuilder> create(rewriter, loc);
+        MemRefType resType = zMemRefType.value;
+        ArrayRef<int64_t> shape = resType.getShape();
+        alloc = create.mem.alignedAlloc(
+            MemRefType::get({shape[0], shape[2], shape[3], shape[1]},
+                resType.getElementType()),
+            dimList);
+      } else {
+        // Otherwise, we can directly stickify from NCHW.
+        // Set pre-transformed layout to NCHW.
+        layout = getNCHWLayoutAttr(rewriter);
+      }
+    }
+    if (alloc == nullptr)
+      alloc = insertAllocForZMemRef(
+          zMemRefType, shapeHelper.getOutputDims(), op, rewriter);
 
     // Emit a ZLow operation.
     rewriter.create<ZLowUnstickOp>(loc, input, alloc, layout);
+    if (isNHWCLayout(layout) && nnpaEnableCompilerStickUnstick)
+      // Compiler-generated unstick hasn't supported NCHW yet.
+      // Explicitly transpose NHWC to NCHW.
+      alloc =
+          create.onnx.transposeInt64(alloc, ArrayRef<int64_t>({0, 3, 1, 2}));
     rewriter.replaceOp(op, alloc);
     return success();
   }
@@ -659,16 +706,15 @@ struct ZHighToZLowStickifiedConstantOpLowering : public ConversionPattern {
         convertZTensorToMemRefType(*op->result_type_begin());
 
     // Normalize MemRefType to get a static shape.
-    assert(zMemRefType.value.cast<MemRefType>().getNumDynamicDims() == 0 &&
+    assert(mlir::cast<MemRefType>(zMemRefType.value).getNumDynamicDims() == 0 &&
            "MemRefType has dynamic dimensions");
     MemRefType normalizedType =
-        affine::normalizeMemRefType(zMemRefType.value.cast<MemRefType>());
+        affine::normalizeMemRefType(mlir::cast<MemRefType>(zMemRefType.value));
     ArrayRef<int64_t> normalizedShape = normalizedType.getShape();
 
     // Get dense resource attribute.
-    auto blob = stickifiedConstOp.getValue()
-                    .value()
-                    .cast<DenseResourceElementsAttr>()
+    auto blob = mlir::cast<DenseResourceElementsAttr>(
+        stickifiedConstOp.getValue().value())
                     .getRawHandle()
                     .getBlob();
     assert(blob && "Expecting dense resource with a valid blob");
@@ -1021,7 +1067,7 @@ struct ZHighToZLowMatMulOpLowering : public ConversionPattern {
 
     // Prepare optional bias.
     Value bias = operandAdaptor.getB();
-    if (bias.getType().isa<NoneType>()) {
+    if (mlir::isa<NoneType>(bias.getType())) {
       SmallVector<IndexExpr, 4> resDims, biasDims;
       create.krnlIE.getShapeAsDims(alloc, resDims);
       ZTensorEncodingAttr::DataLayout biasLayout;
@@ -1106,19 +1152,19 @@ struct ZHighToZLowLSTMOpLowering : public ConversionPattern {
     Value initial_c = operandAdaptor.getC0();
     Value input_bias = operandAdaptor.getInputBias();
     Value hidden_bias = operandAdaptor.getHiddenBias();
-    if (initial_h.getType().isa<NoneType>()) {
+    if (mlir::isa<NoneType>(initial_h.getType())) {
       initial_h = insertAllocOrEmitZeroConstant(shapeHelper.hc0Shape,
           ZTensorEncodingAttr::DataLayout::_3DS, op, rewriter, loc);
     }
-    if (initial_c.getType().isa<NoneType>()) {
+    if (mlir::isa<NoneType>(initial_c.getType())) {
       initial_c = insertAllocOrEmitZeroConstant(shapeHelper.hc0Shape,
           ZTensorEncodingAttr::DataLayout::_3DS, op, rewriter, loc);
     }
-    if (input_bias.getType().isa<NoneType>()) {
+    if (mlir::isa<NoneType>(input_bias.getType())) {
       input_bias = insertAllocOrEmitZeroConstant(shapeHelper.biasShape,
           ZTensorEncodingAttr::DataLayout::FICO, op, rewriter, loc);
     }
-    if (hidden_bias.getType().isa<NoneType>()) {
+    if (mlir::isa<NoneType>(hidden_bias.getType())) {
       hidden_bias = insertAllocOrEmitZeroConstant(shapeHelper.biasShape,
           ZTensorEncodingAttr::DataLayout::FICO, op, rewriter, loc);
     }
@@ -1187,15 +1233,15 @@ struct ZHighToZLowGRUOpLowering : public ConversionPattern {
     Value initial_h = operandAdaptor.getH0();
     Value input_bias = operandAdaptor.getInputBias();
     Value hidden_bias = operandAdaptor.getHiddenBias();
-    if (initial_h.getType().isa<NoneType>()) {
+    if (mlir::isa<NoneType>(initial_h.getType())) {
       initial_h = insertAllocOrEmitZeroConstant(shapeHelper.h0Shape,
           ZTensorEncodingAttr::DataLayout::_3DS, op, rewriter, loc);
     }
-    if (input_bias.getType().isa<NoneType>()) {
+    if (mlir::isa<NoneType>(input_bias.getType())) {
       input_bias = insertAllocOrEmitZeroConstant(shapeHelper.biasShape,
           ZTensorEncodingAttr::DataLayout::ZRH, op, rewriter, loc);
     }
-    if (hidden_bias.getType().isa<NoneType>()) {
+    if (mlir::isa<NoneType>(hidden_bias.getType())) {
       hidden_bias = insertAllocOrEmitZeroConstant(shapeHelper.biasShape,
           ZTensorEncodingAttr::DataLayout::ZRH, op, rewriter, loc);
     }
@@ -1241,9 +1287,8 @@ struct ZHighToZLowFixGRUYOpLowering : public ConversionPattern {
     // create alloc
     ZHighFixGRUYOpShapeHelper shapeHelper(op, operands, &create.krnlIE);
     shapeHelper.computeShapeAndAssertOnFailure();
-    MemRefType outputMemRefType =
-        typeConverter->convertType(op->getResults()[0].getType())
-            .cast<MemRefType>();
+    MemRefType outputMemRefType = mlir::cast<MemRefType>(
+        typeConverter->convertType(op->getResults()[0].getType()));
 
     // Value alloc =
     //     create.mem.alignedAlloc(outputMemRefType,
@@ -1261,7 +1306,7 @@ struct ZHighToZLowFixGRUYOpLowering : public ConversionPattern {
     // for (bs  from 0 to batch size ) {
     //   sequenceUB = sequence_lens[bs]
     //   for sequenceIV = max(0, sequenceUB), SEQ_LENGTH
-    //     for (directioIV for directions)
+    //     for (directionIV for directions)
     //       for (hs for hidden states)
     //         Y[sequenceIV, directionIV, bs, hs] = initValue
 
@@ -1368,9 +1413,8 @@ struct ZHighToZLowFixGRUYhOpLowering : public ConversionPattern {
     // create alloc
     ZHighFixGRUYhOpShapeHelper shapeHelper(op, operands, &create.krnlIE);
     shapeHelper.computeShapeAndAssertOnFailure();
-    MemRefType outputMemRefType =
-        typeConverter->convertType(op->getResults()[0].getType())
-            .cast<MemRefType>();
+    MemRefType outputMemRefType = mlir::cast<MemRefType>(
+        typeConverter->convertType(op->getResults()[0].getType()));
     Value alloc =
         create.mem.alignedAlloc(outputMemRefType, shapeHelper.getOutputDims(0));
 
@@ -1442,7 +1486,7 @@ struct ZHighToZLowConv2DOpLowering : public ConversionPattern {
 
     // Prepare optional values: input_bias.
     Value bias = operandAdaptor.getInputBias();
-    if (bias.getType().isa<NoneType>()) {
+    if (mlir::isa<NoneType>(bias.getType())) {
       // Bias's shape is [Channel_out].
       SmallVector<IndexExpr> dims(1, shapeHelper.allOriginalDims[4]);
       bias = insertAllocOrEmitZeroConstant(
@@ -1507,8 +1551,6 @@ struct ZHighToZLowStickifiedConstantOfShapeOpLowering
       TypeConverter &typeConverter, MLIRContext *ctx)
       : ConversionPattern(typeConverter,
             ZHighStickifiedConstantOfShapeOp::getOperationName(), 1, ctx) {}
-  using MDBuilder = MultiDialectBuilder<IndexExprBuilderForKrnl, MathBuilder,
-      KrnlBuilder, MemRefBuilder>;
 
   LogicalResult matchAndRewrite(Operation *op, ArrayRef<Value> operands,
       ConversionPatternRewriter &rewriter) const final {
@@ -1564,9 +1606,9 @@ struct ZHighToZLowStickifiedConstantOfShapeOpLowering
     //
     // The following manual loop does a trick that puts `create.krnl.load`
     // inside the loop, and LLVM does not seem to read the f16 value.
-    uint64_t rank = res.getType().cast<MemRefType>().getRank();
+    uint64_t rank = mlir::cast<MemRefType>(res.getType()).getRank();
     ValueRange loopDef = create.krnl.defineLoops(rank);
-    SmallVector<IndexExpr, 4> lbs(rank, LiteralIndexExpr(0));
+    SmallVector<IndexExpr, 4> lbs(rank, LitIE(0));
     SmallVector<IndexExpr, 4> ubs = shapeHelper.getOutputDims();
     create.krnl.iterateIE(loopDef, loopDef, lbs, ubs,
         [&](KrnlBuilder &createKrnl, ValueRange indices) {
@@ -1580,8 +1622,156 @@ struct ZHighToZLowStickifiedConstantOfShapeOpLowering
   }
 };
 
+//===----------------------------------------------------------------------===//
+// A template to lower ZHigh DLF16ToF32 and F32ToDLF16.
+//===----------------------------------------------------------------------===//
+
+template <typename CONVERT_OP>
+struct ZHighToZLowDataConversionLowering
+    : public OpConversionPattern<CONVERT_OP> {
+  using OpAdaptor = typename CONVERT_OP::Adaptor;
+  bool fromF32 = false;
+  bool enableParallel = false;
+
+  ZHighToZLowDataConversionLowering(TypeConverter &typeConverter,
+      MLIRContext *ctx, bool fromF32, bool enableParallel)
+      : OpConversionPattern<CONVERT_OP>(typeConverter, ctx), fromF32(fromF32) {
+    this->enableParallel =
+        enableParallel &&
+        OnnxToKrnlLoweringConfiguration::enableSpecificParallelOps.isEnabled(
+            CONVERT_OP::getOperationName());
+  }
+
+  LogicalResult matchAndRewrite(CONVERT_OP convertOp, OpAdaptor adaptor,
+      ConversionPatternRewriter &rewriter) const final {
+    Location loc = convertOp.getLoc();
+    MDBuilder create(rewriter, loc);
+
+    Operation *op = convertOp.getOperation();
+    ValueRange operands = adaptor.getOperands();
+    Value X = operands[0];
+    int64_t rank = getRank(X.getType());
+
+    // SIMD info.
+    // Fixed VL for the conversion instruction: 8 elements per instruction
+    // call. Because the VL of the zlow.conversions are not "virtualized" in
+    // lengths, we manually unroll the loop containing the SIMD operations.
+    // Experiments on a 1024x1024 tensors shows best results with an unrolling
+    // of 8 SIMD vectors.
+    int64_t archVL = 8; // Vector length as defined by z arch for this type.
+    int64_t archVLHalf = archVL / 2;
+    int64_t unrollVL = 8;              // Manually unroll the SIMD loop.
+    int64_t totVL = unrollVL * archVL; // Total numbers of values unrolled.
+
+    // Convert the output type to MemRef.
+    Type outputTensorType = convertOp.getResult().getType();
+    Type convertedType = this->typeConverter->convertType(outputTensorType);
+    int64_t alignment =
+        KrnlTypeConverter::getDefaultAllocAlignment(outputTensorType);
+    assert(convertedType && mlir::isa<MemRefType>(convertedType) &&
+           "Failed to convert type to MemRefType");
+
+    // Types use archVL and archVL / 2.
+    Type f16Type = rewriter.getF16Type();
+    Type f32Type = rewriter.getF32Type();
+    VectorType vecF16Type = VectorType::get({archVL}, f16Type);
+    VectorType vecF32Type = VectorType::get({archVLHalf}, f32Type);
+
+    // Compute output dims.
+    DimsExpr outputDims;
+    ONNXUnaryOpShapeHelper shapeHelper(op, operands, &create.krnlIE);
+    shapeHelper.computeShapeAndAssertOnFailure();
+    IndexExprScope allocScope(create.vec, shapeHelper.getScope());
+    getIndexExprList<SymIE>(shapeHelper.getOutputDims(), outputDims);
+
+    // Alloc memory with padding for SIMD using totVL.
+    MemRefType outputMemRefType = mlir::cast<MemRefType>(convertedType);
+    Value alloc = create.mem.alignedAllocWithSimdPadding(
+        outputMemRefType, outputDims, totVL, alignment);
+
+    // Flatten the input to 1D.
+    int64_t collapsedInnermostLoops = rank;
+    DimsExpr inputDims, flattenedInputDims;
+    create.krnlIE.getShapeAsSymbols(X, inputDims);
+    Value flatInput = create.mem.reshapeToFlatInnermost(
+        X, inputDims, flattenedInputDims, collapsedInnermostLoops);
+
+    // Flatten the output to 1D.
+    SmallVector<IndexExpr, 4> flattenedOutputDims;
+    Value flatOutput = create.mem.reshapeToFlatInnermost(
+        alloc, outputDims, flattenedOutputDims, collapsedInnermostLoops);
+    DimsExpr lbs(1, LitIE(0));
+
+    // Create loop iteration (flattened to 1D) and block it by totVL.
+    ValueRange loopDef = create.krnl.defineLoops(1);
+    ValueRange blockedLoopDef = create.krnl.block(loopDef[0], totVL);
+    SmallVector<Value, 1> optimizedLoopDef(1, blockedLoopDef[0]);
+
+    if (enableParallel) {
+      int64_t parId;
+      int64_t tripCount =
+          flattenedOutputDims[0].isLiteral()
+              ? std::ceil(flattenedOutputDims[0].getLiteral() / (float)archVL)
+              : -1;
+      if (findSuitableParallelDimension(lbs, flattenedOutputDims, 0, 1, parId,
+              /*min iter for going parallel*/ 1024)) {
+        create.krnl.parallel(blockedLoopDef[0]);
+        onnxToKrnlParallelReport(op, /*successful*/ true, 0, tripCount,
+            "dlf16-f32 conversion fully parallelized");
+      } else {
+        onnxToKrnlParallelReport(op, false, 0, tripCount,
+            "not enough work for dlf16-f32 conversion");
+      }
+    }
+    onnxToKrnlSimdReport(op, /*successful*/ true, archVL,
+        flattenedOutputDims[0].isLiteral() ? flattenedOutputDims[0].getLiteral()
+                                           : -1,
+        "dlf16-f32 conversion fully flattened");
+
+    create.krnl.iterateIE(loopDef, optimizedLoopDef, lbs, flattenedOutputDims,
+        [&](KrnlBuilder &b, ValueRange loopInd) {
+          MDBuilder create(b);
+          // Manually unrolled loop, add archVL offset at each iterations.
+          for (int64_t u = 0; u < unrollVL; ++u) {
+            Value baseIdx = create.math.add(
+                loopInd[0], create.math.constantIndex(u * archVL));
+            Value baseIdxNext =
+                create.math.add(baseIdx, create.math.constantIndex(archVLHalf));
+            if (fromF32) {
+              // F32 -> DLF16
+              // Load archVL f32 values from the input into two vectors each
+              // with archVLHalf f32 values.
+              Value vecF32H = create.vec.load(vecF32Type, flatInput, {baseIdx});
+              Value vecF32L =
+                  create.vec.load(vecF32Type, flatInput, {baseIdxNext});
+              Value vecF16 = rewriter.create<ZLowConvertF32ToDLF16VectorOp>(
+                  loc, vecF32H, vecF32L);
+              // Store archVL f16 values back to the output.
+              create.vec.store(vecF16, flatOutput, {baseIdx});
+            } else {
+              // DLF16 -> F32
+              // Load archVL f16 values from the input into a register.
+              Value vecF16 = create.vec.load(vecF16Type, flatInput, {baseIdx});
+              auto convertOp =
+                  rewriter.create<ZLowConvertDLF16ToF32VectorOp>(loc, vecF16);
+              Value vecF32H = convertOp.getResult(0);
+              Value vecF32L = convertOp.getResult(1);
+              // Store f32 values back to the output.
+              create.vec.store(vecF32H, flatOutput, {baseIdx});
+              create.vec.store(vecF32L, flatOutput, {baseIdxNext});
+            }
+          }
+        });
+
+    rewriter.replaceOp(convertOp, alloc);
+
+    return success();
+  }
+};
+
 void populateZHighToZLowConversionPattern(mlir::RewritePatternSet &patterns,
-    mlir::TypeConverter &typeConverter, mlir::MLIRContext *ctx) {
+    mlir::TypeConverter &typeConverter, mlir::MLIRContext *ctx,
+    bool enableParallel) {
   // Stickify and unstickify operations.
   patterns.insert<ZHighToZLowStickifiedConstantOpLowering>(typeConverter, ctx);
   patterns.insert<ZHighToZLowStickOpLowering>(typeConverter, ctx);
@@ -1590,6 +1780,10 @@ void populateZHighToZLowConversionPattern(mlir::RewritePatternSet &patterns,
   patterns.insert<ZHighToZLowStickifiedConstantOfShapeOpLowering>(
       typeConverter, ctx);
   patterns.insert<ZHighToZLowUnstickOpLowering>(typeConverter, ctx);
+  patterns.insert<ZHighToZLowDataConversionLowering<ZHighDLF16ToF32Op>>(
+      typeConverter, ctx, /*fromF32=*/false, enableParallel);
+  patterns.insert<ZHighToZLowDataConversionLowering<ZHighF32ToDLF16Op>>(
+      typeConverter, ctx, /*fromF32=*/true, enableParallel);
   // Binary operations
   patterns.insert<ZHighToZLowBinaryOpLowering<ZHighAddOp>>(typeConverter, ctx);
   patterns.insert<ZHighToZLowBinaryOpLowering<ZHighSubOp>>(typeConverter, ctx);

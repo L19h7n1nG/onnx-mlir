@@ -36,7 +36,7 @@ include "src/Accelerators/NNPA/Dialect/ZHigh/ZHighOps/OpHelper.td"
 
 // zhigh.Unstick (zhigh.Stick (%X)) = %X
 def UnstickStickRemovalPattern : Pat<
-  (ZHighUnstickOp (ZHighStickOp $arg, $_)),
+  (ZHighUnstickOp (ZHighStickOp $arg, $_, $_)),
   (replaceWithValue $arg)
 >;
 
@@ -45,7 +45,7 @@ def UnstickStickRemovalPattern : Pat<
 def DimUnstickNHWCRemovalPattern : Pat<
   (ONNXDimOp (ZHighUnstickOp $arg), $axis),
   (ONNXDimOp $arg, (GetAxisNHWC $axis)),
-  [(TensorHasNHWCLayout $arg)]
+  [(TensorHasNHWCLayout $arg), (HasNNPAUse $arg)]
 >;
 
 // onnx.Dim (zhigh.Unstick (%X)) = onnx.Dim %X
@@ -53,7 +53,7 @@ def DimUnstickNHWCRemovalPattern : Pat<
 def DimUnstickRemovalPattern : Pat<
   (ONNXDimOp (ZHighUnstickOp $arg), $axis),
   (ONNXDimOp $arg, $axis),
-  [(TensorHasNoNHWCLayout $arg)]
+  [(TensorHasNoNHWCLayout $arg), (HasNNPAUse $arg)]
 >;
 
 #endif // UNSTICK_TD

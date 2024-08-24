@@ -4,7 +4,7 @@
 
 //===---------------- ONNXShapeHelper.hpp - help for shapes ---------------===//
 //
-// Copyright 2020-2023 The IBM Research Authors.
+// Copyright 2020-2024 The IBM Research Authors.
 //
 // =============================================================================
 //
@@ -13,7 +13,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#pragma once
+#ifndef ONNX_MLIR_SHAPE_HELPER_H
+#define ONNX_MLIR_SHAPE_HELPER_H
 
 #include <utility>
 
@@ -30,7 +31,6 @@
 #include "src/Dialect/Mlir/IndexExprBuilder.hpp"
 #include "src/Dialect/ONNX/ONNXDimAnalysis.hpp"
 
-#define GET_OP_FWD_DEFINES 1
 #include "src/Dialect/ONNX/ONNXOps.hpp.inc"
 
 // ONNXOpShapeHelper is defined in the interface file below.
@@ -193,6 +193,9 @@ struct ONNXBroadcastOpShapeHelper : public ONNXOpShapeHelper {
   // has MB, and if it does, we then attempt to test at the next innermost
   // level... until we fail or we run out of dimensions.
   //
+  // Below: ?1 and ?2 indicate 2 dynamic dimensions, which may/may not be
+  // guaranteed to be equal depending on what dynamic analysis says.
+  //
   // Manageable broadcast (MB) is either that:
   //   1) we have no broadcast up to that level, or
   //   2) we have scalars up to that level being broadcasted.
@@ -227,6 +230,9 @@ struct ONNXBroadcastOpShapeHelper : public ONNXOpShapeHelper {
   // - (1,3) and (1, 1) have MB at CIL 1; technically, CIL 2 is also a MB but
   //    there is nothing to be gained by collapsing dimensions where all
   //    inputs have dimensions of 1. We thus do not include them in our CILs.
+  //    Revision: it is actually good to detects 1s everywhere as we can
+  //    collapse the loop and have less overhead.
+
   virtual bool hasManageableBroadcastForInnerDims(
       int64_t &collapsedInnermostLoops, int64_t &collapsedLiteralSize,
       IndexExpr &collapsedDynamicSize, DimAnalysis *dimAnalysis);
@@ -290,16 +296,21 @@ struct ONNXPReluOpShapeHelper : public ONNXBroadcastOpShapeHelper {
   }
 };
 
-// Helper for ONNXLayerNormalizationOp (B and Scales broadcast to input X)
-struct ONNXLayerNormalizationOpShapeHelper : public ONNXBroadcastOpShapeHelper {
-  ONNXLayerNormalizationOpShapeHelper(mlir::Operation *op,
-      mlir::ValueRange operands, IndexExprBuilder *ieBuilder = nullptr,
-      IndexExprScope *scope = nullptr)
+// Template for Layer Normalization (LN) ops
+template <typename OP_TYPE>
+struct ONNXLNOpShapeHelper : public ONNXBroadcastOpShapeHelper {
+  ONNXLNOpShapeHelper(mlir::Operation *op, mlir::ValueRange operands,
+      IndexExprBuilder *ieBuilder = nullptr, IndexExprScope *scope = nullptr)
       : ONNXBroadcastOpShapeHelper(op, operands, ieBuilder, scope,
             /*hasUniBroadcasting*/ true) {}
-  virtual ~ONNXLayerNormalizationOpShapeHelper() {}
+  virtual ~ONNXLNOpShapeHelper() {}
   mlir::LogicalResult computeShape() final;
 };
+
+// clang-format off
+using ONNXLayerNormalizationOpShapeHelper = ONNXLNOpShapeHelper<mlir::ONNXLayerNormalizationOp>;
+using ONNXRMSLayerNormalizationOpShapeHelper = ONNXLNOpShapeHelper<mlir::ONNXRMSLayerNormalizationOp>;
+// clang-format on
 
 //===----------------------------------------------------------------------===//
 // Unary Ops
@@ -347,7 +358,6 @@ using ONNXAtanOpShapeHelper = ONNXUnaryOpShapeHelper;
 using ONNXAtanhOpShapeHelper = ONNXUnaryOpShapeHelper;
 using ONNXBernoulliOpShapeHelper = ONNXUnaryOpShapeHelper;
 using ONNXBitwiseNotOpShapeHelper = ONNXUnaryOpShapeHelper;
-using ONNXCastLikeOpShapeHelper = ONNXUnaryOpShapeHelper;
 using ONNXCastOpShapeHelper = ONNXUnaryOpShapeHelper;
 using ONNXCeilOpShapeHelper = ONNXUnaryOpShapeHelper;
 using ONNXCeluOpShapeHelper = ONNXUnaryOpShapeHelper;
@@ -359,6 +369,7 @@ using ONNXEluOpShapeHelper = ONNXUnaryOpShapeHelper;
 using ONNXErfOpShapeHelper = ONNXUnaryOpShapeHelper;
 using ONNXExpOpShapeHelper = ONNXUnaryOpShapeHelper;
 using ONNXFloorOpShapeHelper = ONNXUnaryOpShapeHelper;
+using ONNXGeluOpShapeHelper = ONNXUnaryOpShapeHelper;
 using ONNXHardSigmoidOpShapeHelper = ONNXUnaryOpShapeHelper;
 using ONNXHardSwishOpShapeHelper = ONNXUnaryOpShapeHelper;
 using ONNXHardmaxOpShapeHelper = ONNXUnaryOpShapeHelper;
@@ -463,8 +474,7 @@ struct ONNXConvTransposeOpShapeHelper : public ONNXOpShapeHelper {
   ONNXConvTransposeOpShapeHelper(mlir::Operation *op, mlir::ValueRange operands,
       IndexExprBuilder *ieBuilder = nullptr, IndexExprScope *scope = nullptr)
       : ONNXOpShapeHelper(op, operands, ieBuilder, scope), kernelShape(),
-        pads(), strides(), dilations(), outputPadding(), dimsNoOutputPadding() {
-  }
+        pads(), strides(), dilations(), outputPadding() {}
   virtual ~ONNXConvTransposeOpShapeHelper() {}
   mlir::LogicalResult computeShape() final;
   // Values set by computeShape.
@@ -473,7 +483,6 @@ struct ONNXConvTransposeOpShapeHelper : public ONNXOpShapeHelper {
   llvm::SmallVector<int64_t, 2> strides;
   llvm::SmallVector<int64_t, 2> dilations;
   llvm::SmallVector<int64_t, 2> outputPadding;
-  llvm::SmallVector<IndexExpr, 2> dimsNoOutputPadding;
 };
 
 //===----------------------------------------------------------------------===//
@@ -716,6 +725,24 @@ using ONNXUnsqueezeV11OpShapeHelper = ONNXCommonUnsqueezeOpShapeHelper<mlir::ONN
 // clang-format on
 
 //===----------------------------------------------------------------------===//
+// DFT Ops
+//===----------------------------------------------------------------------===//
+
+// Generic DFT shape helper.
+template <typename OP_TYPE>
+struct ONNXGenericDFTOpShapeHelper : public ONNXOpShapeHelper {
+  ONNXGenericDFTOpShapeHelper(mlir::Operation *op, mlir::ValueRange operands,
+      IndexExprBuilder *ieBuilder = nullptr, IndexExprScope *scope = nullptr)
+      : ONNXOpShapeHelper(op, operands, ieBuilder, scope) {}
+  virtual ~ONNXGenericDFTOpShapeHelper() {}
+  mlir::LogicalResult computeShape() final;
+  mlir::LogicalResult customComputeShape(IndexExpr &axis);
+};
+
+// clang-format off
+using ONNXDFTOpShapeHelper = ONNXGenericDFTOpShapeHelper<mlir::ONNXDFTOp>;
+
+//===----------------------------------------------------------------------===//
 // Reduction Ops
 //===----------------------------------------------------------------------===//
 
@@ -746,10 +773,12 @@ using ONNXReduceLogSumExpOpShapeHelper = ONNXGenericReductionOpShapeHelper<mlir:
 using ONNXReduceLogSumExpV13OpShapeHelper = ONNXGenericReductionOpShapeHelper<mlir::ONNXReduceLogSumExpV13Op>;
 using ONNXReduceMaxOpShapeHelper = ONNXGenericReductionOpShapeHelper<mlir::ONNXReduceMaxOp>;
 using ONNXReduceMaxV13OpShapeHelper = ONNXGenericReductionOpShapeHelper<mlir::ONNXReduceMaxV13Op>;
+using ONNXReduceMaxV18OpShapeHelper = ONNXGenericReductionOpShapeHelper<mlir::ONNXReduceMaxV18Op>;
 using ONNXReduceMeanOpShapeHelper = ONNXGenericReductionOpShapeHelper<mlir::ONNXReduceMeanOp>;
 using ONNXReduceMeanV13OpShapeHelper = ONNXGenericReductionOpShapeHelper<mlir::ONNXReduceMeanV13Op>;
 using ONNXReduceMinOpShapeHelper = ONNXGenericReductionOpShapeHelper<mlir::ONNXReduceMinOp>;
 using ONNXReduceMinV13OpShapeHelper = ONNXGenericReductionOpShapeHelper<mlir::ONNXReduceMinV13Op>;
+using ONNXReduceMinV18OpShapeHelper = ONNXGenericReductionOpShapeHelper<mlir::ONNXReduceMinV18Op>;
 using ONNXReduceProdOpShapeHelper = ONNXGenericReductionOpShapeHelper<mlir::ONNXReduceProdOp>;
 using ONNXReduceProdV13OpShapeHelper = ONNXGenericReductionOpShapeHelper<mlir::ONNXReduceProdV13Op>;
 using ONNXReduceSumOpShapeHelper = ONNXGenericReductionOpShapeHelper<mlir::ONNXReduceSumOp>;
@@ -833,7 +862,6 @@ using ONNXConcatOpShapeHelper = ONNXNonSpecificOpShapeHelper<mlir::ONNXConcatOp>
 using ONNXConcatShapeTransposeOpShapeHelper = ONNXNonSpecificOpShapeHelper<mlir::ONNXConcatShapeTransposeOp>;
 using ONNXConstantOfShapeOpShapeHelper = ONNXNonSpecificOpShapeHelper<mlir::ONNXConstantOfShapeOp>;
 using ONNXConstantOpShapeHelper = ONNXNonSpecificOpShapeHelper<mlir::ONNXConstantOp>;
-using ONNXDFTOpShapeHelper = ONNXNonSpecificOpShapeHelper<mlir::ONNXDFTOp>;
 using ONNXDepthToSpaceOpShapeHelper = ONNXNonSpecificOpShapeHelper<mlir::ONNXDepthToSpaceOp>;
 using ONNXDequantizeLinearOpShapeHelper = ONNXNonSpecificOpShapeHelper<mlir::ONNXDequantizeLinearOp>;
 using ONNXDimOpShapeHelper = ONNXNonSpecificOpShapeHelper<mlir::ONNXDimOp>;
@@ -874,6 +902,7 @@ struct ONNXCustomOpShapeHelper : public ONNXUnaryOpShapeHelper {
       IndexExprBuilder *ieBuilder = nullptr, IndexExprScope *scope = nullptr,
       bool hasUniBroadcasting = false);
 
+  bool isImplemented() override;
   // Default shape compute (every operands of the operation and no additional
   // parameters).
   mlir::LogicalResult computeShape() override;
@@ -921,3 +950,4 @@ void SaveOnnxAttrInOp(mlir::Operation *op,
 }
 
 } // namespace onnx_mlir
+#endif

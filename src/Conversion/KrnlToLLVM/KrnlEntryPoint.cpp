@@ -20,7 +20,6 @@
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/LLVMIR/LLVMDialect.h"
 #include "llvm/Support/JSON.h"
-#include "llvm/TargetParser/Triple.h"
 
 #include "src/Conversion/KrnlToLLVM/ConvertKrnlToLLVM.hpp"
 #include "src/Conversion/KrnlToLLVM/KrnlToLLVMHelper.hpp"
@@ -149,14 +148,16 @@ public:
     // OMInitCompatibleAccelX's signature is `i64 (i64)`.
     if (Attribute maccelAttr =
             module->getAttrOfType<::mlir::Attribute>("onnx-mlir.accels")) {
-      assert(
-          maccelAttr.isa<ArrayAttr>() && "onnx-mlir.accels must be ArrayAttr");
-      ArrayAttr accels = maccelAttr.cast<ArrayAttr>();
+      assert(mlir::isa<ArrayAttr>(maccelAttr) &&
+             "onnx-mlir.accels must be ArrayAttr");
+      ArrayAttr accels = mlir::cast<ArrayAttr>(maccelAttr);
       Value zeroI64 = create.llvm.constant(int64Ty, (int64_t)0);
 
       for (uint64_t i = 0; i < accels.size(); ++i) {
-        assert(accels[i].isa<StringAttr>() && "Attribute must be StringAttr");
-        StringRef accelStr = accels.getValue()[i].cast<StringAttr>().getValue();
+        assert(
+            mlir::isa<StringAttr>(accels[i]) && "Attribute must be StringAttr");
+        StringRef accelStr =
+            mlir::cast<StringAttr>(accels.getValue()[i]).getValue();
         std::pair<StringRef, StringRef> NameAndVersion = accelStr.split('-');
         uint64_t versionNumberInHex =
             std::stoul(NameAndVersion.second.str(), nullptr, 16);
@@ -200,9 +201,8 @@ public:
     // struct but input types are unpacked into a single list of scalar types.
     auto *staticEntryPointFunc =
         module.lookupSymbol(staticEntryPointFuncName.lower());
-    auto staticEntryPointFuncTy = cast<LLVM::LLVMFuncOp>(staticEntryPointFunc)
-                                      .getFunctionType()
-                                      .cast<LLVM::LLVMFunctionType>();
+    auto staticEntryPointFuncTy = mlir::cast<LLVM::LLVMFunctionType>(
+        cast<LLVM::LLVMFuncOp>(staticEntryPointFunc).getFunctionType());
     LLVM_DEBUG(llvm::dbgs() << "Static entry point function type: "
                             << staticEntryPointFuncTy << "\n");
     // Static entry point is wrapped with prefix `_mlir_ciface` automatically by
@@ -217,8 +217,8 @@ public:
            "entry point func must exist and be an llvm func op");
     auto wrappedStaticEntryPointOp =
         cast<LLVM::LLVMFuncOp>(wrappedStaticEntryPointFunc);
-    auto wrappedStaticEntryPointTy = wrappedStaticEntryPointOp.getFunctionType()
-                                         .cast<LLVM::LLVMFunctionType>();
+    auto wrappedStaticEntryPointTy = mlir::cast<LLVM::LLVMFunctionType>(
+        wrappedStaticEntryPointOp.getFunctionType());
 
     Value omTensorPtrArr = RuntimeAPI::callApi(rewriter, loc, apiRegistry,
         RuntimeAPI::API::GET_OMT_ARRAY, {omTensorInputs});
@@ -265,7 +265,8 @@ public:
     // output.
     create.llvm.call({}, wrappedStaticEntryPointFuncName, staticInputs);
     Value outMemRefs = create.llvm.load(memRefOutTy, ptrToOutMemRef);
-    auto outMemRefsType = outMemRefs.getType().dyn_cast<LLVM::LLVMStructType>();
+    auto outMemRefsType =
+        mlir::dyn_cast<LLVM::LLVMStructType>(outMemRefs.getType());
 
     std::vector<mlir::Value> outMemRefList;
     if (numOutputs == 1) {
@@ -293,7 +294,7 @@ public:
       // Get the i-th memref returned, convert to a dynamic memref and store it
       // in the wrappedOutput.
       Value memRef = outMemRefList.at(i);
-      auto outMemRefTy = memRef.getType().dyn_cast<LLVM::LLVMStructType>();
+      auto outMemRefTy = mlir::dyn_cast<LLVM::LLVMStructType>(memRef.getType());
       int64_t outMemRefRank = krnl::getRankFromMemRefType(outMemRefTy);
       Value outMemRefRankVal =
           create.llvm.constant(int64Ty, (int64_t)outMemRefRank);
@@ -329,7 +330,8 @@ private:
       LLVM::LLVMFuncOp &dynamicEntryPointFunc, Location &loc) const {
     // Add entry block:
     auto *entryPointEntryBlock = new Block();
-    auto dynEntryPointFuncType = dynEntryPoint.cast<LLVM::LLVMFunctionType>();
+    auto dynEntryPointFuncType =
+        mlir::cast<LLVM::LLVMFunctionType>(dynEntryPoint);
     dynamicEntryPointFunc.push_back(entryPointEntryBlock);
     llvm::SmallVector<Type, 4> argTypes;
     for (size_t i = 0; i < dynEntryPointFuncType.getNumParams(); i++)
@@ -353,7 +355,7 @@ private:
     Value dataPtr = RuntimeAPI::callApi(
         rewriter, loc, apiRegistry, RuntimeAPI::API::GET_DATA, {rtMemRef});
     dataPtr = create.llvm.bitcast(
-        memRefTy.cast<LLVM::LLVMStructType>().getBody()[0], dataPtr);
+        mlir::cast<LLVM::LLVMStructType>(memRefTy).getBody()[0], dataPtr);
     memRef = create.llvm.insertValue(memRefTy, memRef, dataPtr, {0});
     memRef = create.llvm.insertValue(memRefTy, memRef, dataPtr, {1});
 
@@ -363,7 +365,7 @@ private:
 
     // Get rank, sizes array ptr and strides array ptr.
     auto rank =
-        krnl::getRankFromMemRefType(memRefTy.cast<LLVM::LLVMStructType>());
+        krnl::getRankFromMemRefType(mlir::cast<LLVM::LLVMStructType>(memRefTy));
     Value sizesArrayPtr = RuntimeAPI::callApi(rewriter, loc, apiRegistry,
         RuntimeAPI::API::GET_DATA_SHAPE, {rtMemRef});
     Value stridesArrayPtr = RuntimeAPI::callApi(rewriter, loc, apiRegistry,
@@ -565,11 +567,7 @@ private:
       return globalOp;
     };
 
-    bool zOS = false;
-    if (Attribute mtripleAttr =
-            module->getAttrOfType<::mlir::Attribute>("llvm.target_triple"))
-      zOS = llvm::Triple(mtripleAttr.cast<StringAttr>().getValue()).isOSzOS();
-
+    bool zOS = isZOS(module);
     // NULL terminated entry point name.
     std::string terminatedEntryPointName = currentEntryPointName + '\0';
     terminatedEntryPointName = (zOS) ? krnl::a2e_s(terminatedEntryPointName)

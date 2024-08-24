@@ -4,7 +4,7 @@
 
 //===-------------------------- CompilerUtils.hpp -------------------------===//
 //
-// Copyright 2019-2022 The IBM Research Authors.
+// Copyright 2019-2024 The IBM Research Authors.
 //
 // =============================================================================
 //
@@ -12,12 +12,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-#pragma once
+#ifndef ONNX_MLIR_COMPILER_UTILS_H
+#define ONNX_MLIR_COMPILER_UTILS_H
 
 #include "onnx-mlir/Compiler/OMCompilerTypes.h"
 
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/IR/OwningOpRef.h"
+#include "mlir/Support/Timing.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/Path.h"
 
@@ -25,7 +27,15 @@
 #include <string>
 #include <vector>
 
+extern mlir::DefaultTimingManager timingManager;
+extern mlir::TimingScope rootTimingScope;
+
 namespace onnx_mlir {
+
+// Values to report the current phase of compilation.
+// Increase TOTAL_COMPILE_PHASE when having more phases.
+extern uint64_t CURRENT_COMPILE_PHASE;
+extern uint64_t TOTAL_COMPILE_PHASE;
 
 struct Command {
 
@@ -42,6 +52,8 @@ struct Command {
   Command &resetArgs();
   int exec(std::string wdir = "") const;
 };
+
+void showCompilePhase(std::string msg);
 
 // Registers and loads the mlir and onnx-mlir dialects needed to compile
 // end to end. Initializes accelerator(s) if required.
@@ -78,4 +90,6 @@ int compileModule(mlir::OwningOpRef<mlir::ModuleOp> &module,
 // depending on the underlying machine and/or operating system.
 std::string getTargetFilename(
     const std::string filenameNoExt, EmissionTargetType target);
+
 } // namespace onnx_mlir
+#endif

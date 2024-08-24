@@ -55,19 +55,19 @@ public:
 
     // The element type of the array.
     const Type type = op->getResult(0).getType();
-    const MemRefType memRefTy = type.cast<mlir::MemRefType>();
+    const MemRefType memRefTy = mlir::cast<mlir::MemRefType>(type);
     const Type constantElementType =
         typeConverter->convertType(memRefTy.getElementType());
     Type globalType = constantElementType;
 
     // The llvm type of the global (example: [2 x [8 x float]]).
-    const auto shape = (krnlGlobalOp.getShape()).dyn_cast<ArrayAttr>();
+    const auto shape = mlir::dyn_cast<ArrayAttr>(krnlGlobalOp.getShape());
     if (shape.empty())
-      globalType = LLVM::LLVMArrayType::get(globalType.cast<Type>(), 1);
+      globalType = LLVM::LLVMArrayType::get(mlir::cast<Type>(globalType), 1);
     else {
       for (int i = shape.size() - 1; i >= 0; i--)
         globalType = LLVM::LLVMArrayType::get(
-            globalType.cast<Type>(), ArrayAttrIntVal(shape, i));
+            mlir::cast<Type>(globalType), ArrayAttrIntVal(shape, i));
     }
 
     // Create the global at the entry of the module.
@@ -112,15 +112,16 @@ public:
 
 private:
   static int64_t ArrayAttrIntVal(ArrayAttr a, int i) {
-    return (a.getValue()[i]).cast<IntegerAttr>().getInt();
+    return mlir::cast<IntegerAttr>(a.getValue()[i]).getInt();
   }
 
   LLVM::GlobalOp lowerDenseResourceConstant(KrnlGlobalOp &krnlGlobalOp,
       Type globalType, ConversionPatternRewriter &rewriter) const {
     assert(krnlGlobalOp.getValue().has_value() &&
            "Expecting KrnlGlobalOp with a valid value");
-    assert(krnlGlobalOp.getValue().value().isa<DenseResourceElementsAttr>() &&
-           "Expecting a global with an dense resource elements attribute");
+    assert(
+        mlir::isa<DenseResourceElementsAttr>(krnlGlobalOp.getValue().value()) &&
+        "Expecting a global with an dense resource elements attribute");
 
     MLIRContext *context = krnlGlobalOp.getContext();
     Location loc = krnlGlobalOp.getLoc();
@@ -130,11 +131,10 @@ private:
     OpBuilder::InsertionGuard insertGuard(rewriter);
     rewriter.setInsertionPointToStart(module.getBody());
 
-    auto blob = krnlGlobalOp.getValue()
-                    .value()
-                    .cast<DenseResourceElementsAttr>()
-                    .getRawHandle()
-                    .getBlob();
+    auto blob =
+        mlir::cast<DenseResourceElementsAttr>(krnlGlobalOp.getValue().value())
+            .getRawHandle()
+            .getBlob();
     assert(blob && "Expecting dense resource with a valid blob");
     ArrayRef<char> rawData = blob->getData();
 
@@ -158,7 +158,7 @@ private:
       ConversionPatternRewriter &rewriter) const {
     assert(krnlGlobalOp.getValue().has_value() &&
            "Expecting KrnlGlobalOp with a valid value");
-    assert(krnlGlobalOp.getValue().value().isa<DenseElementsAttr>() &&
+    assert(mlir::isa<DenseElementsAttr>(krnlGlobalOp.getValue().value()) &&
            "Expecting a global with an dense elements attribute");
 
     Location loc = krnlGlobalOp.getLoc();
@@ -172,12 +172,14 @@ private:
     rewriter.setInsertionPointToStart(module.getBody());
 
     DenseElementsAttr denseAttr =
-        krnlGlobalOp.getValue().value().cast<DenseElementsAttr>();
+        mlir::cast<DenseElementsAttr>(krnlGlobalOp.getValue().value());
 
     uint64_t sizeInBytes = computeSizeInBytes(krnlGlobalOp);
     LLVM::GlobalOp global;
-    if ((!denseAttr.getElementType().isa<StringType>()) &&
-        (!denseAttr.isSplat()) && (sizeInBytes > 1024)) {
+    if (!(mlir::isa<StringType>(denseAttr.getElementType())) &&
+        !(denseAttr.getElementType().isInteger(1)) && (!denseAttr.isSplat()) &&
+        (sizeInBytes > 1024)) {
+
       ArrayRef<char> rawData = denseAttr.getRawData();
       assert(
           ((uint64_t)rawData.size() == sizeInBytes) && "Data size mismatch.");
@@ -189,7 +191,7 @@ private:
           /*isConstant=*/true, LLVM::Linkage::Internal, krnlGlobalOp.getName(),
           llvmStringAttr);
     } else {
-      if (denseAttr.getElementType().isa<StringType>())
+      if (mlir::isa<StringType>(denseAttr.getElementType()))
         global = lowerStringLiteral(krnlGlobalOp, globalType, rewriter);
       else
         global = create.llvm.globalOp(globalType,
@@ -246,13 +248,13 @@ private:
 
   uint64_t computeSizeInBytes(KrnlGlobalOp &krnlGlobalOp) const {
     // Compute total number of elements.
-    const auto shape = (krnlGlobalOp.getShape()).dyn_cast<ArrayAttr>();
+    const auto shape = mlir::dyn_cast<ArrayAttr>(krnlGlobalOp.getShape());
     uint64_t numElements = 1;
     for (unsigned int i = 0; i < shape.size(); ++i)
       numElements *= ArrayAttrIntVal(shape, i);
 
     const auto type = krnlGlobalOp.getResult().getType();
-    const auto memRefTy = type.cast<mlir::MemRefType>();
+    const auto memRefTy = mlir::cast<mlir::MemRefType>(type);
 
     // Special handling for bool.
     if (memRefTy.getElementType().isInteger(1))
@@ -283,30 +285,48 @@ private:
   // the address of the global strings into an array. Return the array address.
   LLVM::GlobalOp lowerStringLiteral(
       KrnlGlobalOp &krnlGlobalOp, Type globalType, OpBuilder &builder) const {
-    assert(krnlGlobalOp.getValue().value().isa<DenseElementsAttr>() &&
+    assert(mlir::isa<DenseElementsAttr>(krnlGlobalOp.getValue().value()) &&
            "Expecting a dense value");
 
     Location loc = krnlGlobalOp.getLoc();
     MultiDialectBuilder<LLVMBuilder> create(builder, loc);
 
-    ModuleOp module = krnlGlobalOp->getParentOfType<ModuleOp>();
     DenseElementsAttr denseAttr =
-        krnlGlobalOp.getValue().value().cast<DenseElementsAttr>();
+        mlir::cast<DenseElementsAttr>(krnlGlobalOp.getValue().value());
 
     Type i8PtrType = getI8PointerType(builder.getContext());
 
-    // Generate LLVM GlobalOps for each string in the KrnlGlobalOp dense
-    // attribute.
-    SmallVector<LLVM::GlobalOp> globalOps;
-    for (StringRef str : denseAttr.getValues<StringRef>()) {
-      LLVM::GlobalOp globalOp = krnl::getOrCreateGlobalString(
-          str, loc, builder, module, getTypeConverter());
-      globalOps.push_back(globalOp);
+    auto strs = denseAttr.getValues<StringRef>();
+    // Collect total size of the strs.
+    size_t totalSize = 0;
+    for (StringRef str : strs) {
+      // Add 1 for the null terminator.
+      totalSize += str.size() + 1;
     }
+
+    // Concatenate all strings into one.
+    std::vector<char> concatStr(totalSize);
+    size_t offset = 0;
+    std::vector<size_t> offsets;
+    for (StringRef str : strs) {
+      offsets.emplace_back(offset);
+      std::copy(str.begin(), str.end(), concatStr.begin() + offset);
+      concatStr[offset + str.size()] = '\0';
+      offset += str.size() + 1;
+    }
+
+    // Create a global for the concatenated string.
+    StringRef data(concatStr.data(), concatStr.size());
+    StringAttr llvmStringAttr = StringAttr::get(builder.getContext(), data);
+    auto i8Type = IntegerType::get(builder.getContext(), 8);
+    auto llvmArrayI8Ty = LLVM::LLVMArrayType::get(i8Type, totalSize);
+    LLVM::GlobalOp globalStr = create.llvm.globalOp(llvmArrayI8Ty,
+        /*isConstant=*/true, LLVM::Linkage::Internal,
+        "om.strArray." + krnlGlobalOp.getName().str(), llvmStringAttr);
 
     // Generate an LLVM GlobalOps with an initializer region containing one
     // block.
-    auto arrayType = LLVM::LLVMArrayType::get(i8PtrType, globalOps.size());
+    auto arrayType = LLVM::LLVMArrayType::get(i8PtrType, offsets.size());
     auto global = create.llvm.globalOp(arrayType,
         /*isConstant=*/true, LLVM::Linkage::Internal, krnlGlobalOp.getName(),
         Attribute());
@@ -319,10 +339,15 @@ private:
 
     int32_t index = 0;
     Value lastValue = array;
-    for (const LLVM::GlobalOp &globalOp : globalOps) {
-      Value strAddr = krnl::getPtrToGlobalString(globalOp, loc, builder);
+    Value baseAddr = create.llvm.addressOf(globalStr);
+    // Cast globalStr to i8Ptr.
+    baseAddr = create.llvm.bitcast(i8PtrType, baseAddr);
+    for (size_t offset : offsets) {
+      // Get each str with gep base, offset.
+      Value gepOp = create.llvm.getElemPtr(
+          i8PtrType, i8Type, baseAddr, {(int32_t)offset});
       lastValue =
-          create.llvm.insertValue(arrayType, lastValue, strAddr, {index++});
+          create.llvm.insertValue(arrayType, lastValue, gepOp, {index++});
     }
 
     create.llvm._return(lastValue);

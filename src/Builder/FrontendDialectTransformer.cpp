@@ -51,6 +51,8 @@ SUPPRESS_WARNINGS_POP
 #include <array>
 #include <fstream>
 #include <map>
+#include <sstream>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -253,7 +255,7 @@ private:
 
   static onnx::TypeProto fromMlirToONNXType(Type mlirType) {
     onnx::TypeProto onnxType;
-    if (mlirType.isa<NoneType>()) {
+    if (mlir::isa<NoneType>(mlirType)) {
       // Done: Uninitialized TypeProto onnxType represents NoneType.
     } else if (auto mlirTensorType = dyn_cast<TensorType>(mlirType)) {
       onnx::TypeProto::Tensor &onnxTensorType = *onnxType.mutable_tensor_type();
@@ -338,9 +340,10 @@ private:
       assert(elem_type.value_case() == onnx::TypeProto::kTensorType &&
              "expect tensor inside sequence type");
       Type mlir_elem_type = ImportTensorType(elem_type, dim_params);
-      if (!mlir_elem_type.isa<ShapedType>())
+      if (!mlir::isa<ShapedType>(mlir_elem_type))
         llvm_unreachable("Seq type is incorrect");
-      Type seq_type = mlir::SeqType::get(mlir_elem_type.cast<ShapedType>(), -1);
+      Type seq_type =
+          mlir::SeqType::get(mlir::cast<ShapedType>(mlir_elem_type), -1);
       return seq_type;
     }
     llvm_unreachable("unexpected type");
@@ -450,6 +453,27 @@ private:
     return attributes;
   }
 
+  // Generate a string vector from the dimParams option string
+  void getInputDimParamsMapFromOption(std::string optionStr,
+      std::map<int, std::string> &paramStrMap,
+      std::string &paramStrForAllArgs) {
+    std::stringstream paramStrStream(optionStr);
+    std::string dimParamStr;
+    while (std::getline(paramStrStream, dimParamStr, '|')) {
+      size_t pos = dimParamStr.find(':');
+      assert((pos > 0) && "invalid dimParams option string");
+      int idx = stoi(dimParamStr.substr(0, pos));
+      dimParamStr = dimParamStr.substr(pos + 1);
+      std::replace(dimParamStr.begin(), dimParamStr.end(), '=', ':');
+      if (idx < 0) // set all arguments
+        paramStrForAllArgs = dimParamStr;
+      else {
+        paramStrMap[idx] = dimParamStr;
+      }
+    }
+    return;
+  }
+
   /*!
    * An alternative graph importing procedure for importing ONNX subgraphs.
    * ONNX subgraphs, unlike the main computation graph, are imported as regions
@@ -490,6 +514,10 @@ private:
     // See https://github.com/onnx/onnx/blob/main/docs/IR.md for more
     // information about dim_param.
     llvm::SmallVector<std::string, 4> inputDimParams, outputDimParams;
+    std::map<int, std::string> inputDimParamsFromOption;
+    std::string inputDimParamsFromOptionForAllArgs;
+    getInputDimParamsMapFromOption(options_.dimParams, inputDimParamsFromOption,
+        inputDimParamsFromOptionForAllArgs);
 
     // Import the input tensor types that are not constant and not initialized.
     int inputIndex = 0;
@@ -500,7 +528,16 @@ private:
         std::string dimParams = "";
         Type argTy = ImportType(input.type(), &dimParams);
         argTy = modelInputShaper_.reshape(inputIndex, argTy);
-        if (!dimParams.empty())
+        // For each input tensor, use either all dimensions by the compiler
+        // option OR all dimensions in the original onnx model. Dimensions
+        // from the option and the model in a single input tensor are not
+        // merged.
+        if (inputDimParamsFromOption.find(inputIndex) !=
+            inputDimParamsFromOption.end())
+          inputDimParams.emplace_back(inputDimParamsFromOption[inputIndex]);
+        else if (!inputDimParamsFromOptionForAllArgs.empty())
+          inputDimParams.emplace_back(inputDimParamsFromOptionForAllArgs);
+        else if (!dimParams.empty())
           inputDimParams.emplace_back(dimParams);
 
         argTypes.emplace_back(argTy);
@@ -750,8 +787,9 @@ private:
         if (j < outputMap.size() && outputMap[j] >= MAX_NUM_TYPES) {
           // Mapping gives a connection with an input.
           Type inputType = inputs[outputMap[j] - MAX_NUM_TYPES].getType();
-          if (inputType.isa<TensorType>()) {
-            Type elementType = inputType.cast<TensorType>().getElementType();
+          if (mlir::isa<TensorType>(inputType)) {
+            Type elementType =
+                mlir::cast<TensorType>(inputType).getElementType();
             auto outType = UnrankedTensorType::get(elementType);
             outputTypes.emplace_back(outType);
           } else {
@@ -852,7 +890,7 @@ private:
     getNodeInputs(node, inputs);
     auto attributes = ImportNodeAttributes(node);
     std::vector<Type> outputTypes;
-    auto inputType = inputs[0].getType().cast<TensorType>();
+    auto inputType = mlir::cast<TensorType>(inputs[0].getType());
     if (inputType.getElementType().isInteger(64)) {
       outputTypes.emplace_back(
           mlir::ONNXStringType::get(builder_.getContext()));
@@ -996,7 +1034,7 @@ private:
       std::vector<Value> inputs;
       getNodeInputs(node, inputs);
       Type elementType =
-          inputs[0].getType().cast<TensorType>().getElementType();
+          mlir::cast<TensorType>(inputs[0].getType()).getElementType();
 
       llvm::SmallVector<Attribute, 2> values(
           1, builder_.getZeroAttr(elementType));
@@ -1038,7 +1076,7 @@ private:
     const Type elementType = builder_.getIntegerType(64);
     const auto attributes = ImportNodeAttributes(node);
     for (auto attr : attributes) {
-      if (auto arrayAttr = attr.getValue().dyn_cast<ArrayAttr>()) {
+      if (auto arrayAttr = mlir::dyn_cast<ArrayAttr>(attr.getValue())) {
         const auto tensorType =
             RankedTensorType::get({(int64_t)arrayAttr.size()}, elementType);
         auto constantDenseAttribute =
@@ -1376,8 +1414,12 @@ private:
     const Value *valPtr = frontend_symbols_.GetByOnnxName(output.name());
     Value val = *valPtr;
     if (output.type().value_case() == onnx::TypeProto::kTensorType) {
+      Type outTy = ImportType(output.type(), dim_params);
+      if (std::getenv("IMPORTER_FORCE_DYNAMIC"))
+        outTy =
+            UnrankedTensorType::get(cast<TensorType>(outTy).getElementType());
       if (output.type().tensor_type().has_shape()) {
-        val.setType(ImportType(output.type(), dim_params));
+        val.setType(outTy);
       }
       ret_types.emplace_back(val.getType());
     } else {
@@ -1413,7 +1455,7 @@ private:
       SmallVector<NamedAttribute, 2> argAttrs;
       for (size_t k = 0; k < funcAttrsToMove.size(); ++k) {
         if (i < funcAttrsToMove[k].size()) {
-          auto name = (funcAttrsToMove[k].getValue()[i]).cast<StringAttr>();
+          auto name = mlir::cast<StringAttr>(funcAttrsToMove[k].getValue()[i]);
           if (name) {
             NamedAttribute namedAttr =
                 builder_.getNamedAttr(argAttrNames[k], name);
@@ -1543,7 +1585,7 @@ int readAndStripComments(
   // but appear in lit tests in test/mlir/onnx/parse.
   for (llvm::line_iterator line(*buf, /*SkipBlanks=*/false), end; line != end;
        ++line) {
-    if (line->ltrim(" \t").startswith("//"))
+    if (line->ltrim(" \t").starts_with("//"))
       continue; // omit comment lines beginning with (whitespace and) //
     if (line->contains("//")) {
       // Not stripping end-of-line comments because there's no robust way to
@@ -1563,7 +1605,7 @@ int ImportFrontendModelFile(StringRef model_fname, MLIRContext &context,
     OwningOpRef<ModuleOp> &module, std::string *errorMessage,
     ImportOptions options) {
   onnx::ModelProto model;
-  if (model_fname.endswith(".onnxtext")) {
+  if (model_fname.ends_with(".onnxtext")) {
     std::string text;
     int ret = readAndStripComments(model_fname, errorMessage, text);
     if (ret != CompilerSuccess)
@@ -1576,7 +1618,7 @@ int ImportFrontendModelFile(StringRef model_fname, MLIRContext &context,
                       " with error '" + status.ErrorMessage() + "'";
       return InvalidOnnxFormat;
     }
-  } else if (model_fname.endswith(".json")) {
+  } else if (model_fname.ends_with(".json")) {
     std::string json;
     int ret = readAndStripComments(model_fname, errorMessage, json);
     if (ret != CompilerSuccess)

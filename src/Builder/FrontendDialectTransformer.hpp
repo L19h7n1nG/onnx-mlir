@@ -4,13 +4,14 @@
 
 //===--------- FrontendDialectTransformer.hpp - MLIR Operations -----------===//
 //
-// Copyright 2019 The IBM Research Authors.
+// Copyright 2019-2024 The IBM Research Authors.
 //
 // =============================================================================
 //
 //===----------------------------------------------------------------------===//
 
-#pragma once
+#ifndef ONNX_MLIR_FRONTEND_TRANSFORMER_H
+#define ONNX_MLIR_FRONTEND_TRANSFORMER_H
 
 #include <set>
 #include <string>
@@ -55,6 +56,18 @@ struct ImportOptions {
   //   - (arg0: tensor<3x4x5xf32>, arg1: tensor<10x5xf32>)
   //
   std::string shapeInformation = "";
+  // Custom onnx.dim_params attributes for the graph inputs for specifying
+  // relationship among their dynamic dimensions.
+  // Its format is 'input_id:dim_id=sym,dim_id=sym,...|input_id:
+  // dim_id=sym,dim_id=sym,...|input_id...'
+  // E.g. An ONNX model has two dynamic inputs
+  //   - (arg0: tensor<?x5xf32>, arg1: tensor<?x5xf32>)
+  // If we want to specify that the first unknown dimension of arg0 and the
+  // first unknown dimension of arg1 are the same, we can assign the two
+  // dimensions to the same symbol "batch" as follows.
+  //   - dimParams = '0:0=batch|1:0=batch'
+  //
+  std::string dimParams = "";
   // Directory to look for external data if any tensor has external
   // data location. If empty then external data is disabled.
   std::string externalDataDir = "";
@@ -97,3 +110,4 @@ void ImportFrontendModel(const onnx::ModelProto &model,
  *  operations specific to other frameworks such as Tensorflow or Pytorch.
  */
 } // namespace onnx_mlir
+#endif
